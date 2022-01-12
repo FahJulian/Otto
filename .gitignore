@@ -1,0 +1,9 @@
+.vs/
+*.sln
+bin/
+int/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+enc_temp_folder/
+*.log
