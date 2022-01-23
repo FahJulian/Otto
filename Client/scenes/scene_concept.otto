@@ -15,17 +15,19 @@ Entity1:
         Variable3:   // This is also a list
             Value1
             Value2
-//        Variable4: [
-//            [
-//                a
-//                b
-//                c
-//            ]
-//            {
-//                Key1: Value1
-//                Key2: Value2
-//            }
-//        ]
+        Variable4: [
+            [
+                a
+                b
+                c
+            ]
+            {
+                Key1: Value1
+                Key2: Value2
+            }
+            Value4
+            Value5
+        ]
 
 Entity2:
     Component1: {

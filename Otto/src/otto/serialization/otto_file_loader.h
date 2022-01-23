@@ -32,9 +32,6 @@ namespace otto
 
         static void _filterEmtpyLines(DynamicArray<String>& lines);
 
-        static Result<DictioaryParsingResult, ParsingError> _parseDictionary(
-            DynamicArray<String>& lines, uint64 keyIndex, uint64 keyIndentation, Serialized::Type type = Serialized::Type::VOID);
-
         static Result<SerializableParsingResult, ParsingError> _parseSerializable(DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation);
     };
 

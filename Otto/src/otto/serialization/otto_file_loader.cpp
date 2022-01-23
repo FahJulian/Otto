@@ -89,9 +89,8 @@ namespace otto
             {
                 String line = lines.get(i);
                 uint64 indentation = line.findFirstNotOfWhiteSpace();
-                line.trim();
 
-                if (line.startsWith('}'))
+                if (String::trim(line).startsWith('}'))
                 {
                     if (indentation == outerIndentation)
                         return SerializableParsingResult{ i - lineIndex, serialized };
@@ -102,6 +101,8 @@ namespace otto
                     return SerializableParsingResult{ i - (lineIndex + 1), serialized };
                 else
                 {
+                    line.trim();
+
                     if (indentation != innerIndentation)
                         return ParsingError::INDENTATION_ERROR;
 
@@ -145,9 +146,8 @@ namespace otto
             {
                 auto& line = lines.get(i);
                 uint64 indentation = line.findFirstNotOfWhiteSpace();
-                line.trim();
 
-                if (line.startsWith(']'))
+                if (String::trim(line).startsWith(']'))
                 {
                     if (indentation == outerIndentation)
                         return SerializableParsingResult{ i - lineIndex, serialized };
@@ -158,6 +158,8 @@ namespace otto
                     return SerializableParsingResult{ i - (lineIndex + 1), serialized };
                 else
                 {
+                    line.trim();
+
                     if (indentation != innerIndentation)
                         return ParsingError::INDENTATION_ERROR;
 
