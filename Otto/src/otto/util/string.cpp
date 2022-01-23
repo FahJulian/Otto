@@ -64,6 +64,11 @@ namespace otto
     {
     }
 
+    constexpr String::String() noexcept
+        : mSize(0), mData(new char('\0'))
+    {
+    }
+
     String::String(const char* data)
         : mSize(std::strlen(data)), mData(new char[mSize + 1])
     {
@@ -281,28 +286,12 @@ namespace otto
 
     String& String::trim()
     {
-        uint64 firstNotWhiteSpace = 0;
-        uint64 LastNotWhiteSpace = 0;
+        uint64 beginIndex = findFirstNotOfWhiteSpace();
 
-        for (uint64 i = 0; i < mSize; i++)
-        {
-            if (!_isWhitespace(mData[i]))
-            {
-                firstNotWhiteSpace = i;
-                break;
-            }
-        }
+        if (beginIndex == mSize)    // String is all whitespace
+            return (*this = String());
 
-        for (uint64 i = mSize; i > 0; i--)
-        {
-            if (!_isWhitespace(mData[i - 1]))
-            {
-                LastNotWhiteSpace = i - 1;
-                break;
-            }
-        }
-
-        return toSubString(firstNotWhiteSpace, LastNotWhiteSpace + 1);
+        return toSubString(beginIndex, findLastNotOfWhiteSpace() + 1);
     }
 
     String& String::toLowerCase()
@@ -352,7 +341,7 @@ namespace otto
 
             char* newData = new char[mSize + 1];
 
-            std::memcpy(newData, mData, mSize);
+            std::memcpy(newData, mData + beginIndex, mSize);
             newData[mSize] = '\0';
 
             delete[] mData;
@@ -1584,12 +1573,10 @@ namespace otto
         uint64 deltaLen = uint64(1) - (endIndex - beginIndex);
         String newString = String(string.mSize + deltaLen);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, beginIndex);
         std::memcpy(newString.mData + beginIndex + 1, string.mData + endIndex, string.mSize - endIndex);
 
         newString.mData[beginIndex] = c;
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1603,12 +1590,9 @@ namespace otto
         uint64 deltaLen = len - (endIndex - beginIndex);
         String newString = String(string.mSize + deltaLen);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, beginIndex);
         std::memcpy(newString.mData + beginIndex, replaceString, len);
         std::memcpy(newString.mData + beginIndex + len, string.mData + endIndex, string.mSize - endIndex);
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1621,12 +1605,9 @@ namespace otto
         uint64 deltaLen = replaceString.mSize - (endIndex - beginIndex);
         String newString = String(string.mSize + deltaLen);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, beginIndex);
         std::memcpy(newString.mData + beginIndex, replaceString.mData, replaceString.mSize);
         std::memcpy(newString.mData + beginIndex + replaceString.mSize, string.mData + endIndex, string.mSize - endIndex);
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1634,12 +1615,9 @@ namespace otto
     String String::replaceAll(const String& string, char oldChar, char newChar, uint64 startIndex)
     {
         String newString = String(string.mSize);
-        newString.mData = new char[newString.mSize + 1];
 
         for (uint64 i = 0; i < string.mSize; i++)
             newString[i] = string[i] == oldChar ? newChar : string[i];
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1657,12 +1635,9 @@ namespace otto
     String String::replaceAllIgnoreCase(const String& string, char oldChar, char newChar, uint64 startIndex)
     {
         String newString = String(string.mSize);
-        newString.mData = new char[newString.mSize + 1];
 
         for (uint64 i = 0; i < string.mSize; i++)
             newString[i] = _toLowerCase(string[i]) == _toLowerCase(oldChar) ? newChar : string[i];
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1694,28 +1669,12 @@ namespace otto
 
     String String::trim(const String& string)
     {
-        uint64 firstNotWhiteSpace = 0;
-        uint64 LastNotWhiteSpace = 0;
+        uint64 beginIndex = string.findFirstNotOfWhiteSpace();
 
-        for (uint64 i = 0; i < string.mSize; i++)
-        {
-            if (!_isWhitespace(string.mData[i]))
-            {
-                firstNotWhiteSpace = i;
-                break;
-            }
-        }
+        if (beginIndex == string.mSize) // string is all whitespace
+            return String();
 
-        for (uint64 i = string.mSize; i > 0; i--)
-        {
-            if (!_isWhitespace(string.mData[i - 1]))
-            {
-                LastNotWhiteSpace = i - 1;
-                break;
-            }
-        }
-
-        return subString(string, firstNotWhiteSpace, LastNotWhiteSpace + 1);
+        return subString(string, beginIndex, string.findLastNotOfWhiteSpace() + 1);
     }
 
     String String::lowerCase(const String& string)
@@ -1775,13 +1734,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString, newLen);
         std::memcpy(changedString.mData + index + newLen, string.mData + index + oldLen, string.mSize - (index + oldLen));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1795,13 +1751,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString.mData, newString.mSize);
         std::memcpy(changedString.mData + index + newString.mSize, string.mData + index + oldString.mSize, string.mSize - (index + oldString.mSize));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1829,13 +1782,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString, newLen);
         std::memcpy(changedString.mData + index + newLen, string.mData + index + oldLen, string.mSize - (index + oldLen));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1849,13 +1799,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString.mData, newString.mSize);
         std::memcpy(changedString.mData + index + newString.mSize, string.mData + index + oldString.mSize, string.mSize - (index + oldString.mSize));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1883,13 +1830,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString, newLen);
         std::memcpy(changedString.mData + index + newLen, string.mData + index + oldLen, string.mSize - (index + oldLen));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1903,13 +1847,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString.mData, newString.mSize);
         std::memcpy(changedString.mData + index + newString.mSize, string.mData + index + oldString.mSize, string.mSize - (index + oldString.mSize));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1937,13 +1878,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString, newLen);
         std::memcpy(changedString.mData + index + newLen, string.mData + index + oldLen, string.mSize - (index + oldLen));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1957,13 +1895,10 @@ namespace otto
             return NONE;
 
         String changedString = String(string.mSize + deltaLen);
-        changedString.mData = new char[changedString.mSize + 1];
 
         std::memcpy(changedString.mData, string.mData, index);
         std::memcpy(changedString.mData + index, newString.mData, newString.mSize);
         std::memcpy(changedString.mData + index + newString.mSize, string.mData + index + oldString.mSize, string.mSize - (index + oldString.mSize));
-
-        changedString.mData[changedString.mSize] = '\0';
 
         return changedString;
     }
@@ -1972,11 +1907,9 @@ namespace otto
     {
         String newString = String(string.mSize + 1);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, string.mSize);
 
         newString.mData[newString.mSize - 1] = c;
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1986,11 +1919,8 @@ namespace otto
         uint64 appendStringLen = std::strlen(appendString);
         String newString = String(string.mSize + appendStringLen);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, string.mSize);
         std::memcpy(newString.mData + string.mSize, appendString, appendStringLen);
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -1999,11 +1929,8 @@ namespace otto
     {
         String newString = String(string.mSize + appendString.mSize);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, string.mSize);
         std::memcpy(newString.mData + string.mSize, appendString.mData, appendString.mSize);
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -2012,12 +1939,10 @@ namespace otto
     {
         String newString = String(string.mSize + 1);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, index);
         std::memcpy(newString.mData + index + 1, string.mData + index, string.mSize - index);
 
         newString.mData[index] = c;
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -2027,12 +1952,9 @@ namespace otto
         uint64 insertStringLen = std::strlen(insertString);
         String newString = String(string.mSize + insertStringLen);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, index);
         std::memcpy(newString.mData + index, insertString, insertStringLen);
         std::memcpy(newString.mData + index + insertStringLen, string.mData + index, string.mSize - index);
-
-        newString.mData[newString.mSize] = '\0';
 
         return newString;
     }
@@ -2041,14 +1963,17 @@ namespace otto
     {
         String newString = String(string.mSize + insertString.mSize);
 
-        newString.mData = new char[newString.mSize + 1];
         std::memcpy(newString.mData, string.mData, index);
         std::memcpy(newString.mData + index, insertString.mData, insertString.mSize);
         std::memcpy(newString.mData + index + insertString.mSize, string.mData + index, string.mSize - index);
 
-        newString.mData[newString.mSize] = '\0';
-
         return newString;
+    }
+
+    String String::findNextWord(const String& string, uint64 beginIndex)
+    {
+        uint64 firstIndex = string.findFirstNotOfWhiteSpace(beginIndex);
+        return String::subString(string, firstIndex, string.findFirstOfWhiteSpace(firstIndex + 1));
     }
 
     uint64 String::_replaceFirst(char oldChar, char newChar, uint64 startIndex)

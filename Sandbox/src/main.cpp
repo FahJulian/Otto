@@ -10,83 +10,32 @@
 #include "otto/util/string.h"
 #include "otto/math/math.h"
 #include "otto/debug/profile/profiler.h"
+#include "otto/serialization/otto_file_loader.h"
+#include "otto/scene/scene.h"
+#include "otto/math/vec4.h"
 
-template<int i>
-otto::String s = "";
-
-template<>
-otto::String s<1> = "1";
-
-template<int i>
-otto::String getS()
+struct Test
 {
+    otto::int32 test;
 
-}
+    friend otto::float32 operator+(const Test& test, otto::float32 f)
+    {
+        return f;
+    }
+};
 
 int main()
 {
     otto::Time::init();
     otto::Log::init("C:/dev/Otto/Sandbox/.log/main.log", std::cout, otto::Log::ALL, otto::Log::ALL);
 
-    otto::Log::debug("Testing logger...");
+    auto file = otto::OttoFileLoader::load("C:/dev/Otto/Client/scenes/scene_concept.otto");
 
-    //otto::uint32 i = 3;
-    //std::cout << (i += 3) << std::endl;
+    if (!file.hasError())
+        otto::Log::trace(otto::String::toString(file.getResult().serialized));
 
-    //otto::Vec2f32 pos = { 1.f, .2f };
-    //std::cout << pos.x << pos.y << std::endl;
+    otto::Vec4f32 vec = { 0, 1, 2, 3 };
+    otto::Vec4f32 vec2 = { 0, 1, 2, 3 };
 
-    //otto::Mat2x2f32 mat = {
-    //    1, 1,
-    //    1, 1
-    //};
-
-    //otto::Vec2f32 result = mat * pos;
-    //std::cout << result.x << ", " << result.y << std::endl;
-
-    //std::cout << otto::Mat2x2f32(1, 2, 3, 4) << std::endl;
-
-    //std::cout << s<1> << std::endl;
-
-    //std::cout << sizeof(double) << std::endl;
-
-    //std::cout << otto::sqrt(static_cast<otto::float32>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::float64>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::int8>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::int16>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::int32>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::int64>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::uint8>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::uint16>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::uint32>(2)) << std::endl;
-    //std::cout << otto::sqrt(static_cast<otto::uint64>(2)) << std::endl;
-
-    struct T
-    {
-        otto::float32 sqrt()
-        {
-            return 2.f;
-        }
-    } a;
-
-    int i = 3;
-    const int& j = i;
-    
-    otto::String testString = "123456789";
-    std::cout << otto::String::replace(testString, 2, 3, 'a') << std::endl;
-    std::cout << otto::String::replace(testString, 2, 5, 'a') << std::endl;
-    std::cout << otto::String::replace(testString, 2, 2, "Replacement") << std::endl;
-    std::cout << otto::String::replace(testString, 1, 3, "Replacement") << std::endl;
-    std::cout << otto::String::replace(testString, 2, 3, otto::String("Replacement")) << std::endl;
-    std::cout << otto::String::replace(testString, 1, 3, otto::String("Replacement")) << std::endl;
-
-    otto::float32 f = otto::PI_32;
-    otto::float64 d = otto::PI_64;
-
-    for (int i = 0; i < 100; i++)
-        otto::sqrt(3.0f);
-
-    std::cout << otto::Time::getTime32() << std::endl;
-
-    otto::Profiler::logResults();
+    otto::Log::debug(vec + vec2);
 }

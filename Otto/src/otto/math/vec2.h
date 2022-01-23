@@ -1,106 +1,100 @@
 #pragma once
 
+#include <iostream>
+
 #include "otto/base.h"
 
 namespace otto
 {
     template<typename T>
-    class Vec2
+    struct Vec2
     {
-    public:
+        constexpr Vec2() = default;
 
-        template<typename T>
-        Vec2<T> operator+=(T value)
+        constexpr Vec2(T t)
+            : mX(t), mY(t)
         {
-            mX += value;
-            mY += value;
-            return *this;
         }
 
-        template<typename T>
-        Vec2<T> operator-=(T value)
+        constexpr Vec2(T x, T y)
+            : mX(x), mY(y)
         {
-            mX -= value;
-            mY -= value;
-            return *this;
         }
 
-        template<typename T>
-        Vec2<T> operator+=(const Vec2<T>& value)
+        Vec2(const Vec2& other) = default;
+
+        Vec2& operator=(const Vec2& other) = default;
+
+        template<typename F>
+        Vec2& operator+=(const Vec2<F>& v)
         {
-            mX += value.x;
-            mY += value.y;
-            return *this;
+            mX += v.mX;
+            mY += v.mY;
         }
 
-        template<typename T>
-        Vec2<T> operator-=(const Vec2<T>& value)
+        template<typename F>
+        typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator+=(F f)
         {
-            mX -= value.x;
-            mY -= value.y;
-            return *this;
+            mX += f;
+            mY += f;
         }
 
-        template<typename T>
-        Vec2<T> operator*=(T value)
+        template<typename F>
+        typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator*=(F f)
         {
-            mX *= value.x;
-            mY *= value.y;
-            return *this;
+            mX *= f;
+            mY *= f;
         }
 
-        T getX() const
+        template<typename F, typename G>
+        friend Vec2 operator+(const Vec2<F>& v1, const Vec2<G>& v2)
         {
-            return mX;
+            return { v1.mX + v2.mX, v1.mY + v2.mY };
         }
 
-        T getY() const
+        template<typename F>
+        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(F f, const Vec2& v)
         {
-            return mY;
+            return { f + v.mX, f + v.mY };
         }
 
-        void setX(T x)
+        template<typename F>
+        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(const Vec2& v, F f)
         {
-            mX = x;
+            return { v.mX + f, v.mY + f };
         }
 
-        void setY(T y)
+        template<typename F>
+        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(F f, const Vec2& v)
         {
-            mY = y;
+            return { f * v.mX, f * v.mY };
         }
 
-        T dot(const Vec2& other) const
+        template<typename F>
+        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(const Vec2& v, F f)
         {
-            return mX * other.mX + mY * other.mY;
+            return { v.mX * f, v.mY * f };
         }
 
-        T length() const
+        friend std::ostream& operator<<(std::ostream& stream, const Vec2& v)
         {
-            return dot(*this);
+            return (stream << '(' << v.mX << ", " << v.mY << ')');
         }
 
     private:
-        union
-        {
-            T mX;
-        };
-
-        union
-        {
-            T mY;
-        };
+        T mX = T();
+        T mY = T();
     };
 
     using Vec2f32 = Vec2<float32>;
     using Vec2f64 = Vec2<float64>;
-
     using Vec2ui8 = Vec2<uint8>;
     using Vec2ui16 = Vec2<uint16>;
     using Vec2ui32 = Vec2<uint32>;
     using Vec2ui64 = Vec2<uint64>;
-
     using Vec2i8 = Vec2<int8>;
     using Vec2i16 = Vec2<int16>;
     using Vec2i32 = Vec2<int32>;
     using Vec2i64 = Vec2<int64>;
-}
+
+} // namespace otto

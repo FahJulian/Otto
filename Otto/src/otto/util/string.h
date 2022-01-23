@@ -15,10 +15,7 @@ namespace otto
     class String
     {
     public:
-        constexpr String() noexcept
-            : mSize(0), mData(nullptr)
-        {
-        }
+        constexpr String() noexcept;
 
         constexpr String(char c);
 
@@ -229,6 +226,8 @@ namespace otto
         static String replaceLastIgnoreCase(const String& string, const char* oldString, const char* newString, uint64 endIndex = std::numeric_limits<uint64>::max());
         static String replaceLastIgnoreCase(const String& string, const String& oldString, const String& newString, uint64 endIndex = std::numeric_limits<uint64>::max());
 
+        static String findNextWord(const String& string, uint64 beginIndex = 0);
+
         static String append(const String& string, char c);
         static String append(const String& string, const char* appendString);
         static String append(const String& string, const String& appendString);
@@ -251,6 +250,20 @@ namespace otto
         static String valueOf(float f, bool scientific = false);
         static String valueOf(double f, bool scientific = false);
         static String valueOf(long double d, bool scientific = false);
+
+        static String toString(const String& s) { return s; }
+
+        template<typename T> requires std::is_integral<T>::value
+        static String toString(T t)
+        {
+            return String::valueOf(t);
+        }
+
+        template<typename T>
+        static String toString(const T& t)
+        {
+            return t.toString();
+        }
 
         template<typename T>
         static T stringTo(const String& string);

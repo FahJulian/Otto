@@ -9,7 +9,7 @@ class TestBehaviour : public Behaviour
 
     }
 
-    void onUpdate(float32 delta)
+    void onUpdate(float32 delta)        // OPTIONAL: onUpdate(float64 delta)
     {
 
     }

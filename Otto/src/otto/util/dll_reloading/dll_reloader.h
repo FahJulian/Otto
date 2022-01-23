@@ -63,7 +63,7 @@ namespace otto
         }
 
         template<typename R, typename... Args>
-        static Functionptr64<R, Args...> registerFunctionptr64(const String& dllPath,
+        static Functionptr64<R, Args...> registerFunctionPointer(const String& dllPath,
             Functionptr64<R, Args...>* functionptr64,
             const String& returnType,
             const String& namespaceName,
@@ -83,7 +83,7 @@ namespace otto
         }
 
         template<typename R, typename T, typename... Args>
-        static MemberFunctionptr64<R, T, Args...> registerMemberFunctionptr64(const String& dllPath,
+        static MemberFunctionptr64<R, T, Args...> registerMemberFunctionPointer(const String& dllPath,
             MemberFunctionptr64<R, T, Args...>* memberFunctionptr64,
             const String& returnType,
             const String& memberFunctionName,
@@ -91,7 +91,7 @@ namespace otto
             const String& argumentTypes)
         {
             String className = getTypeNames<T>(false);
-            className = className.subString(className.findFirstOf(' ') + 1);    // remove the "class " or "struct " prefix
+            className.toSubString(className.findFirstOf(' ') + 1);    // remove the "class " or "struct " prefix
 
             String fullMemberFunctionName = returnType + ' ' + className + "::" + memberFunctionName;
 

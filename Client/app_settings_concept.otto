@@ -1,0 +1,17 @@
+# TYPE APP_SETTINGS
+
+Components: [
+    TestComponent: 'comoonents/TestComponent.hpp'
+]
+
+Behaviours: [
+    TestBehaviour: 'behaviours/TestBehaviour.hpp'
+]
+
+Systems: [
+    TestSystem: 'systems/TestSystem.hpp'
+]
+
+Events: [
+    TestEvent: 'events/TestEvent.hpp'
+]

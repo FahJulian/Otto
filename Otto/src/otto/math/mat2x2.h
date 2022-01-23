@@ -10,19 +10,24 @@ namespace otto
     class Mat2x2
     {
     public:
-        T m11 = T(), m12 = T();
-        T m21 = T(), m22 = T();
-
         constexpr Mat2x2() = default;
+
+        constexpr Mat2x2(T value)
+            : m11(value), m22(value)
+        {
+        }
 
         constexpr Mat2x2(T m11, T m12, T m21, T m22)
             : m11(m11), m12(m12), m21(m21), m22(m22)
         {
         }
 
-        constexpr Mat2x2(T value)
-            : m11(value), m12(value), m21(value), m22(value)
+        Mat2x2& operator+=(const Mat2x2& other)
         {
+            m11 += other.m11;
+            m12 += other.m12;
+            m21 += other.m21;
+            m22 += other.m22;
         }
 
         Mat2x2& operator*=(const Mat2x2& other)
@@ -55,6 +60,10 @@ namespace otto
                 T(0), T(0)
             };
         }
+
+    private:
+        T m11 = T(), m12 = T();
+        T m21 = T(), m22 = T();
     };
 
     using Mat2x2i8 = Mat2x2<int8>;
@@ -72,8 +81,8 @@ namespace otto
     Vec2<T> operator*(const Mat2x2<T>& mat, const Vec2<T>& vec)
     {
         return { 
-            mat.m11 * vec.x + mat.m12 * vec.y,
-            mat.m21 * vec.x + mat.m22 * vec.y
+            mat.m11 * vec.mX + mat.m12 * vec.mY,
+            mat.m21 * vec.mX + mat.m22 * vec.mY
         };
     }
 

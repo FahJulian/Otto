@@ -1,18 +1,33 @@
-#TYPE SCENEBODY
+# TYPE SCENE
+# SETTINGS scene_settings_concept.otto
 
-Entity1:
-    Component1:
-        property1 = a
-        property2 = b
+Entity1: 
+    Component1: {
+        Variable1: 1.0
+        Variable2: 234
+    }
     Component2:
-    Component3:
-        property1 = [
-            1, 2, 3, 4, 5, 6, 'Test', "Test2"
+        Variable1: This is also a viable value // This is a comment
+        Variable2: [ // This is a list
+            String 1
+            23456456
         ]
-        property3 = {
-            'Name1': 1.2, 
-            'Name2': 3, 
-            'Name3': "Test",
-            'Name4': 'Test'
-        }
-        
+        Variable3:   // This is also a list
+            Value1
+            Value2
+//        Variable4: [
+//            [
+//                a
+//                b
+//                c
+//            ]
+//            {
+//                Key1: Value1
+//                Key2: Value2
+//            }
+//        ]
+
+Entity2:
+    Component1: {
+        Variable1: "String",    
+    }

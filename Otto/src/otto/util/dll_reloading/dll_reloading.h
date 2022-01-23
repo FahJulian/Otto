@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 #if !defined(OTTO_DLL_EXPORT)
 #include "dll_reloader.h"
@@ -25,8 +26,8 @@
 #define OTTO_RCR_FUNCTION(returnType, name, arguments, argumentTypes, argumensForwarded, ...) \
         static returnType name##arguments \
         { \
-            static returnType(*functionPointer)(argumentTypes) = sonic::DllReloader::registerFunctionPointer(OTTO_RCR_DLL_PATH, &functionPointer, \
-                sonic::DllReloader::getTypeNames<returnType>(), OTTO_RCR_NAMESPACE"::", #name, sonic::DllReloader::getTypeNames<__VA_ARGS__>(), sonic::DllReloader::getTypeNames<argumentTypes>(true)); \
+            static returnType(*functionPointer)(argumentTypes) = otto::DllReloader::registerFunctionPointer(OTTO_RCR_DLL_PATH, &functionPointer, \
+                otto::DllReloader::getTypeNames<returnType>(), OTTO_RCR_NAMESPACE"::", #name, otto::DllReloader::getTypeNames<__VA_ARGS__>(), otto::DllReloader::getTypeNames<argumentTypes>(true)); \
             \
             return (*functionPointer)##argumensForwarded; \
         }
@@ -34,8 +35,8 @@
 #define OTTO_RCR_MEMBER_FUNCTION(returnType, name, arguments, argumentTypes, argumensForwarded, ...) \
         returnType name##arguments \
         { \
-            static returnType(std::remove_reference<decltype(*this)>::type::*memberFunctionPointer)(argumentTypes) = sonic::DllReloader::registerMemberFunctionPointer( \
-                OTTO_RCR_DLL_PATH, &memberFunctionPointer, sonic::DllReloader::getTypeNames<returnType>(), #name, sonic::DllReloader::getTypeNames<__VA_ARGS__>(), sonic::DllReloader::getTypeNames<argumentTypes>(true)); \
+            static returnType(std::remove_reference<decltype(*this)>::type::*memberFunctionPointer)(argumentTypes) = otto::DllReloader::registerMemberFunctionPointer( \
+                OTTO_RCR_DLL_PATH, &memberFunctionPointer, otto::DllReloader::getTypeNames<returnType>(), #name, otto::DllReloader::getTypeNames<__VA_ARGS__>(), otto::DllReloader::getTypeNames<argumentTypes>(true)); \
             \
             return (this->*memberFunctionPointer)##argumensForwarded; \
         }

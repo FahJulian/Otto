@@ -51,20 +51,20 @@ namespace otto {
         template<typename T>
         V& operator[](const T& key)
         {
-            return mData.get(mData.indexOf(key)).mSecond;
+            return mData.get(mData.indexOf(key)).second;
         }
 
         template<typename T>
         const V& operator[](const T& key) const
         {
-            return mData.get(mData.indexOf(key)).mSecond;
+            return mData.get(mData.indexOf(key)).second;
         }
 
         template<typename T, typename F>
         void insert(const T& key, const F& value)
         {
             if (mData.contains(key))
-                mData.get(mData.indexOf(key)).mSecond = value;
+                mData.get(mData.indexOf(key)).second = value;
             else
                 mData.add(key, value);
         }
@@ -72,17 +72,17 @@ namespace otto {
         void insert(const K& key, const V& value)
         {
             if (mData.contains(key))
-                mData.get(mData.indexOf(key)).mSecond = value;
+                mData.get(mData.indexOf(key)).second = value;
             else
                 mData.add(key, value);
         }
 
         void insert(const Pair<K, V>& pair)
         {
-            if (mData.contains(pair.mFirst))
-                mData.get(mData.indexOf(pair.mFirst)).mSecond = pair.mSecond;
+            if (mData.contains(pair.first))
+                mData.get(mData.indexOf(pair.first)).second = pair.second;
             else
-                mData.add(pair.mFirst, pair.mSecond);
+                mData.add(pair.first, pair.second);
         }
 
         template<typename T>
@@ -178,13 +178,13 @@ namespace otto {
         template<typename T>
         V& get(const T& key)
         {
-            return mData.get(mData.indexOf(key)).value;
+            return mData.get(mData.indexOf(key)).second;
         }
 
         template<typename T>
         const V& get(const T& key) const
         {
-            return mData.get(mData.indexOf(key)).value;
+            return mData.get(mData.indexOf(key)).second;
         }
 
     private:

@@ -6,24 +6,29 @@ namespace otto
     struct Result
     {
         Result(R result)
-            : hasError(false), result(result)
+            : _hasError(false), result(result)
         {
         }
 
         Result(E error)
-            : hasError(true), error(error)
+            : _hasError(true), error(error)
         {
         }
 
         ~Result()
         {
-            if (hasError)
+            if (_hasError)
                 error.~E();
             else
                 result.~R();
         }
 
-        bool hasError;
+        bool hasError() const { return _hasError; }
+        const E& getError() const { return error; }
+        const R& getResult() const { return result; }
+
+    private:
+        bool _hasError;
 
         union
         {

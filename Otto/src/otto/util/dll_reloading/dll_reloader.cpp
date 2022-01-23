@@ -231,7 +231,7 @@ namespace otto
 
             // Turn .cpp files into .obj files
             for (auto& file : files)
-                file = file.subString(file.findLastOf('\\') + 1, file.findFirstOf(".cpp")) + ".obj";
+                file = file.toSubString(file.findLastOf('\\') + 1, file.findFirstOf(".cpp")) + ".obj";
 
             _linkDll(dll.name, files);
 
@@ -320,7 +320,7 @@ namespace otto
         String dllDir = String::subString(dllPath, 0, dllPath.findLastOf('\\') + 1);
 
         if (!sDlls.containsKey(dllPath))
-            sDlls.insert(dllPath, { dllPath.subString(dllPath.findLastOf('\\') + 1, dllPath.findFirstOf('.')) });
+            sDlls.insert(dllPath, { String::subString(dllPath, dllPath.findLastOf('\\') + 1, dllPath.findFirstOf('.')) });
 
         Dll& dll = sDlls[dllPath];
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "otto/base.h"
+
 namespace otto
 {
     template<typename K, typename V>
@@ -7,14 +9,14 @@ namespace otto
     {
         Pair() = default;
 
-        Pair(const K& mFirst, const V& mSecond)
-            : mFirst(mFirst), mSecond(mSecond)
+        Pair(const K& first, const V& second)
+            : first(first), second(second)
         {
         }
 
         template<typename T, typename F>
-        Pair(const T& mFirst, const F& mSecond)
-            : mFirst(mFirst), mSecond(mSecond)
+        Pair(const T& first, const F& second)
+            : first(first), second(second)
         {
         }
 
@@ -40,7 +42,7 @@ namespace otto
         template<typename T>
         Pair& operator=(T&& otherValue)
         {
-            mSecond = std::move(otherValue);
+            second = std::move(otherValue);
 
             return *this;
         }
@@ -48,16 +50,16 @@ namespace otto
         template<typename T, typename F>
         Pair& operator=(const Pair<T, F>& other)
         {
-            mFirst = other.mFirst;
-            mSecond = other.mSecond;
+            first = other.first;
+            second = other.second;
 
             return *this;
         }
 
         Pair& operator=(const Pair& other)
         {
-            mFirst = other.mFirst;
-            mSecond = other.mSecond;
+            first = other.first;
+            second = other.second;
 
             return *this;
         }
@@ -65,16 +67,16 @@ namespace otto
         template<typename T, typename F>
         Pair& operator=(Pair<T, F>&& other)
         {
-            mFirst = std::move(other.mFirst);
-            mSecond = std::move(other.mSecond);
+            first = std::move(other.first);
+            second = std::move(other.second);
 
             return *this;
         }
 
         Pair& operator=(Pair&& other)
         {
-            mFirst = std::move(other.mFirst);
-            mSecond = std::move(other.mSecond);
+            first = std::move(other.first);
+            second = std::move(other.second);
 
             return *this;
         }
@@ -82,17 +84,17 @@ namespace otto
         template<typename T, typename F>
         bool operator==(const Pair<T, F>& other) const
         {
-            return mFirst == other.mFirst;
+            return first == other.first;
         }
 
         template<typename T>
         bool operator==(const T& otherKey) const
         {
-            return mFirst == otherKey;
+            return first == otherKey;
         }
 
-        K mFirst;
-        V mSecond;
+        K first;
+        V second;
     };
 
 } // namespace otto
