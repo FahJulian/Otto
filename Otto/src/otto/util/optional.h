@@ -67,7 +67,7 @@ namespace otto
         union
         {
             T mValue;
-            char _;
+            char8 _;
         };
     };
 

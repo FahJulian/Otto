@@ -29,6 +29,15 @@ namespace otto
         return content;
     }
 
+    void File::write(const String& text)
+    {
+        std::ofstream stream = std::ofstream(mFilePath.toString().getData());
+
+        stream << text.getData();
+
+        stream.close();
+    }
+
     DynamicArray<String> File::readLines() const
     {
         return String::split(read(), '\n');

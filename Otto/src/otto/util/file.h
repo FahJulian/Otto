@@ -16,6 +16,8 @@ namespace otto
 
         DynamicArray<String> readLines() const;
 
+        void write(const String& text);
+
     private:
         FilePath mFilePath;
     };

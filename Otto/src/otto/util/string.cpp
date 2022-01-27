@@ -25,23 +25,23 @@ namespace otto
         }
 
         template<typename T>
-        String _integerToString(T value, int base)
+        String _integerToString(T value, int32 base)
         {
             auto result = std::to_chars(STRING_CAST_BUFFER.begin(), STRING_CAST_BUFFER.end(), value, base);
             return String(STRING_CAST_BUFFER.begin(), result.ptr - STRING_CAST_BUFFER.begin());
         }
 
-        char _toLowerCase(char c)
+        char8 _toLowerCase(char8 c)
         {
             return (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c;
         }
 
-        char _toUpperCase(char c)
+        char8 _toUpperCase(char8 c)
         {
             return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
         }
 
-        bool _equalsIgnoreCase(const char* c1, const char* c2, uint64 len)
+        bool _equalsIgnoreCase(const char8* c1, const char8* c2, uint64 len)
         {
             for (uint64 i = 0; i < len; i++)
             {
@@ -52,15 +52,15 @@ namespace otto
             return true;
         }
 
-        bool _isWhitespace(char c)
+        bool _isWhitespace(char8 c)
         {
             return c <= ' ';
         }
 
     } // namespace
 
-    constexpr String::String(char c)
-        : mSize(uint64(1)), mData(new char[2] { c, '\0' })
+    constexpr String::String(char8 c)
+        : mSize(uint64(1)), mData(new char8[2] { c, '\0' })
     {
     }
 
@@ -69,15 +69,15 @@ namespace otto
     {
     }
 
-    String::String(const char* data)
-        : mSize(std::strlen(data)), mData(new char[mSize + 1])
+    String::String(const char8* data)
+        : mSize(std::strlen(data)), mData(new char8[mSize + 1])
     {
         std::memcpy(mData, data, mSize);
         mData[mSize] = '\0';
     }
 
-    String::String(const char* data, uint64 size)
-        : mSize(size), mData(new char[mSize + 1])
+    String::String(const char8* data, uint64 size)
+        : mSize(size), mData(new char8[mSize + 1])
     {
         if (data != nullptr)
             std::memcpy(mData, data, mSize);
@@ -91,7 +91,7 @@ namespace otto
     }
 
     String::String(const String& other)
-        : mSize(other.mSize), mData(new char[mSize + 1])
+        : mSize(other.mSize), mData(new char8[mSize + 1])
     {
         std::memcpy(mData, other.mData, mSize);
         mData[mSize] = '\0';
@@ -109,13 +109,13 @@ namespace otto
         delete[] mData;
     }
 
-    String& String::operator=(char c)
+    String& String::operator=(char8 c)
     {
         if (mSize != 1)
         {
             delete[] mData;
 
-            mData = new char[1]{ c };
+            mData = new char8[1]{ c };
             mSize = 1;
         }
         else
@@ -126,7 +126,7 @@ namespace otto
         return *this;
     }
 
-    String& String::operator=(const char* other)
+    String& String::operator=(const char8* other)
     {
         uint64 len = std::strlen(other);
 
@@ -134,7 +134,7 @@ namespace otto
         {
             delete[] mData;
 
-            mData = new char[len + 1];
+            mData = new char8[len + 1];
             std::memcpy(mData, other, len + 1);
 
             mSize = len;
@@ -154,7 +154,7 @@ namespace otto
             mSize = other.mSize;
 
             delete[] mData;
-            mData = new char[mSize + 1];
+            mData = new char8[mSize + 1];
 
             std::memcpy(mData, other.mData, mSize);
             mData[mSize] = '\0';
@@ -179,9 +179,9 @@ namespace otto
         return *this;
     }
 
-    String& String::append(char c)
+    String& String::append(char8 c)
     {
-        char* newData = new char[mSize + 2];
+        char8* newData = new char8[mSize + 2];
         std::memcpy(newData, mData, mSize);
 
         mSize++;
@@ -197,7 +197,7 @@ namespace otto
 
     String& String::append(const String& string)
     {
-        char* newData = new char[mSize + string.mSize + 1];
+        char8* newData = new char8[mSize + string.mSize + 1];
         std::memcpy(newData, mData, mSize);
         std::memcpy(newData + mSize, string.mData, string.mSize);
 
@@ -210,11 +210,11 @@ namespace otto
         return *this;
     }
 
-    String& String::append(const char* string)
+    String& String::append(const char8* string)
     {
         uint64 len = std::strlen(string);
 
-        char* newData = new char[mSize + len + 1];
+        char8* newData = new char8[mSize + len + 1];
         std::memcpy(newData, mData, mSize);
         std::memcpy(newData + mSize, string, len);
 
@@ -227,11 +227,11 @@ namespace otto
         return *this;
     }
 
-    String& String::insert(uint64 index, char c)
+    String& String::insert(uint64 index, char8 c)
     {
         OTTO_ASSERT(index <= mSize, "Index is out of bounds");
 
-        char* newData = new char[mSize + 2];
+        char8* newData = new char8[mSize + 2];
         std::memcpy(newData, mData, index);
         std::memcpy(newData + index + 1, mData + index, mSize - index);
 
@@ -250,7 +250,7 @@ namespace otto
     {
         OTTO_ASSERT(index <= mSize, "Index is out of bounds");
 
-        char* newData = new char[mSize + string.mSize + 1];
+        char8* newData = new char8[mSize + string.mSize + 1];
         std::memcpy(newData, mData, index);
         std::memcpy(newData + index, string.mData, string.mSize);
         std::memcpy(newData + index + string.mSize, mData + index, mSize - index);
@@ -264,13 +264,13 @@ namespace otto
         return *this;
     }
 
-    String& String::insert(uint64 index, const char* string)
+    String& String::insert(uint64 index, const char8* string)
     {
         OTTO_ASSERT(index <= mSize, "Index is out of bounds");
 
         uint64 len = std::strlen(string);
 
-        char* newData = new char[mSize + len + 1];
+        char8* newData = new char8[mSize + len + 1];
         std::memcpy(newData, mData, index);
         std::memcpy(newData + index, string, len);
         std::memcpy(newData + index + len, mData + index, mSize - index);
@@ -296,7 +296,7 @@ namespace otto
 
     String& String::toLowerCase()
     {
-        for (char* c = mData; c < mData + mSize; c++)
+        for (char8* c = mData; c < mData + mSize; c++)
             *c = _toLowerCase(*c);
 
         return *this;
@@ -304,7 +304,7 @@ namespace otto
 
     String& String::toUpperCase()
     {
-        for (char* c = mData; c < mData + mSize; c++)
+        for (char8* c = mData; c < mData + mSize; c++)
             *c = _toUpperCase(*c);
 
         return *this;
@@ -318,9 +318,9 @@ namespace otto
         {
             mSize = mSize - beginIndex;
 
-            char* newData = new char[mSize + 1];
+            char8* newData = new char8[mSize + 1];
 
-            std::memcpy(newData, mData, mSize);
+            std::memcpy(newData, mData + beginIndex, mSize);
             newData[mSize] = '\0';
 
             delete[] mData;
@@ -339,7 +339,7 @@ namespace otto
         {
             mSize = endIndex - beginIndex;
 
-            char* newData = new char[mSize + 1];
+            char8* newData = new char8[mSize + 1];
 
             std::memcpy(newData, mData + beginIndex, mSize);
             newData[mSize] = '\0';
@@ -353,7 +353,7 @@ namespace otto
 
     void String::setSize(uint64 size)
     {
-        char* newData = new char[size + 1];
+        char8* newData = new char8[size + 1];
         std::memcpy(newData, mData, mSize);
 
         mSize = size;
@@ -363,7 +363,7 @@ namespace otto
         mData = newData;
     }
 
-    bool String::equals(char c) const
+    bool String::equals(char8 c) const
     {
         return mSize == 1 && *mData == c;
     }
@@ -373,12 +373,12 @@ namespace otto
         return std::strcmp(mData, other.mData) == 0;
     }
 
-    bool String::equals(const char* other) const
+    bool String::equals(const char8* other) const
     {
         return std::strcmp(mData, other) == 0;
     }
 
-    bool String::equalsIgnoreCase(char c) const
+    bool String::equalsIgnoreCase(char8 c) const
     {
         return mSize == 1 && _toLowerCase(*mData) == _toLowerCase(c);
     }
@@ -397,7 +397,7 @@ namespace otto
         return true;
     }
 
-    bool String::equalsIgnoreCase(const char* other) const
+    bool String::equalsIgnoreCase(const char8* other) const
     {
         if (mSize != std::strlen(other))
             return false;
@@ -411,7 +411,7 @@ namespace otto
         return true;
     }
 
-    bool String::startsWith(char c) const
+    bool String::startsWith(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -419,7 +419,7 @@ namespace otto
         return mData[0] == c;
     }
 
-    bool String::startsWith(const char* string) const
+    bool String::startsWith(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -437,7 +437,7 @@ namespace otto
         return std::strncmp(mData, string.mData, string.mSize) == 0;
     }
 
-    bool String::startsWithIgnoreCase(char c) const
+    bool String::startsWithIgnoreCase(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -445,7 +445,7 @@ namespace otto
         return _toLowerCase(mData[0]) == _toLowerCase(c);
     }
 
-    bool String::startsWithIgnoreCase(const char* string) const
+    bool String::startsWithIgnoreCase(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -463,7 +463,7 @@ namespace otto
         return _equalsIgnoreCase(mData, string.mData, string.mSize);
     }
 
-    bool String::endsWith(char c) const
+    bool String::endsWith(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -471,7 +471,7 @@ namespace otto
         return mData[mSize - 1] == c;
     }
 
-    bool String::endsWith(const char* string) const
+    bool String::endsWith(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -489,7 +489,7 @@ namespace otto
         return std::strncmp(mData + mSize - string.mSize, string.mData, string.mSize) == 0;
     }
 
-    bool String::endsWithIgnoreCase(char c) const
+    bool String::endsWithIgnoreCase(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -497,7 +497,7 @@ namespace otto
         return _toLowerCase(mData[mSize - 1]) == _toLowerCase(c);
     }
 
-    bool String::endsWithIgnoreCase(const char* string) const
+    bool String::endsWithIgnoreCase(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -515,7 +515,7 @@ namespace otto
         return _equalsIgnoreCase(mData + mSize - string.mSize, string.mData, string.mSize);
     }
 
-    bool String::contains(char c) const
+    bool String::contains(char8 c) const
     {
         return findFirstOf(c) != mSize;
     }
@@ -525,12 +525,12 @@ namespace otto
         return findFirstOf(string) != mSize;
     }
 
-    bool String::contains(const char* string) const
+    bool String::contains(const char8* string) const
     {
         return findFirstOf(string) != mSize;
     }
 
-    bool String::containsIgnoreCase(char c) const
+    bool String::containsIgnoreCase(char8 c) const
     {
         return findFirstOfIgnoreCase(c) != mSize;
     }
@@ -540,12 +540,12 @@ namespace otto
         return findFirstOfIgnoreCase(string) != mSize;
     }
 
-    bool String::containsIgnoreCase(const char* string) const
+    bool String::containsIgnoreCase(const char8* string) const
     {
         return findFirstOfIgnoreCase(string) != mSize;
     }
 
-    String& String::replace(uint64 beginIndex, uint64 endIndex, char c)
+    String& String::replace(uint64 beginIndex, uint64 endIndex, char8 c)
     {
         OTTO_ASSERT(endIndex >= beginIndex, "endIndex must be greater than or equal to beginIndex");
         OTTO_ASSERT(endIndex <= mSize, "endIndex must be less than or equal to string Size")
@@ -554,7 +554,7 @@ namespace otto
 
         if (deltaLen != 0)
         {
-            char* newData = new char[mSize + 1 + deltaLen];
+            char8* newData = new char8[mSize + 1 + deltaLen];
             std::memcpy(newData, mData, beginIndex);
             std::memcpy(newData + beginIndex + 1, mData + endIndex, mSize - endIndex);
 
@@ -572,7 +572,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replace(uint64 beginIndex, uint64 endIndex, const char* string)
+    String& String::replace(uint64 beginIndex, uint64 endIndex, const char8* string)
     {
         OTTO_ASSERT(endIndex >= beginIndex, "endIndex must be greater than or equal to beginIndex");
         OTTO_ASSERT(endIndex <= mSize, "endIndex must be less than or equal to string Size")
@@ -583,7 +583,7 @@ namespace otto
 
         if (deltaLen != static_cast<uint64>(0))
         {
-            char* newData = new char[mSize + 1 + deltaLen];
+            char8* newData = new char8[mSize + 1 + deltaLen];
             std::memcpy(newData, mData, beginIndex);
             std::memcpy(newData + beginIndex + len, mData + endIndex, mSize - endIndex);
 
@@ -610,7 +610,7 @@ namespace otto
 
         if (deltaLen != static_cast<uint64>(0))
         {
-            char* newData = new char[mSize + 1 + deltaLen];
+            char8* newData = new char8[mSize + 1 + deltaLen];
             std::memcpy(newData, mData, beginIndex);
             std::memcpy(newData + beginIndex + string.mSize, mData + endIndex, mSize - endIndex);
 
@@ -628,7 +628,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceAll(char oldChar, char newChar, uint64 startIndex)
+    String& String::replaceAll(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         while ((startIndex = _replaceFirst(oldChar, newChar, startIndex)) != mSize)
             ;
@@ -636,7 +636,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceAll(const char* oldString, const char* newString, uint64 startIndex)
+    String& String::replaceAll(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         while ((startIndex = _replaceFirst(oldString, newString, startIndex)) != mSize)
             ;
@@ -652,7 +652,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceAllIgnoreCase(char oldChar, char newChar, uint64 startIndex)
+    String& String::replaceAllIgnoreCase(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         while ((startIndex = _replaceFirstIgnoreCase(oldChar, newChar, startIndex)) != mSize)
             ;
@@ -660,7 +660,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceAllIgnoreCase(const char* oldString, const char* newString, uint64 startIndex)
+    String& String::replaceAllIgnoreCase(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         while ((startIndex = _replaceFirstIgnoreCase(oldString, newString, startIndex)) != mSize)
             ;
@@ -676,13 +676,13 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceFirst(char oldChar, char newChar, uint64 startIndex)
+    String& String::replaceFirst(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         _replaceFirst(oldChar, newChar, startIndex);
         return *this;
     }
 
-    String& String::replaceFirst(const char* oldString, const char* newString, uint64 startIndex)
+    String& String::replaceFirst(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         _replaceFirst(oldString, newString, startIndex);
         return *this;
@@ -694,13 +694,13 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceFirstIgnoreCase(char oldChar, char newChar, uint64 startIndex)
+    String& String::replaceFirstIgnoreCase(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         _replaceFirstIgnoreCase(oldChar, newChar, startIndex);
         return *this;
     }
 
-    String& String::replaceFirstIgnoreCase(const char* oldString, const char* newString, uint64 startIndex)
+    String& String::replaceFirstIgnoreCase(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         _replaceFirstIgnoreCase(oldString, newString, startIndex);
         return *this;
@@ -712,7 +712,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceLast(char oldChar, char newChar, uint64 endIndex)
+    String& String::replaceLast(char8 oldChar, char8 newChar, uint64 endIndex)
     {
         uint64 index = findLastOf(oldChar, endIndex);
 
@@ -722,7 +722,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceLast(const char* oldString, const char* newString, uint64 endIndex)
+    String& String::replaceLast(const char8* oldString, const char8* newString, uint64 endIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -732,10 +732,10 @@ namespace otto
         if (index == mSize)
             return *this;
 
-        if (int deltaLen = static_cast<int>(newLen - oldLen);
+        if (int32 deltaLen = static_cast<int>(newLen - oldLen);
             deltaLen != 0)
         {
-            char* newData = new char[mSize + deltaLen + 1];
+            char8* newData = new char8[mSize + deltaLen + 1];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString, newLen);
@@ -762,10 +762,10 @@ namespace otto
         if (index == mSize)
             return *this;
 
-        if (int deltaLen = static_cast<int>(newString.mSize - oldString.mSize);
+        if (int32 deltaLen = static_cast<int>(newString.mSize - oldString.mSize);
             deltaLen != 0)
         {
-            char* newData = new char[mSize + deltaLen + 1];
+            char8* newData = new char8[mSize + deltaLen + 1];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString.mData, newString.mSize);
@@ -785,7 +785,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceLastIgnoreCase(char oldChar, char newChar, uint64 endIndex)
+    String& String::replaceLastIgnoreCase(char8 oldChar, char8 newChar, uint64 endIndex)
     {
         uint64 index = findLastOfIgnoreCase(oldChar, endIndex);
 
@@ -795,7 +795,7 @@ namespace otto
         return *this;
     }
 
-    String& String::replaceLastIgnoreCase(const char* oldString, const char* newString, uint64 endIndex)
+    String& String::replaceLastIgnoreCase(const char8* oldString, const char8* newString, uint64 endIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -805,10 +805,10 @@ namespace otto
         if (index == mSize)
             return *this;
 
-        if (int deltaLen = static_cast<int>(newLen - oldLen);
+        if (int32 deltaLen = static_cast<int>(newLen - oldLen);
             deltaLen != 0)
         {
-            char* newData = new char[mSize + deltaLen + 1];
+            char8* newData = new char8[mSize + deltaLen + 1];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString, newLen);
@@ -835,10 +835,10 @@ namespace otto
         if (index == mSize)
             return *this;
 
-        if (int deltaLen = static_cast<int>(newString.mSize - oldString.mSize);
+        if (int32 deltaLen = static_cast<int>(newString.mSize - oldString.mSize);
             deltaLen != 0)
         {
-            char* newData = new char[mSize + deltaLen + 1];
+            char8* newData = new char8[mSize + deltaLen + 1];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString.mData, newString.mSize);
@@ -858,7 +858,44 @@ namespace otto
         return *this;
     }
 
-    uint64 String::findFirstOf(char c, uint64 startIndex) const
+    String& String::removeLast(char8 c, uint64 endIndex)
+    {
+        uint64 index = findLastOf(c, endIndex);
+        if (index != mSize)
+        {
+            char8* newData = new char[(mSize - 1) + 1];
+            
+            std::memcpy(newData, mData, index);
+            std::memcpy(newData + index, mData + index + 1, mSize - index);
+
+            newData[(mSize - 1)] = '\0';
+
+            delete[] mData;
+            mData = newData;
+
+            mSize -= 1;
+        }
+
+        return *this;
+    }
+
+    String& String::title()
+    {
+        if (!isEmpty())
+            mData[0] = _toUpperCase(mData[0]);
+
+        return *this;
+    }
+
+    String& String::untitle()
+    {
+        if (!isEmpty())
+            mData[0] = _toLowerCase(mData[0]);
+
+        return *this;
+    }
+
+    uint64 String::findFirstOf(char8 c, uint64 startIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -872,7 +909,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstOf(const char* string, uint64 startIndex) const
+    uint64 String::findFirstOf(const char8* string, uint64 startIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -901,7 +938,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstOfIgnoreCase(char c, uint64 startIndex) const
+    uint64 String::findFirstOfIgnoreCase(char8 c, uint64 startIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -917,7 +954,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstOfIgnoreCase(const char* string, uint64 startIndex) const
+    uint64 String::findFirstOfIgnoreCase(const char8* string, uint64 startIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -946,7 +983,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastOf(char c, uint64 endIndex) const
+    uint64 String::findLastOf(char8 c, uint64 endIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -966,7 +1003,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastOf(const char* string, uint64 endIndex) const
+    uint64 String::findLastOf(const char8* string, uint64 endIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1007,7 +1044,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastOfIgnoreCase(char c, uint64 endIndex) const
+    uint64 String::findLastOfIgnoreCase(char8 c, uint64 endIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -1029,7 +1066,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastOfIgnoreCase(const char* string, uint64 endIndex) const
+    uint64 String::findLastOfIgnoreCase(const char8* string, uint64 endIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1070,7 +1107,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstNotOf(char c, uint64 startIndex) const
+    uint64 String::findFirstNotOf(char8 c, uint64 startIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -1084,7 +1121,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstNotOf(const char* string, uint64 startIndex) const
+    uint64 String::findFirstNotOf(const char8* string, uint64 startIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1113,7 +1150,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstNotOfIgnoreCase(char c, uint64 startIndex) const
+    uint64 String::findFirstNotOfIgnoreCase(char8 c, uint64 startIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -1129,7 +1166,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findFirstNotOfIgnoreCase(const char* string, uint64 startIndex) const
+    uint64 String::findFirstNotOfIgnoreCase(const char8* string, uint64 startIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1158,7 +1195,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastNotOf(char c, uint64 endIndex) const
+    uint64 String::findLastNotOf(char8 c, uint64 endIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -1178,7 +1215,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastNotOf(const char* string, uint64 endIndex) const
+    uint64 String::findLastNotOf(const char8* string, uint64 endIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1219,7 +1256,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastNotOfIgnoreCase(char c, uint64 endIndex) const
+    uint64 String::findLastNotOfIgnoreCase(char8 c, uint64 endIndex) const
     {
         if (isEmpty())
             return mSize;
@@ -1241,7 +1278,7 @@ namespace otto
         return mSize;
     }
 
-    uint64 String::findLastNotOfIgnoreCase(const char* string, uint64 endIndex) const
+    uint64 String::findLastNotOfIgnoreCase(const char8* string, uint64 endIndex) const
     {
         uint64 len = std::strlen(string);
         if (len > mSize)
@@ -1351,15 +1388,15 @@ namespace otto
     }
 
 
-    DynamicArray<String> String::split(const String& string, char c)
+    DynamicArray<String> String::split(const String& string, char8 c)
     {
         if (string.isEmpty())
             return { };
 
         DynamicArray<String> parts;
 
-        const char* nextPartStart = string.mData;
-        for (const char* i = string.mData; i < string.mData + string.mSize; i++)
+        const char8* nextPartStart = string.mData;
+        for (const char8* i = string.mData; i < string.mData + string.mSize; i++)
         {
             if (*i == c)
             {
@@ -1382,7 +1419,7 @@ namespace otto
         return parts;
     }
 
-    DynamicArray<String> String::split(const String& string, const char* splitString)
+    DynamicArray<String> String::split(const String& string, const char8* splitString)
     {
         uint64 len = std::strlen(splitString);
         if (len > string.mSize)
@@ -1390,8 +1427,8 @@ namespace otto
 
         DynamicArray<String> parts;
 
-        const char* i = string.mData;
-        const char* nextPartStart = string.mData;
+        const char8* i = string.mData;
+        const char8* nextPartStart = string.mData;
         while (i <= string.mData + string.mSize - len)
         {
             if (std::strncmp(splitString, i, len) == 0)
@@ -1427,8 +1464,8 @@ namespace otto
 
         DynamicArray<String> parts;
 
-        const char* i = string.mData;
-        const char* nextPartStart = string.mData;
+        const char8* i = string.mData;
+        const char8* nextPartStart = string.mData;
         while (i <= string.mData + string.mSize - splitString.mSize)
         {
             if (std::strncmp(splitString.mData, i, splitString.mSize) == 0)
@@ -1457,7 +1494,7 @@ namespace otto
         return parts;
     }
 
-    DynamicArray<String> String::splitIgnoreCase(const String& string, char c)
+    DynamicArray<String> String::splitIgnoreCase(const String& string, char8 c)
     {
         if (string.isEmpty())
             return { };
@@ -1466,8 +1503,8 @@ namespace otto
 
         c = _toLowerCase(c);
 
-        const char* nextPartStart = string.mData;
-        for (const char* i = string.mData; i < string.mData + string.mSize; i++)
+        const char8* nextPartStart = string.mData;
+        for (const char8* i = string.mData; i < string.mData + string.mSize; i++)
         {
             if (_toLowerCase(*i) == c)
             {
@@ -1490,7 +1527,7 @@ namespace otto
         return parts;
     }
 
-    DynamicArray<String> String::splitIgnoreCase(const String& string, const char* splitString)
+    DynamicArray<String> String::splitIgnoreCase(const String& string, const char8* splitString)
     {
         uint64 len = std::strlen(splitString);
         if (len >= string.mSize)
@@ -1498,8 +1535,8 @@ namespace otto
 
         DynamicArray<String> parts;
 
-        const char* i = string.mData;
-        const char* nextPartStart = string.mData;
+        const char8* i = string.mData;
+        const char8* nextPartStart = string.mData;
         while (i <= string.mData + string.mSize - len)
         {
             if (_equalsIgnoreCase(splitString, i, len))
@@ -1535,8 +1572,8 @@ namespace otto
 
         DynamicArray<String> parts;
 
-        const char* i = string.mData;
-        const char* nextPartStart = string.mData;
+        const char8* i = string.mData;
+        const char8* nextPartStart = string.mData;
         while (i <= string.mData + string.mSize - splitString.mSize)
         {
             if (_equalsIgnoreCase(splitString.mData, i, splitString.mSize))
@@ -1565,7 +1602,7 @@ namespace otto
         return parts;
     }
 
-    String String::replace(const String& string, uint64 beginIndex, uint64 endIndex, char c)
+    String String::replace(const String& string, uint64 beginIndex, uint64 endIndex, char8 c)
     {
         OTTO_ASSERT(endIndex >= beginIndex, "endIndex must be greater than or equal to beginIndex");
         OTTO_ASSERT(endIndex <= string.mSize, "endIndex must be less than or equal to string Size")
@@ -1581,7 +1618,7 @@ namespace otto
         return newString;
     }
 
-    String String::replace(const String& string, uint64 beginIndex, uint64 endIndex, const char* replaceString)
+    String String::replace(const String& string, uint64 beginIndex, uint64 endIndex, const char8* replaceString)
     {
         OTTO_ASSERT(endIndex >= beginIndex, "endIndex must be greater than or equal to beginIndex");
         OTTO_ASSERT(endIndex <= string.mSize, "endIndex must be less than or equal to string Size")
@@ -1612,7 +1649,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceAll(const String& string, char oldChar, char newChar, uint64 startIndex)
+    String String::replaceAll(const String& string, char8 oldChar, char8 newChar, uint64 startIndex)
     {
         String newString = String(string.mSize);
 
@@ -1622,7 +1659,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceAll(const String& string, const char* oldString, const char* newString, uint64 startIndex)
+    String String::replaceAll(const String& string, const char8* oldString, const char8* newString, uint64 startIndex)
     {
         return String(string).replaceAll(oldString, newString, startIndex);
     }
@@ -1632,7 +1669,7 @@ namespace otto
         return String(string).replaceAll(oldString, newString, startIndex);
     }
 
-    String String::replaceAllIgnoreCase(const String& string, char oldChar, char newChar, uint64 startIndex)
+    String String::replaceAllIgnoreCase(const String& string, char8 oldChar, char8 newChar, uint64 startIndex)
     {
         String newString = String(string.mSize);
 
@@ -1642,7 +1679,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceAllIgnoreCase(const String& string, const char* oldString, const char* newString, uint64 startIndex)
+    String String::replaceAllIgnoreCase(const String& string, const char8* oldString, const char8* newString, uint64 startIndex)
     {
         return String(string).replaceAllIgnoreCase(oldString, newString, startIndex);
     }
@@ -1650,6 +1687,25 @@ namespace otto
     String String::replaceAllIgnoreCase(const String& string, const String& oldString, const String& newString, uint64 startIndex)
     {
         return String(string).replaceAllIgnoreCase(oldString, newString, startIndex);
+    }
+
+    String String::removeAll(const String& string, char8 c, uint64 startIndex)
+    {
+        char8* newData = new char8[string.mSize];
+
+        uint64 replaced = 0;
+        for (uint64 i = startIndex; i < string.mSize; i++)
+        {
+            if (string[i] != c)
+                newData[i - replaced] = string[i];
+            else
+                replaced++;
+        }
+
+        String newString = String(newData, string.getSize() - replaced);
+        delete[] newData;
+
+        return newString;
     }
 
     String String::subString(const String& string, uint64 beginIndex)
@@ -1711,7 +1767,7 @@ namespace otto
         return mData[index];
     }
 
-    String String::replaceFirst(const String& string, char oldChar, char newChar, uint64 startIndex)
+    String String::replaceFirst(const String& string, char8 oldChar, char8 newChar, uint64 startIndex)
     {
         uint64 index = string.findFirstOf(oldChar, startIndex);
         String newString = String(string);
@@ -1722,7 +1778,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceFirst(const String& string, const char* oldString, const char* newString, uint64 startIndex)
+    String String::replaceFirst(const String& string, const char8* oldString, const char8* newString, uint64 startIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -1759,7 +1815,7 @@ namespace otto
         return changedString;
     }
 
-    String String::replaceFirstIgnoreCase(const String& string, char oldChar, char newChar, uint64 startIndex)
+    String String::replaceFirstIgnoreCase(const String& string, char8 oldChar, char8 newChar, uint64 startIndex)
     {
         uint64 index = string.findFirstOfIgnoreCase(oldChar, startIndex);
         String newString = String(string);
@@ -1770,7 +1826,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceFirstIgnoreCase(const String& string, const char* oldString, const char* newString, uint64 startIndex)
+    String String::replaceFirstIgnoreCase(const String& string, const char8* oldString, const char8* newString, uint64 startIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -1807,7 +1863,7 @@ namespace otto
         return changedString;
     }
 
-    String String::replaceLast(const String& string, char oldChar, char newChar, uint64 endIndex)
+    String String::replaceLast(const String& string, char8 oldChar, char8 newChar, uint64 endIndex)
     {
         uint64 index = string.findLastOf(oldChar, endIndex);
         String newString = String(string);
@@ -1818,7 +1874,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceLast(const String& string, const char* oldString, const char* newString, uint64 endIndex)
+    String String::replaceLast(const String& string, const char8* oldString, const char8* newString, uint64 endIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -1855,7 +1911,7 @@ namespace otto
         return changedString;
     }
 
-    String String::replaceLastIgnoreCase(const String& string, char oldChar, char newChar, uint64 endIndex)
+    String String::replaceLastIgnoreCase(const String& string, char8 oldChar, char8 newChar, uint64 endIndex)
     {
         uint64 index = string.findLastOfIgnoreCase(oldChar, endIndex);
         String newString = String(string);
@@ -1866,7 +1922,7 @@ namespace otto
         return newString;
     }
 
-    String String::replaceLastIgnoreCase(const String& string, const char* oldString, const char* newString, uint64 endIndex)
+    String String::replaceLastIgnoreCase(const String& string, const char8* oldString, const char8* newString, uint64 endIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -1903,7 +1959,31 @@ namespace otto
         return changedString;
     }
 
-    String String::append(const String& string, char c)
+    String String::title(const String& string)
+    {
+        if (!string.isEmpty())
+        {
+            String newString = string;
+            newString.mData[0] = _toUpperCase(string.mData[0]);
+            return newString;
+        }
+
+        return NONE;
+    }
+
+    String String::untitle(const String& string)
+    {
+        if (!string.isEmpty())
+        {
+            String newString = string;
+            newString.mData[0] = _toLowerCase(string.mData[0]);
+            return newString;
+        }
+
+        return NONE;
+    }
+
+    String String::append(const String& string, char8 c)
     {
         String newString = String(string.mSize + 1);
 
@@ -1914,7 +1994,7 @@ namespace otto
         return newString;
     }
 
-    String String::append(const String& string, const char* appendString)
+    String String::append(const String& string, const char8* appendString)
     {
         uint64 appendStringLen = std::strlen(appendString);
         String newString = String(string.mSize + appendStringLen);
@@ -1935,7 +2015,7 @@ namespace otto
         return newString;
     }
 
-    String String::insert(const String& string, uint64 index, char c)
+    String String::insert(const String& string, uint64 index, char8 c)
     {
         String newString = String(string.mSize + 1);
 
@@ -1947,7 +2027,7 @@ namespace otto
         return newString;
     }
 
-    String String::insert(const String& string, uint64 index, const char* insertString)
+    String String::insert(const String& string, uint64 index, const char8* insertString)
     {
         uint64 insertStringLen = std::strlen(insertString);
         String newString = String(string.mSize + insertStringLen);
@@ -1976,7 +2056,7 @@ namespace otto
         return String::subString(string, firstIndex, string.findFirstOfWhiteSpace(firstIndex + 1));
     }
 
-    uint64 String::_replaceFirst(char oldChar, char newChar, uint64 startIndex)
+    uint64 String::_replaceFirst(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         uint64 index = findFirstOf(oldChar, startIndex);
 
@@ -1986,7 +2066,7 @@ namespace otto
         return index;
     }
 
-    uint64 String::_replaceFirst(const char* oldString, const char* newString, uint64 startIndex)
+    uint64 String::_replaceFirst(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -1999,7 +2079,7 @@ namespace otto
         if (uint64 deltaLen = newLen - oldLen;
             deltaLen != uint64(0))
         {
-            char* newData = new char[mSize + deltaLen + uint64(1)];
+            char8* newData = new char8[mSize + deltaLen + uint64(1)];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString, newLen);
@@ -2029,7 +2109,7 @@ namespace otto
         if (uint64 deltaLen = newString.mSize - oldString.mSize;
             deltaLen != uint64(0))
         {
-            char* newData = new char[mSize + deltaLen + uint64(1)];
+            char8* newData = new char8[mSize + deltaLen + uint64(1)];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString.mData, newString.mSize);
@@ -2049,7 +2129,7 @@ namespace otto
         return index;
     }
 
-    uint64 String::_replaceFirstIgnoreCase(char oldChar, char newChar, uint64 startIndex)
+    uint64 String::_replaceFirstIgnoreCase(char8 oldChar, char8 newChar, uint64 startIndex)
     {
         uint64 index = findFirstOfIgnoreCase(oldChar, startIndex);
 
@@ -2059,7 +2139,7 @@ namespace otto
         return index;
     }
 
-    uint64 String::_replaceFirstIgnoreCase(const char* oldString, const char* newString, uint64 startIndex)
+    uint64 String::_replaceFirstIgnoreCase(const char8* oldString, const char8* newString, uint64 startIndex)
     {
         uint64 oldLen = std::strlen(oldString);
         uint64 newLen = std::strlen(newString);
@@ -2072,7 +2152,7 @@ namespace otto
         if (uint64 deltaLen = newLen - oldLen;
             deltaLen != uint64(0))
         {
-            char* newData = new char[mSize + deltaLen + uint64(1)];
+            char8* newData = new char8[mSize + deltaLen + uint64(1)];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString, newLen);
@@ -2102,7 +2182,7 @@ namespace otto
         if (uint64 deltaLen = newString.mSize - oldString.mSize;
             deltaLen != uint64(0))
         {
-            char* newData = new char[mSize + deltaLen + uint64(1)];
+            char8* newData = new char8[mSize + deltaLen + uint64(1)];
 
             std::memcpy(newData, mData, index);
             std::memcpy(newData + index, newString.mData, newString.mSize);
@@ -2127,69 +2207,54 @@ namespace otto
         return value ? String("true", 4) : String("false", 5);
     }
 
-    String String::valueOf(char value, int base)
+    String String::valueOf(char8 value, int32 base)
     {
-        return _integerToString<char>(value, base);
+        return _integerToString<char8>(value, base);
     }
 
-    String String::valueOf(unsigned char value, int base)
+    String String::valueOf(uchar8 value, int32 base)
     {
-        return _integerToString<unsigned char>(value, base);
+        return _integerToString<uchar8>(value, base);
     }
 
-    String String::valueOf(short value, int base)
+    String String::valueOf(short value, int32 base)
     {
         return _integerToString<short>(value, base);
     }
 
-    String String::valueOf(unsigned short value, int base)
+    String String::valueOf(uint16 value, int32 base)
     {
-        return _integerToString<unsigned short>(value, base);
+        return _integerToString<uint16>(value, base);
     }
 
-    String String::valueOf(int value, int base)
+    String String::valueOf(int32 value, int32 base)
     {
         return _integerToString<int>(value, base);
     }
 
-    String String::valueOf(unsigned int value, int base)
+    String String::valueOf(uint32 value, int32 base)
     {
-        return _integerToString<unsigned int>(value, base);
+        return _integerToString<uint32>(value, base);
     }
 
-    String String::valueOf(long value, int base)
+    String String::valueOf(int64 value, int32 base)
     {
-        return _integerToString<long>(value, base);
+        return _integerToString<int64>(value, base);
     }
 
-    String String::valueOf(unsigned long value, int base)
+    String String::valueOf(uint64 value, int32 base)
     {
-        return _integerToString<unsigned long>(value, base);
+        return _integerToString<uint64>(value, base);
     }
 
-    String String::valueOf(long long value, int base)
+    String String::valueOf(float32 value, bool scientific)
     {
-        return _integerToString<long long>(value, base);
+        return _floatToString<float32>(value, scientific);
     }
 
-    String String::valueOf(unsigned long long value, int base)
+    String String::valueOf(float64 value, bool scientific)
     {
-        return _integerToString<unsigned long long>(value, base);
-    }
-
-    String String::valueOf(float value, bool scientific)
-    {
-        return _floatToString<float>(value, scientific);
-    }
-
-    String String::valueOf(double value, bool scientific)
-    {
-        return _floatToString<double>(value, scientific);
-    }
-
-    String String::valueOf(long double value, bool scientific)
-    {
-        return _floatToString<long double>(value, scientific);
+        return _floatToString<float64>(value, scientific);
     }
 
     template<typename T>
@@ -2205,81 +2270,63 @@ namespace otto
     }
 
     template<>
-    char String::stringTo<char>(const String& string)
+    char8 String::stringTo<char8>(const String& string)
     {
-        return static_cast<char>(std::atoi(string.getData()));
+        return static_cast<char8>(std::atoi(string.getData()));
     }
 
     template<>
-    unsigned char String::stringTo<unsigned char>(const String& string)
+    uchar8 String::stringTo<uchar8>(const String& string)
     {
-        return static_cast<unsigned char>(std::atoi(string.getData()));
+        return static_cast<uchar8>(std::atoi(string.getData()));
     }
 
     template<>
-    short String::stringTo<short>(const String& string)
+    int16 String::stringTo<int16>(const String& string)
     {
         return static_cast<short>(std::atoi(string.getData()));
     }
 
     template<>
-    unsigned short String::stringTo<unsigned short>(const String& string)
+    uint16 String::stringTo<uint16>(const String& string)
     {
-        return static_cast<unsigned short>(std::atoi(string.getData()));
+        return static_cast<uint16>(std::atoi(string.getData()));
     }
 
     template<>
-    int String::stringTo<int>(const String& string)
+    int32 String::stringTo<int32>(const String& string)
     {
         return std::atoi(string.getData());
     }
 
     template<>
-    unsigned int String::stringTo<unsigned int>(const String& string)
+    uint32 String::stringTo<uint32>(const String& string)
     {
-        return static_cast<unsigned int>(std::atol(string.getData()));
+        return static_cast<uint32>(std::atol(string.getData()));
     }
 
     template<>
-    long String::stringTo<long>(const String& string)
+    int64 String::stringTo<int64>(const String& string)
     {
         return std::atol(string.getData());
     }
 
     template<>
-    unsigned long String::stringTo<unsigned long>(const String& string)
+    uint64 String::stringTo<uint64>(const String& string)
     {
-        return static_cast<unsigned long>(std::atoll(string.getData()));
+        return static_cast<uint64>(std::atoll(string.getData()));
     }
 
     template<>
-    long long String::stringTo<long long>(const String& string)
+    float32 String::stringTo<float32>(const String& string)
     {
-        return std::atoll(string.getData());
+        return static_cast<float32>(std::atof(string.getData()));
     }
 
     template<>
-    unsigned long long String::stringTo<unsigned long long>(const String& string)
-    {
-        return std::stoull(string.getData());
-    }
-
-    template<>
-    float String::stringTo<float>(const String& string)
-    {
-        return static_cast<float>(std::atof(string.getData()));
-    }
-
-    template<>
-    double String::stringTo<double>(const String& string)
+    float64 String::stringTo<float64>(const String& string)
     {
         return std::atof(string.getData());
-    }
-
-    template<>
-    long double String::stringTo<long double>(const String& string)
-    {
-        return static_cast<long double>(std::atof(string.getData())); // In MSVC double and long double are identical
     }
 
     std::ostream& operator<<(std::ostream& stream, const String& string)
@@ -2326,7 +2373,7 @@ namespace otto
         return true;
     }
 
-    String operator+(const char* string1, const String& string2)
+    String operator+(const char8* string1, const String& string2)
     {
         uint64 len = std::strlen(string1);
         String string = String(len + string2.getSize());
@@ -2337,7 +2384,7 @@ namespace otto
         return string;
     }
 
-    String operator+(const String& string1, const char* string2)
+    String operator+(const String& string1, const char8* string2)
     {
         uint64 len = std::strlen(string2);
         String string = String(string1.getSize() + len);
@@ -2358,7 +2405,7 @@ namespace otto
         return string;
     }
 
-    String operator+(const String& string1, char c)
+    String operator+(const String& string1, char8 c)
     {
         String string = String(string1.getSize() + 1);
 
@@ -2368,7 +2415,7 @@ namespace otto
         return string;
     }
 
-    String operator+(char c, const String& string1)
+    String operator+(char8 c, const String& string1)
     {
         String string = String(string1.getSize() + 1);
 

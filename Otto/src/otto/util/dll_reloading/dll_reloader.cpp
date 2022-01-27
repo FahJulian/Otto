@@ -28,7 +28,7 @@ namespace otto
 
         constexpr const char* COMPILER_COMMAND = "%COMPILER_PATH "
             "/c /ZI /JMC /nologo /W3 /WX- /diagnostics:column /sdl /Gm- /EHsc /MDd /GS /fp:precise "
-            "/permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++17 /Gd /TP /FC /errorReport:queue "
+            "/permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /Gd /TP /FC /errorReport:queue "
             "/D OTTO_DLL_EXPORT /D OTTO_DLL_EXPORT_DEBUG /D _CONSOLE /D _WINDLL /D _UNICODE /D UNICODE ";
 
         constexpr const char* LINKER_COMMAND = "%LINKER_PATH "
@@ -40,45 +40,55 @@ namespace otto
         DllReloader::Settings sSettings;
         bool sInitialized = false;
 
-        String _generateCompilerCommand(const String& dllName, const DynamicArray<String>& sourceFiles, const DynamicArray<String>& prepocessorDefinitions)
+        String _generateCompilerCommand(const String& dllName, const DynamicArray<FilePath>& sourceFiles, const DynamicArray<String>& prepocessorDefinitions)
         {
             String command = COMPILER_COMMAND;
-            command.replaceFirst("%COMPILER_PATH", sSettings.compilerExePath);
+            command.replaceFirst("%COMPILER_PATH", sSettings.compilerExePath.toString());
             command += sSettings.configuration == DllReloader::Configuration::DEBUG ? "/Od " : "/02 ";
-            command += "/Fo\"" + sSettings.tmpDir + dllName + "\\\\\" ";
 
             for (auto& preprocessorDefinition : prepocessorDefinitions)
                 command += "/D " + preprocessorDefinition + " ";
 
-            for (auto& sourceFile : sourceFiles)
-                command += sourceFile + " ";
+            command += "/Fo\"" + sSettings.tmpDir.toString() + dllName + "\\\\\" ";
 
             for (auto& includeDir : sSettings.includeDirs)
-                command += "/I\"" + includeDir + "\" ";
+            {
+                String dir = String::removeAll(includeDir.toString(), '\"');
+                if (dir.endsWith('\\'))
+                    dir.removeLast('\\');
+
+                command += "/I \"" + dir + "\" ";
+            }
+
+            for (auto& sourceFile : sourceFiles)
+                command += sourceFile.toString() + " "; 
 
             return command;
         }
 
-        String _generateLinkerCommand(const String& dllName, const DynamicArray<String> objFiles)
+        String _generateLinkerCommand(const String& dllName, const DynamicArray<FilePath> objFiles)
         {
             String command = LINKER_COMMAND;
-            command.replaceFirst("%LINKER_PATH", sSettings.linkerExePath);
-            command += "/IMPLIB:\"" + sSettings.tmpDir + dllName + "\\" + dllName + ".lib\" ";
-            command += "/OUT:\"" + sSettings.tmpDir + dllName + "\\" + dllName + ".dll\" ";
+            command.replaceFirst("%LINKER_PATH", sSettings.linkerExePath.toString());
+            command += "/IMPLIB:\"" + sSettings.tmpDir.toString() + dllName + "\\" + dllName + ".lib\" ";
+            command += "/OUT:\"" + sSettings.tmpDir.toString() + dllName + "\\" + dllName + ".dll\" ";
+
+            for (auto& lib : sSettings.libs)
+                command += lib + " ";
 
             for (auto& libDir : sSettings.libDirs)
-                command += "/LIBPATH:\"" + libDir + "\" ";
+                command += "/LIBPATH:\"" + libDir.toString() + "\" ";
 
             for (auto& objFile : objFiles)
-                command += sSettings.tmpDir + dllName + "\\" + objFile + " ";
+                command += sSettings.tmpDir.toString() + dllName + "\\" + objFile.toString() + " ";
 
             return command;
         }
 
         bool _compilationSuccessfull(const Dll& dll)
         {
-            return (platform::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".dll") &&
-                platform::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".lib"));
+            return (FileUtils::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".dll") &&
+                FileUtils::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".lib"));
         }
 
         Map<String, String> _extractSymbols(const String& dllPath)
@@ -97,10 +107,10 @@ namespace otto
                     DWORD* symbolsVirtualAddresses = reinterpret_cast<DWORD*>(ImageRvaToVa(loadedImage.FileHeader,
                         loadedImage.MappedAddress, imageExportDirectory->AddressOfNames, NULL));
 
-                    constexpr size_t symbolNameBufferSize = 0xfff;
-                    char symbolNameBuffer[symbolNameBufferSize];
+                    constexpr uint64 symbolNameBufferSize = 0xfff;
+                    char8 symbolNameBuffer[symbolNameBufferSize];
 
-                    for (size_t i = 0; i < imageExportDirectory->NumberOfNames; i++)
+                    for (uint64 i = 0; i < imageExportDirectory->NumberOfNames; i++)
                     {
                         char* symbolAdress = reinterpret_cast<char*>(ImageRvaToVa(loadedImage.FileHeader, loadedImage.MappedAddress, symbolsVirtualAddresses[i], NULL));
                         constexpr DWORD flags = UNDNAME_NO_ACCESS_SPECIFIERS | UNDNAME_NO_ALLOCATION_LANGUAGE | UNDNAME_NO_ALLOCATION_MODEL | UNDNAME_NO_SPECIAL_SYMS |
@@ -152,29 +162,29 @@ namespace otto
         bool _swapFiles(const Dll& dll, const String& path)
         {
             if (String oldDllFileName = path + dll.name + ".dll";
-                platform::fileExists(oldDllFileName))
+                FileUtils::fileExists(oldDllFileName))
             {
-                platform::renameFile(oldDllFileName, path + dll.name + "-old.dll");
+                FileUtils::renameFile(oldDllFileName, path + dll.name + "-old.dll");
             }
 
             if (String oldLibFileName = path + dll.name + ".lib";
-                platform::fileExists(oldLibFileName))
+                FileUtils::fileExists(oldLibFileName))
             {
-                platform::renameFile(oldLibFileName, path + dll.name + "-old.lib");
+                FileUtils::renameFile(oldLibFileName, path + dll.name + "-old.lib");
             }
 
-            return (platform::moveFile(sSettings.tmpDir + dll.name + '\\' + dll.name + ".dll", path + dll.name + ".dll") &&
-                platform::moveFile(sSettings.tmpDir + dll.name + '\\' + dll.name + ".lib", path + dll.name + ".lib"));
+            return (FileUtils::moveFile(sSettings.tmpDir.toString() + dll.name + '\\' + dll.name + ".dll", path + dll.name + ".dll") &&
+                FileUtils::moveFile(sSettings.tmpDir.toString() + dll.name + '\\' + dll.name + ".lib", path + dll.name + ".lib"));
         }
 
         bool _reloadOldDll(Dll& dll, const String& path)
         {
-            return (platform::renameFile(path + dll.name + "-old.dll", path + dll.name + ".dll") &&
-                platform::renameFile(path + dll.name + "-old.lib", path + dll.name + ".lib") &&
+            return (FileUtils::renameFile(path + dll.name + "-old.dll", path + dll.name + ".dll") &&
+                FileUtils::renameFile(path + dll.name + "-old.lib", path + dll.name + ".lib") &&
                 _reloadDll(dll, path));
         }
 
-        void _compileDll(const String& dllName, const DynamicArray<String>& cppFiles, const DynamicArray<String>& preprocessorDefinitions)
+        void _compileDll(const String& dllName, const DynamicArray<FilePath>& cppFiles, const DynamicArray<String>& preprocessorDefinitions)
         {
             String compilerCommand = _generateCompilerCommand(dllName, cppFiles, preprocessorDefinitions);
 
@@ -183,7 +193,7 @@ namespace otto
             std::system(compilerCommand.getData());
         }
 
-        void _linkDll(const String& dllName, const DynamicArray<String>& objFiles)
+        void _linkDll(const String& dllName, const DynamicArray<FilePath>& objFiles)
         {
             String linkerCommand = _generateLinkerCommand(dllName, objFiles);
 
@@ -192,35 +202,33 @@ namespace otto
             std::system(linkerCommand.getData());
         }
 
-        void _deleteTemporaryFiles(const Dll& dll, const String& path, const DynamicArray<String>& objFiles)
+        void _deleteTemporaryFiles(const Dll& dll, const String& path, const DynamicArray<FilePath>& objFiles)
         {
-            String tmpDir = sSettings.tmpDir + dll.name + '\\';
+            String tmpDir = sSettings.tmpDir.toString() + dll.name + '\\';
 
-            platform::deleteFile(path + dll.name + "-old.dll");
-            platform::deleteFile(path + dll.name + "-old.lib");
+            FileUtils::deleteFile(path + dll.name + "-old.dll");
+            FileUtils::deleteFile(path + dll.name + "-old.lib");
 
-            platform::deleteFile(tmpDir + dll.name + ".dll");
-            platform::deleteFile(tmpDir + dll.name + ".lib");
-            platform::deleteFile(tmpDir + dll.name + ".exp");
-            platform::deleteFile(tmpDir + dll.name + ".ilk");
+            FileUtils::deleteFile(tmpDir + dll.name + ".dll");
+            FileUtils::deleteFile(tmpDir + dll.name + ".lib");
+            FileUtils::deleteFile(tmpDir + dll.name + ".exp");
+            FileUtils::deleteFile(tmpDir + dll.name + ".ilk");
 
             for (auto& objFile : objFiles)
-                platform::deleteFile(tmpDir + objFile);
+                FileUtils::deleteFile(tmpDir + objFile);
 
-            platform::deleteEmptyDirectoryRecursively(tmpDir);
+            FileUtils::deleteEmptyDirectoryRecursively(tmpDir);
         }
 
-        bool _recompileAndReloadDll(Dll& dll, const String& path, DynamicArray<String> files, DynamicArray<String> preprocessorDefinitions)
+        bool _recompileAndReloadDll(Dll& dll, const String& path, DynamicArray<FilePath> files, DynamicArray<String> preprocessorDefinitions)
         {
-            String tmpDir = sSettings.tmpDir + dll.name + '\\';
-            if (!platform::directoryExists(tmpDir))
-                platform::createDirectoryRecursively(tmpDir);
+            String tmpDir = sSettings.tmpDir.toString() + dll.name + '\\';
+            if (!FileUtils::directoryExists(tmpDir))
+                FileUtils::createDirectoryRecursively(tmpDir);
 
             for (auto& file : files)
             {
-                file.replaceAll('/', '\\');
-
-                if (!file.endsWith(".cpp"))
+                if (!file.toString().endsWith(".cpp"))
                 {
                     Log::error("Can't recompile dll ", dll.name, ": invalid source file ", file, ". Only .cpp files are allowed.");
                     return false;
@@ -231,7 +239,7 @@ namespace otto
 
             // Turn .cpp files into .obj files
             for (auto& file : files)
-                file = file.toSubString(file.findLastOf('\\') + 1, file.findFirstOf(".cpp")) + ".obj";
+                file = String::subString(file.toString(), file.toString().findLastOf('\\') + 1, file.toString().findFirstOf(".cpp")) + ".obj";
 
             _linkDll(dll.name, files);
 
@@ -267,47 +275,30 @@ namespace otto
 
     } // namespace
 
-    void _putDirectoriesWithSpacesInQuotes(String& path)
-    {
-        size_t index = 0;
-        while ((index = path.findFirstOf(' ', index)) != path.getSize())
-        {
-            path.replaceLast("\\", "\\\"", index);
-
-            index = path.findFirstOf('\\', index);
-            path.replace(index, index + 1, "\"\\");
-        }
-    }
-
     bool DllReloader::init(const Settings& settings)
     {
         sSettings = settings;
-        sSettings.compilerExePath = sSettings.compilerExePath.trim().replaceAll('/', '\\');
-        sSettings.linkerExePath = sSettings.linkerExePath.trim().replaceAll('/', '\\');
 
-        if (!sSettings.compilerExePath.endsWithIgnoreCase("\\cl.exe"))
+        if (!sSettings.compilerExePath.toString().endsWithIgnoreCase("\\cl.exe"))
         {
-            Log::error("[DllReloader] Invalid cl.exe path: ", sSettings.compilerExePath);
+            Log::error("[DllReloader] Invalid cl.exe path: ", sSettings.compilerExePath.toString());
             return false;
         }
 
-        if (!sSettings.linkerExePath.endsWithIgnoreCase("\\link.exe"))
+        if (!sSettings.linkerExePath.toString().endsWithIgnoreCase("\\link.exe"))
         {
-            Log::error("[DllReloader] Invalid link.exe path: ", sSettings.linkerExePath);
+            Log::error("[DllReloader] Invalid link.exe path: ", sSettings.linkerExePath.toString());
             return false;
         }
 
-        _putDirectoriesWithSpacesInQuotes(sSettings.compilerExePath);
-        _putDirectoriesWithSpacesInQuotes(sSettings.linkerExePath);
-
-        if (!platform::fileExists(sSettings.tmpDir))
-            platform::createDirectoryRecursively(sSettings.tmpDir);
+        if (!FileUtils::fileExists(sSettings.tmpDir))
+            FileUtils::createDirectoryRecursively(sSettings.tmpDir);
 
         sInitialized = true;
         return true;
     }
 
-    bool DllReloader::reloadDll(String dllPath, bool forceRecompile, std::initializer_list<String> sourceFiles,
+    bool DllReloader::reloadDll(const FilePath& dllPath, bool forceRecompile, std::initializer_list<FilePath> sourceFiles,
         std::initializer_list<String> additionalPreprocessorDefinitions)
     {
         if (!sInitialized)
@@ -316,26 +307,25 @@ namespace otto
             return false;
         }
 
-        dllPath.replaceAll('/', '\\');
-        String dllDir = String::subString(dllPath, 0, dllPath.findLastOf('\\') + 1);
+        FilePath dllDir = dllPath.getParentDirectory();
 
         if (!sDlls.containsKey(dllPath))
-            sDlls.insert(dllPath, { String::subString(dllPath, dllPath.findLastOf('\\') + 1, dllPath.findFirstOf('.')) });
+            sDlls.insert(dllPath.toString(), { String::subString(dllPath.toString(), dllPath.toString().findLastOf('\\') + 1, dllPath.toString().findLastOf('.')) });
 
-        Dll& dll = sDlls[dllPath];
+        Dll& dll = sDlls[dllPath.toString()];
 
         if (forceRecompile)
         {
-            if (!_recompileAndReloadDll(dll, dllDir, sourceFiles, additionalPreprocessorDefinitions))
+            if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions))
                 return false;
         }
         else
         {
-            if (!_reloadDll(dll, dllDir))
+            if (!_reloadDll(dll, dllDir.toString()))
             {
-                Log::info("Reloading dll ", dllPath, " failed, trying to recompile...");
+                Log::info("Reloading dll ", dllPath.toString(), " failed, trying to recompile...");
 
-                if (!_recompileAndReloadDll(dll, dllDir, sourceFiles, additionalPreprocessorDefinitions))
+                if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions))
                     return false;
             }
         }
@@ -353,15 +343,15 @@ namespace otto
         }
     }
 
-    ptr64 DllReloader::_registerFunction(const String& dllPath, ptr64* functionPointer, const String& functionName)
+    ptr64 DllReloader::_registerFunction(const FilePath& dllPath, ptr64* functionPointer, const String& functionName)
     {
-        if (!sDlls.containsKey(dllPath))
+        if (!sDlls.containsKey(dllPath.toString()))
         {
             Log::warn("Can't register function ", functionName, " for Dll ", dllPath, ": Dll is not registered for RCR");
             return 0;
         }
 
-        Dll& dll = sDlls[dllPath];
+        Dll& dll = sDlls[dllPath.toString()];
         if (!dll.win32Handle)
         {
             Log::warn("Can't register function ", functionName, " for Dll ", dllPath, ": Dll has not been loaded.");
@@ -374,7 +364,7 @@ namespace otto
             return 0;
         }
 
-        dll.functions[dllPath].pointer = functionPointer;
+        dll.functions[functionName].pointer = functionPointer;
         return reinterpret_cast<ptr64>(GetProcAddress(dll.win32Handle, dll.functions[functionName].nativeName.getData()));
     }
 

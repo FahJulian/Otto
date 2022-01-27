@@ -24,3 +24,11 @@
 #include "otto/debug/profile/profiler.h"
 
 #include "otto/core/platform/time.h"
+
+namespace otto
+{
+    struct Behaviour
+    {
+
+    };
+}

@@ -1,6 +1,3 @@
-# TYPE SCENE
-# SETTINGS scene_settings_concept.otto
-
 Entity1: 
     Component1: {
         Variable1: 1.0
@@ -28,6 +25,10 @@ Entity1:
             Value4
             Value5
         ]
+    TransformComponent:
+        translation: 1.0, 3, 4
+        rotation: 654609.45345, 534580345, 0
+        scale: 1, 1, 1
 
 Entity2:
     Component1: {

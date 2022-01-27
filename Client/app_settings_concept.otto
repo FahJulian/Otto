@@ -1,17 +1,25 @@
-# TYPE APP_SETTINGS
+RootDirectory: C:/dev/Otto/Client/
+LogFilePath: .log/client.log
+LogConsoleLevel: ALL
+LogFileLevel: ALL
+MSVC_Version: 14.29.30133
 
 Components: [
-    TestComponent: 'comoonents/TestComponent.hpp'
+    components/TestComponent
+    components/TestComponent2
 ]
 
 Behaviours: [
-    TestBehaviour: 'behaviours/TestBehaviour.hpp'
+    behaviours/TestBehaviour
+    behaviours/TestBehaviour2
 ]
 
 Systems: [
-    TestSystem: 'systems/TestSystem.hpp'
+    systems/TestSystem
+    systems/TestSystem2
 ]
 
 Events: [
-    TestEvent: 'events/TestEvent.hpp'
+    events/TestEvent
+    events/TestEvent2
 ]

@@ -56,100 +56,36 @@ namespace otto
         {
         }
 
-        template<typename T>
-        T get()
+        const DynamicArray<Serialized>& getList() const
         {
-            return deserialize<T>(*this);
-        }
-
-        template<>
-        bool get()
-        {
-            return mValue.to<bool>();
-        }
-
-        template<>
-        uint8 get()
-        {
-            return mValue.to<uint8>();
-        }
-
-        template<>
-        uint16 get()
-        {
-            return mValue.to<uint16>();
-        }
-
-        template<>
-        uint32 get()
-        {
-            return mValue.to<uint32>();
-        }
-
-        template<>
-        uint64 get()
-        {
-            return mValue.to<uint64>();
-        }
-
-        template<>
-        int8 get()
-        {
-            return mValue.to<int8>();
-        }
-
-        template<>
-        int16 get()
-        {
-            return mValue.to<int16>();
-        }
-
-        template<>
-        int32 get()
-        {
-            return mValue.to<int32>();
-        }
-
-        template<>
-        int64 get()
-        {
-            return mValue.to<int64>();
-        }
-
-        template<>
-        float32 get()
-        {
-            return mValue.to<float32>();
-        }
-
-        template<>
-        float64 get()
-        {
-            return mValue.to<float64>();
-        }
-
-        template<>
-        String get()
-        {
-            return mValue;
+            return mList;
         }
 
         template<typename T>
-        DynamicArray<T> get()
+        DynamicArray<T> getList() const
         {
-            return NONE;
+            DynamicArray<T> list = DynamicArray<T>(mList.getSize());
+
+            for (auto& element : mList)
+                list.add(element.get<T>());
+
+            return list;
         }
 
-        template<typename T, uint64 N>
-        StaticArray<T, N> get()
+        const Map<String, Serialized>& getDictionary() const
         {
-            return NONE;
+            return mDictionary;
         }
 
-        template<typename T, typename F>
-        Map<F, T> get()
+        template<typename T>
+        Map<String, T> getDictionary() const
         {
-            return NONE;
+            Map<String, T> dictionary = Map<String, T>(mDictionary.getSize());
+
+            for (auto& [key, element] : mDictionary)
+                dictionary.insert(key, element.get<T>());
+
+            return dictionary;
         }
 
         bool contains(const String& entryName) const
@@ -157,14 +93,62 @@ namespace otto
             return mDictionary.containsKey(entryName);
         }
 
-        Serialized& get(const String& entryName)
+        const Serialized& get(const String& entryName) const
         {
-            mDictionary.get(entryName);
+            return mDictionary.get(entryName);
+        }
+
+        template<typename T> requires std::is_integral<T>::value
+            T get() const
+        {
+            return mValue.to<T>();
+        }
+
+        template<typename T>
+        T get() const
+        {
+            return deserialize<T>(*this);
+        }
+
+        template<>
+        String get() const
+        {
+            return mValue;
+        }
+
+        template<typename T> requires std::is_integral<T>::value
+            T get(const String& entryName) const
+        {
+            return mDictionary.get(entryName).get<T>();
+        }
+
+        template<typename T>
+        T get(const String& entryName) const
+        {
+            return mDictionary.get(entryName).get<T>();
         }
 
         const Serialized& get(uint64 index)
         {
             return mList[index];
+        }
+
+        template<typename T> requires std::is_integral<T>::value
+            void insert(const String& key, T value)
+        {
+            if (mType == Type::VOID)
+                mType = Type::DICTIONARY;
+
+            mDictionary.insert(key, String::valueOf(value));
+        }
+
+        template<typename T>
+        void insert(const String& key, const T& value)
+        {
+            if (mType == Type::VOID)
+                mType = Type::DICTIONARY;
+
+            mDictionary.insert(key, serialize<T>(value));
         }
 
         String toString() const
@@ -205,7 +189,7 @@ namespace otto
         bool isList() const { return mType == Type::LIST; }
         bool isDictionary() const { return mType == Type::DICTIONARY; }
 
-    //private:
+    private:
         Type mType;
 
         String mValue;
@@ -213,7 +197,24 @@ namespace otto
         Map<String, Serialized> mDictionary;
 
         friend struct OttoFile;
-        friend class OttoFileLoader;
+        friend class Serializer;
     };
+
+    template<typename T>
+    Serialized serialize(const T& t)
+    {
+        OTTO_ASSERT(false, "Type is not serializable");
+    }
+
+    template<typename T>
+    T deserialize(const Serialized& serialized)
+    {
+        OTTO_ASSERT(false, "Type is not deserializable");
+    }
+
+    //std::ostream& operator<<(std::ostream& stream, const Serialized& serialized);
+    //{
+    //    return (stream << serialized.toString());
+    //}
 
 } // namespace otto

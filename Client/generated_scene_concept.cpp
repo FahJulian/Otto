@@ -1,7 +1,7 @@
 #include "otto/scene/scene.h"
 
-#include "./behaviours/test_behaviour.hpp"
-#include "./components/test_component.hpp"
+#include "./behaviours/TestBehaviour.hpp"
+#include "./components/TestComponent.hpp"
 
 #define OTTO_DLL_EXPORT
 
@@ -29,10 +29,9 @@ namespace otto
         otto::Log::init(mainLog);
     }
 
-    OTTO_RCR_API Optional<Scene*> createScene(const String& sceneName)
+    OTTO_RCR_API Scene* Scene::createScene(const String& sceneName)
     {
-        if (sceneName == "TestScene")
-            return new Scene(TEST_SCENE, new SceneData());
+        return new Scene(new SceneData());
     }
 
     OTTO_RCR_API void Scene::init()

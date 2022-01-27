@@ -1,21 +1,28 @@
 #pragma once
 
 #include "otto/base.h"
-#include "otto/util/string.h"
+#include "otto/util/platform/file_path.h"
 
-namespace otto::platform
+namespace otto
 {
-    bool directoryExists(const String& directoryPath);
-    bool fileExists(const String& filePath);
+    class FileUtils
+    {
+        FileUtils() = delete;
+        FileUtils(const FileUtils& other) = delete;
 
-    bool createDirectory(const String& directory);
-    bool createDirectoryRecursively(const String& directory);
+    public:
+        static bool directoryExists(const FilePath& directoryPath);
+        static bool fileExists(const FilePath& filePath);
 
-    bool moveFile(const String& oldName, const String& newName);
-    bool renameFile(const String& oldName, const String& newName);
+        static bool createDirectory(const FilePath& directory);
+        static bool createDirectoryRecursively(const FilePath& directory);
 
-    bool deleteFile(const String& fileName);
-    bool deleteEmptyDirectory(const String& directoryPath);
-    bool deleteEmptyDirectoryRecursively(const String& directoryPath);
+        static bool moveFile(const FilePath& oldName, const FilePath& newName);
+        static bool renameFile(const FilePath& oldName, const FilePath& newName);
+
+        static bool deleteFile(const FilePath& fileName);
+        static bool deleteEmptyDirectory(const FilePath& directoryPath);
+        static bool deleteEmptyDirectoryRecursively(const FilePath& directoryPath);
+    };
 
 } // namespace otto::platform

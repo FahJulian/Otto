@@ -2,25 +2,46 @@
 
 namespace otto
 {
+    namespace
+    {
+        void _putDirectoriesWithSpacesInQuotes(String& path)
+        {
+            uint64 index = 0;
+            while ((index = path.findFirstOf(' ', index)) != path.getSize())
+            {
+                if (path.findLastOf('\\', index) != path.findLastOf("\\\"", index))
+                    path.replaceLast("\\", "\\\"", index);
+                
+                uint64 i = path.findFirstOf("\"\\", index);
+                index = path.findFirstOf('\\', index);
+                if (i + 1 != index)
+                    path.replace(index, index + 1, "\"\\");
+            }
+        }
+
+    } //namespace
 
 #ifdef OTTO_WINDOWS
 
     FilePath::FilePath(const String& path)
         : mFilePath(path)
     {
-        mFilePath.replaceAll('/', '\\');
+        mFilePath.replaceAll('/', '\\').trim();
+        _putDirectoriesWithSpacesInQuotes(mFilePath);
     }
 
     FilePath::FilePath(String&& path) noexcept
         : mFilePath(std::forward<String>(path))
     {
-        mFilePath.replaceAll('/', '\\');
+        mFilePath.replaceAll('/', '\\').trim();
+        _putDirectoriesWithSpacesInQuotes(mFilePath);
     }
 
     FilePath::FilePath(const char* path)
         : mFilePath(path)
     {
-        mFilePath.replaceAll('/', '\\');
+        mFilePath.replaceAll('/', '\\').trim();
+        _putDirectoriesWithSpacesInQuotes(mFilePath);
     }
 
     FilePath FilePath::getParentDirectory() const

@@ -116,6 +116,8 @@ namespace otto
         std::ostringstream mFileStream;
 
         static Log* sInstance;
+
+        friend class Application;
     };
 
 } // namespace otto

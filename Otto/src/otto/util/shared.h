@@ -1,5 +1,7 @@
 #pragma once
 
+#include "otto/base.h"
+
 namespace otto
 {
     template<typename T>
@@ -12,7 +14,7 @@ namespace otto
         }
 
         Shared(T* pointer)
-            : mPointer(pointer), mNCopies(pointer != nullptr ? new size_t(0) : nullptr)
+            : mPointer(pointer), mNCopies(pointer != nullptr ? new uint64(0) : nullptr)
         {
         }
 
@@ -91,14 +93,14 @@ namespace otto
             return mPointer;
         }
 
-        size_t getCopyCount() const
+        uint64 getCopyCount() const
         {
             return *mNCopies;
         }
 
     private:
         T* mPointer;
-        size_t* mNCopies;
+        uint64* mNCopies;
     };
 
 } // namespace otto

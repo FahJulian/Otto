@@ -12,8 +12,7 @@ namespace otto
 
     Log::~Log()
     {
-        //platform::createDirectoryRecursively(String::subString(mFilePath, 0, mFilePath.replaceAll('/', '\\').findLastOf('\\') + 1));
-        platform::createDirectoryRecursively(mFilePath.getParentDirectory());
+        FileUtils::createDirectoryRecursively(mFilePath.getParentDirectory());
 
         std::ofstream file = std::ofstream(mFilePath.toString().getData(), std::ios::out);
         file << mFileStream.str();

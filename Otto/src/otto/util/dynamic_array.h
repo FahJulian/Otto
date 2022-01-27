@@ -20,7 +20,7 @@ namespace otto {
         {
         }
 
-        DynamicArray(uint64 capacity)
+        explicit DynamicArray(uint64 capacity)
             : mSize(0), mCapacity(capacity), mData(_allocateMemory(capacity))
         {
         }

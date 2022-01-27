@@ -8,7 +8,7 @@ namespace otto
     class Mat3x3
     {
     public:
-        constexpr Mat3x3 = default();
+        constexpr Mat3x3() = default;
 
         constexpr Mat3x3(T t)
             : m11(t), m22(t), m33(t)
@@ -16,8 +16,8 @@ namespace otto
         }
 
         constexpr Mat3x3(T m11, T m12, T m13,
-            T 11, T m12, T m13,
-            T 11, T m12, T m13)
+            T m21, T m22, T m23,
+            T m31, T m32, T m33)
             : m11(m11), m12(m12), m13(m13),
             m21(m21), m22(m22), m23(m23),
             m31(m31), m32(m32), m33(m33)
@@ -29,9 +29,9 @@ namespace otto
             return m11 * m22 * m33 +
                 m12 * m23 * m31 +
                 m13 * m21 * m32 -
-                m31 * m22 * m13 - 
+                m31 * m22 * m13 -
                 m32 * m23 * m11 -
-                m33 * m21 * m12
+                m33 * m21 * m12;
         }
 
         static constexpr Mat3x3 identity()

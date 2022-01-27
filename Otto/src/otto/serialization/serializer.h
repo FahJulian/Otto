@@ -2,12 +2,12 @@
 
 #include "otto/base.h"
 #include "otto/util/result.h"
-#include "otto/serialization/otto_file.h"
+#include "otto/serialization/serialized.h"
 #include "otto/util/platform/file_path.h"
 
 namespace otto
 {
-    class OttoFileLoader
+    class Serializer
     {
     public:
         enum class ParsingError
@@ -21,7 +21,7 @@ namespace otto
             SYNTAX_ERROR,
         };
 
-        static Result<OttoFile, ParsingError> load(const FilePath& filePath);
+        static Result<Serialized, ParsingError> deserialize(const FilePath& filePath);
 
     private:
         struct SerializableParsingResult

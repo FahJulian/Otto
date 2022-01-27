@@ -4,8 +4,11 @@
 #error Exporting dlls should not use RCR to load another dll
 #endif
 
+#include "otto/base.h"
+
 #include "otto/util/string.h"
 #include "otto/util/dynamic_array.h"
+#include "otto/util/platform/file_path.h"
 
 namespace otto
 {
@@ -26,11 +29,12 @@ namespace otto
 
         struct Settings
         {
-            String compilerExePath;
-            String linkerExePath;
-            String tmpDir;
-            DynamicArray<String> includeDirs;
-            DynamicArray<String> libDirs;
+            FilePath compilerExePath;
+            FilePath linkerExePath;
+            FilePath tmpDir;
+            DynamicArray<FilePath> includeDirs;
+            DynamicArray<FilePath> libDirs;
+            DynamicArray<String> libs;
             Configuration configuration = Configuration::DEBUG;
         };
 
@@ -63,7 +67,7 @@ namespace otto
         }
 
         template<typename R, typename... Args>
-        static Functionptr64<R, Args...> registerFunctionPointer(const String& dllPath,
+        static Functionptr64<R, Args...> registerFunctionPointer(const FilePath& dllPath,
             Functionptr64<R, Args...>* functionptr64,
             const String& returnType,
             const String& namespaceName,
@@ -83,7 +87,7 @@ namespace otto
         }
 
         template<typename R, typename T, typename... Args>
-        static MemberFunctionptr64<R, T, Args...> registerMemberFunctionPointer(const String& dllPath,
+        static MemberFunctionptr64<R, T, Args...> registerMemberFunctionPointer(const FilePath& dllPath,
             MemberFunctionptr64<R, T, Args...>* memberFunctionptr64,
             const String& returnType,
             const String& memberFunctionName,
@@ -106,13 +110,13 @@ namespace otto
 
         static bool init(const Settings& settings);
 
-        static bool reloadDll(String dllPath, bool forceRecompile, std::initializer_list<String> sourceFiles,
+        static bool reloadDll(const FilePath& dllPath, bool forceRecompile, std::initializer_list<FilePath> sourceFiles,
             std::initializer_list<String> additionalPreprocessorDefinitions = {});
 
         static void destroy();
 
     private:
-        static ptr64 _registerFunction(const String& dllPath, ptr64* functionptr64, const String& functionName);
+        static ptr64 _registerFunction(const FilePath& dllPath, ptr64* functionptr64, const String& functionName);
 
         template<typename T>
         static void _appendTypeNames(String& string, bool isArgumentTypes, bool start = true)

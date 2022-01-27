@@ -1,36 +1,48 @@
 #pragma once
 
 #include "otto/base.h"
+#include "otto/util/shared.h"
 #include "otto/scene/entity.h"
 #include "otto/util/optional.h"
 #include "otto/debug/log/log.h"
+#include "otto/core/application.h"
 #include "otto/event/event_listener.h"
 #include "otto/scene/component_pool.h"
+#include "otto/serialization/serialized.h"
+
+#pragma warning(disable: 4005)
 
 #define OTTO_DYNAMIC
 
 #ifdef OTTO_DYNAMIC
 
-#define OTTO_RCR_DLL_PATH getClientDllPath()
+#ifndef OTTO_RCR_DLL_PATH
+#define OTTO_RCR_DLL_PATH Application::_getClientDllPath()
+#endif
+
 #include "otto/util/dll_reloading/dll_reloading.h"
 
 #endif
 
 
+#define OTTO_RCR_NAMESPACE "otto"
 namespace otto
 {
 	struct SceneData;
-	enum SceneType : uint16;
-
-	OTTO_RCR_FUNCTION_0_ARGS(String, getClientDllPath);
 
     class Scene
     {
 #ifdef OTTO_DYNAMIC
 
+		using SerializedMap = Map<String, Serialized>;
+		using EntityMap = Map<String, Entity>;
+
+	public:
         //OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, load, SceneLoadData& sceneLoadData);
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(void, init);
-		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, update, float, delta);
+		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, update, float32, delta);
+
+		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Entity, addEntity);
 
 		template<typename E>
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, addEventListener, const EventListener<E>&, eventListener);
@@ -54,20 +66,35 @@ namespace otto
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(bool, hasComponent, Entity, entity, C);
 
 	private:	
-		Scene(SceneData* data, SceneType type)
-			: mData(data), mType(type)
+		OTTO_RCR_MEMBER_FUNCTION_3_ARGS(void, addComponent, const String&, componentName, const SerializedMap&, args, const EntityMap&, entities);
+
+
+		Scene(SceneData* data)
+			: mData(data)
 		{
 		}
 
 		SceneData* mData;
-		SceneType mType;
 
-		friend Optional<Scene*> createScene(const String& sceneName);
-#endif
+		friend class SceneLoader;
+		friend class _SceneInitializer;
+		friend class Application;
     };
 
-#ifdef OTTO_DYNAMIC
-    OTTO_RCR_FUNCTION_1_ARGS(Optional<Scene*>, createScene, const String&, sceneName);
-    OTTO_RCR_FUNCTION_1_ARGS(void, initClientLog, Log*, mainLog);
+	class _SceneInitializer
+	{
+	private:
+		_SceneInitializer() = default;
+
+		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Scene*, createScene);
+
+		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, initClientLog, Log*, mainLog);
+
+		friend class SceneLoader;
+	};
+
 #endif
-}
+
+} // namespace otto
+
+#pragma warning(default : 4005)

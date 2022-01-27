@@ -12,12 +12,12 @@ namespace otto
         constexpr Vec3() = default;
 
         constexpr Vec3(T t)
-            : mX(t), mY(t), mZ(t)
+            : x(t), y(t), z(t)
         {
         }
 
         constexpr Vec3(T x, T y, T z)
-            : mX(x), mY(y), mZ(z)
+            : x(x), y(y), z(z)
         {
         }
 
@@ -28,66 +28,65 @@ namespace otto
         template<typename F>
         Vec3& operator+=(const Vec3<F>& v)
         {
-            mX += v.mX;
-            mY += v.mY;
-            mZ += v.mZ;
+            x += v.x;
+            y += v.y;
+            z += v.z;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec3&>::type operator+=(F f)
         {
-            mX += f;
-            mY += f;
-            mZ += f;
+            x += f;
+            y += f;
+            z += f;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec3&>::type operator*=(F f)
         {
-            mX *= f;
-            mY *= f;
-            mZ *= f;
+            x *= f;
+            y *= f;
+            z *= f;
         }
 
         template<typename F, typename G>
         friend Vec3 operator+(const Vec3<F>& v1, const Vec3<G>& v2)
         {
-            return { v1.mX + v2.mX, v1.mY + v2.mY, v1.mZ + v2.mZ };
+            return { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator+(F f, const Vec3& v)
         {
-            return { f + v.mX, f + v.mY, f + v.mZ };
+            return { f + v.x, f + v.y, f + v.z };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator+(const Vec3& v, F f)
         {
-            return { v.mX + f, v.mY + f, v.mZ + f };
+            return { v.x + f, v.y + f, v.z + f };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator*(F f, const Vec3& v)
         {
-            return { f * v.mX, f * v.mY, f * v.mZ };
+            return { f * v.x, f * v.y, f * v.z };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator*(const Vec3& v, F f)
         {
-            return { v.mX * f, v.mY * f, v.mZ * f };
+            return { v.x * f, v.y * f, v.z * f };
         }
 
         friend std::ostream& operator<<(std::ostream& stream, const Vec3& v)
         {
-            return (stream << '(' << v.mX << ", " << v.mY << ", " << v.mZ << ')');
+            return (stream << '(' << v.x << ", " << v.y << ", " << v.z << ')');
         }
 
-    private:
-        T mX = T();
-        T mY = T();
-        T mZ = T();
+        T x = T();
+        T y = T();
+        T z = T();
     };
 
     using Vec3f32 = Vec3<float32>;

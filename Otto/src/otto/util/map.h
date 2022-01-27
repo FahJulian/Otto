@@ -12,7 +12,7 @@ namespace otto {
     public:
         constexpr Map() = default;
 
-        Map(uint64 capacity)
+        explicit Map(uint64 capacity)
             : mData(capacity)
         {
         }

@@ -20,7 +20,7 @@ namespace otto
             mListeners.remove(listener);
         }
 
-        void dispatch(const E& e)
+        void dispatchEvent(const E& e)
         {
             for (auto& listener : mListeners)
                 listener(e);

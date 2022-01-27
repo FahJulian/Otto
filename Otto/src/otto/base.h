@@ -29,5 +29,9 @@ namespace otto
     typedef float float32;
     typedef double float64;
 
+    typedef char char8;
+    typedef unsigned char uchar8;
+    typedef wchar_t char16;
+
     typedef uintptr_t ptr64;
 }

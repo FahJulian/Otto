@@ -13,17 +13,19 @@ namespace otto
         FilePath(String&& path) noexcept;
         FilePath(const char* path);
 
-        operator const String&() const
-        {
-            return toString();
-        }
-
         const String& toString() const
         {
             return mFilePath;
         }
 
         FilePath getParentDirectory() const;
+
+        friend FilePath operator+(const FilePath& filePath1, const FilePath& filePath2) 
+        {
+            return FilePath(filePath1.mFilePath + filePath2.mFilePath);
+        }
+
+        bool operator==(const FilePath& other) const { return mFilePath == other.mFilePath; }
 
     private:
         String mFilePath;

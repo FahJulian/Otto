@@ -10,9 +10,11 @@
 #include "otto/util/string.h"
 #include "otto/math/math.h"
 #include "otto/debug/profile/profiler.h"
-#include "otto/serialization/otto_file_loader.h"
+#include "otto/serialization/serializer.h"
 #include "otto/scene/scene.h"
 #include "otto/math/vec4.h"
+#include "otto/components/transform_component.hpp"
+#include "otto/core/application.h"
 
 struct Test
 {
@@ -29,10 +31,15 @@ int main()
     otto::Time::init();
     otto::Log::init("C:/dev/Otto/Sandbox/.log/main.log", std::cout, otto::Log::ALL, otto::Log::ALL);
 
-    auto file = otto::OttoFileLoader::load("C:/dev/Otto/Client/scenes/scene_concept.otto");
+    otto::Application::init("C:/dev/Otto/Client/app_settings_concept.otto");
+
+    auto file = otto::Serializer::deserialize("C:/dev/Otto/Client/scenes/scene_concept.otto");
 
     if (!file.hasError())
-        otto::Log::trace(otto::String::toString(file.getResult().serialized));
+        otto::Log::trace(otto::String::toString(file.getResult()));
+
+    otto::TransformComponent c = file.getResult().get("Entity1").get<otto::TransformComponent>("TransformComponent");
+    otto::Log::trace(otto::serialize(c));
 
     otto::Vec4f32 vec = { 0, 1, 2, 3 };
     otto::Vec4f32 vec2 = { 0, 1, 2, 3 };

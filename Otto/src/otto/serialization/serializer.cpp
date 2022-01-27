@@ -1,12 +1,12 @@
-#include "otto_file_loader.h"
+#include "serializer.h"
 
 #include "otto/util/file.h"
 
 namespace otto
 {
-    Result<OttoFile, OttoFileLoader::ParsingError> OttoFileLoader::load(const FilePath& filePath)
+    Result<Serialized, Serializer::ParsingError> Serializer::deserialize(const FilePath& filePath)
     {
-        OttoFile file;
+        Serialized serialized;
         DynamicArray<String> lines = File(filePath).readLines();
 
         _filterEmtpyLines(lines);
@@ -17,40 +17,37 @@ namespace otto
             uint64 indentation = line.findFirstNotOfWhiteSpace();
             line.trim();
 
-            if (line.startsWith('#'))
+            if (indentation != 0)
+                return ParsingError::INDENTATION_ERROR;
+
+            uint64 seperatorIndex = line.findFirstOf(':');
+            if (seperatorIndex == line.getSize())
+                return ParsingError::SYNTAX_ERROR_MISSING_COLON;
+            else if (line.findFirstOf(": ", seperatorIndex + 1) != line.getSize())
+                return ParsingError::SYNTAX_ERROR_MORE_THAN_ONE_COLON;
+
+            String key = String::subString(line, 0, seperatorIndex).trim();
+
+            if (line.endsWith(':') || line.endsWith('{') || line.endsWith('['))
             {
-                auto words = String::split(String::subString(line, 1), ' ');
-
-                if (words.getSize() >= 2 && words[0].equalsIgnoreCase("TYPE") && words[1].equalsIgnoreCase("SCENE"))
-                    file.type = OttoFile::Type::SCENE;
-            }
-            else
-            {
-                if (indentation != 0)
-                    return ParsingError::INDENTATION_ERROR;
-
-                uint64 seperatorIndex = line.findFirstOf(':');
-                if (seperatorIndex == line.getSize())
-                    return ParsingError::SYNTAX_ERROR_MISSING_COLON;
-                else if (line.findFirstOf(':', seperatorIndex + 1) != line.getSize())
-                    return ParsingError::SYNTAX_ERROR_MORE_THAN_ONE_COLON;
-
-                String key = String::subString(line, 0, seperatorIndex).trim();
-
                 auto result = _parseSerializable(lines, i, indentation);
 
                 if (result.hasError())
                     return result.getError();
 
-                file.serialized.mDictionary.insert(key, result.getResult().serialized);
+                serialized.mDictionary.insert(key, result.getResult().serialized);
                 i += result.getResult().linesParsed;
             }
+            else
+            {
+                serialized.mDictionary.insert(key, String::subString(line, seperatorIndex + 1).trim());
+            }
         }
-
-        return file;
+        
+        return serialized;
     }
 
-    void OttoFileLoader::_filterEmtpyLines(DynamicArray<String>& lines)
+    void Serializer::_filterEmtpyLines(DynamicArray<String>& lines)
     {
         DynamicArray<uint64> emptyLines;
         for (uint64 i = 0; i < lines.getSize(); i++)
@@ -66,7 +63,7 @@ namespace otto
             lines.remove(emptyLines.get(i) - i);
     }
 
-    Result<OttoFileLoader::SerializableParsingResult, OttoFileLoader::ParsingError> OttoFileLoader::_parseSerializable(
+    Result<Serializer::SerializableParsingResult, Serializer::ParsingError> Serializer::_parseSerializable(
         DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation)
     {
         Serialized serialized = Serialized(Serialized::Type::VOID);
@@ -109,7 +106,7 @@ namespace otto
                     uint64 seperatorIndex = line.findFirstOf(':');
                     if (seperatorIndex == line.getSize())
                         return ParsingError::SYNTAX_ERROR_MISSING_COLON;
-                    else if (line.findFirstOf(':', seperatorIndex + 1) != line.getSize())
+                    else if (line.findFirstOf(": ", seperatorIndex + 1) != line.getSize())
                         return ParsingError::SYNTAX_ERROR_MORE_THAN_ONE_COLON;
                     else
                     {

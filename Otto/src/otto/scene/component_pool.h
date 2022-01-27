@@ -30,12 +30,14 @@ namespace otto
             return mComponents[entity];
         }
 
-        bool hasEntity(Entity entity)
+        bool hasComponent(Entity entity)
         {
             return mComponents.containsKey(entity);
         }
 
         Map<Entity, C> mComponents;
+
+        friend class Scene;
     };
 
 } // namespace otto

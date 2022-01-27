@@ -7,6 +7,8 @@
 #include "dll_reloader.h"
 #endif
 
+#include <iostream>
+
 #if defined(OTTO_DLL_EXPORT)
 
 #define OTTO_RCR_API __declspec(dllexport)
@@ -15,30 +17,36 @@
 
 #else
 
+#define OTTO_RCR_API
+
 #if !defined(OTTO_RCR_NAMESPACE)
-#define OTTO_RCR_NAMESPACE
+#define OTTO_RCR_NAMESPACE 
+#endif
+
+#if !defined(OTTO_RCR_CLASS)
+#define OTTO_RCR_CLASS 
 #endif
 
 #if !defined(OTTO_RCR_DLL_PATH)
 #define OTTO_RCR_DLL_PATH ""
 #endif
 
-#define OTTO_RCR_FUNCTION(returnType, name, arguments, argumentTypes, argumensForwarded, ...) \
-        static returnType name##arguments \
+#define OTTO_RCR_FUNCTION(returnType, name, arguments, argumentTypes, argumentsForwarded, ...) \
+        static returnType name arguments \
         { \
             static returnType(*functionPointer)(argumentTypes) = otto::DllReloader::registerFunctionPointer(OTTO_RCR_DLL_PATH, &functionPointer, \
-                otto::DllReloader::getTypeNames<returnType>(), OTTO_RCR_NAMESPACE"::", #name, otto::DllReloader::getTypeNames<__VA_ARGS__>(), otto::DllReloader::getTypeNames<argumentTypes>(true)); \
+                otto::DllReloader::getTypeNames<returnType>(), OTTO_RCR_NAMESPACE "::" OTTO_RCR_CLASS "::", #name, otto::DllReloader::getTypeNames<__VA_ARGS__>(), otto::DllReloader::getTypeNames<argumentTypes>(true)); \
             \
-            return (*functionPointer)##argumensForwarded; \
+            return (*functionPointer) argumentsForwarded; \
         }
 
-#define OTTO_RCR_MEMBER_FUNCTION(returnType, name, arguments, argumentTypes, argumensForwarded, ...) \
-        returnType name##arguments \
+#define OTTO_RCR_MEMBER_FUNCTION(returnType, name, arguments, argumentTypes, argumentsForwarded, ...) \
+        returnType name arguments \
         { \
             static returnType(std::remove_reference<decltype(*this)>::type::*memberFunctionPointer)(argumentTypes) = otto::DllReloader::registerMemberFunctionPointer( \
                 OTTO_RCR_DLL_PATH, &memberFunctionPointer, otto::DllReloader::getTypeNames<returnType>(), #name, otto::DllReloader::getTypeNames<__VA_ARGS__>(), otto::DllReloader::getTypeNames<argumentTypes>(true)); \
             \
-            return (this->*memberFunctionPointer)##argumensForwarded; \
+            return (this->*memberFunctionPointer) argumentsForwarded; \
         }
 
 #endif
