@@ -1,6 +1,7 @@
 #pragma once
 
 #include "otto/base.h"
+#include "otto/scene/view.h"
 #include "otto/util/shared.h"
 #include "otto/scene/entity.h"
 #include "otto/util/optional.h"
@@ -34,7 +35,6 @@ namespace otto
     {
 #ifdef OTTO_DYNAMIC
 
-		using SerializedMap = Map<String, Serialized>;
 		using EntityMap = Map<String, Entity>;
 
 	public:
@@ -65,8 +65,11 @@ namespace otto
 		template<typename C>
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(bool, hasComponent, Entity, entity, C);
 
-	private:	
-		OTTO_RCR_MEMBER_FUNCTION_3_ARGS(void, addComponent, const String&, componentName, const SerializedMap&, args, const EntityMap&, entities);
+	private:
+		template<typename C>
+		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(View<C>&, view);
+
+		OTTO_RCR_MEMBER_FUNCTION_4_ARGS(void, addComponent, Entity, entity, const String&, componentName, const Serialized&, args, const EntityMap&, entities);
 
 
 		Scene(SceneData* data)
@@ -86,7 +89,7 @@ namespace otto
 	private:
 		_SceneInitializer() = default;
 
-		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Scene*, createScene);
+		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Shared<Scene>, createScene);
 
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, initClientLog, Log*, mainLog);
 

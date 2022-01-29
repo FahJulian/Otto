@@ -4,6 +4,7 @@ using namespace otto;
 
 class TestBehaviour2 : public Behaviour
 {
+public:
     void onInit()
     {
 
@@ -18,6 +19,7 @@ class TestBehaviour2 : public Behaviour
     {
 
     }
-
+    
+private:
     float32 var;
 };

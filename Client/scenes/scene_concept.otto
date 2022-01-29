@@ -1,18 +1,18 @@
 Entity1: 
-    Component1: {
-        Variable1: 1.0
-        Variable2: 234
+    TestComponent: {
+        variable1: 1.0
+        variable2: 234
     }
-    Component2:
-        Variable1: This is also a viable value // This is a comment
-        Variable2: [ // This is a list
+    TestComponent:
+        variable1: This is also a viable value // This is a comment
+        variable2: [ // This is a list
             String 1
             23456456
         ]
-        Variable3:   // This is also a list
+        variable3:   // This is also a list
             Value1
             Value2
-        Variable4: [
+        variable4: [
             [
                 a
                 b
@@ -32,5 +32,5 @@ Entity1:
 
 Entity2:
     Component1: {
-        Variable1: "String",    
+        variable1: "String",    
     }

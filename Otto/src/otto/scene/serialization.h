@@ -1,11 +1,19 @@
 #pragma once
 
 #include "otto/base.h"
+#include "otto/util/map.h"
 #include "otto/math/math.h"
+#include "otto/scene/entity.h"
 #include "otto/serialization/serialized.h"
 
 namespace otto
 {
+    template<typename C>
+    C deserializeComponent(const Serialized& args, const Map<String, Entity>& entities)
+    {
+        OTTO_ASSERT(false, "Component can't be deserialized.");
+    }
+
     template<>
     Serialized serialize(const Vec3f32& v)
     {

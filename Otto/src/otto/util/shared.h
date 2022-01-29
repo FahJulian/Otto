@@ -19,6 +19,7 @@ namespace otto
         }
 
         Shared(const Shared& other)
+            : mPointer(nullptr), mNCopies(nullptr)
         {
             *this = other;
         }
@@ -40,7 +41,7 @@ namespace otto
         Shared& operator=(const Shared& other)
         {
             if (this == &other)
-                return;
+                return *this;
 
             this->~Shared();
 

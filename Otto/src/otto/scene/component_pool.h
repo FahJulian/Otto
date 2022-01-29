@@ -38,6 +38,9 @@ namespace otto
         Map<Entity, C> mComponents;
 
         friend class Scene;
+
+        template<typename C>
+        friend class View;
     };
 
 } // namespace otto

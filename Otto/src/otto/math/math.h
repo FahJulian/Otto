@@ -15,6 +15,42 @@ namespace otto
     extern const float32 ONE_OVER_PI_32;
     extern const float64 ONE_OVER_PI_64;
 
+    template<typename T> requires std::is_integral_v<T>
+    T min(T value1, T value2)
+    {
+        return value1 < value2 ? value1 : value2;
+    }
+
+    template<typename T> requires std::is_integral_v<T>
+    T max(T value1, T value2)
+    {
+        return value1 > value2 ? value1 : value2;
+    }
+
+    template<typename T> requires std::is_integral_v<T>
+    T min(std::initializer_list<T> values)
+    {
+        T minValue = std::numeric_limits<T>::max;
+
+        for (T value : values)
+            if (value > minValue)
+                minValue = value;
+
+        return minValue;
+    }
+
+    template<typename T> requires std::is_integral_v<T>
+    T max(std::initializer_list<T> values)
+    {
+        T maxValue = 0;
+
+        for (T value : values)
+            if (value > maxValue)
+                maxValue = value;
+
+        return maxValue;
+    }
+
     float32 sqrt(float32 value);
     float64 sqrt(float64 value);
     int8 sqrt(int8 value);

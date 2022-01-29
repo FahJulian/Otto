@@ -104,7 +104,8 @@ namespace otto
 
         DllReloader::init(dllSettings);
 
-        SceneLoader::reloadDll();
+        if (!SceneLoader::reloadDll())
+            return false;
 #endif
 
         sInitialized = true;

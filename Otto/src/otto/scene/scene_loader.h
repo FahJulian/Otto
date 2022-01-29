@@ -5,22 +5,28 @@
 #include "otto/util/result.h"
 #include "otto/util/dynamic_array.h"
 #include "otto/util/platform/file_path.h"
-#include "otto/serialization/serializer.h"
 
 namespace otto
 {
     class SceneLoader
     {
+        enum SceneLoadingError
+        {
+            SYNTAX_ERROR,
+            DUPLICATE_ENTITY,
+        };
+
         SceneLoader() = delete;
         SceneLoader(const SceneLoader& other) = delete;
 
-    private:
+    public:
+    //private:
         static void init(const DynamicArray<String>& components, const DynamicArray<String>& behaviours,
             const DynamicArray<String>& systems, const DynamicArray<String>& events);
 
-        static void reloadDll();
+        static bool reloadDll();
 
-        static Result<Scene*, Serializer::ParsingError> loadScene(const FilePath& filePath);
+        static Result<Shared<Scene>, SceneLoadingError> loadScene(const FilePath& filePath);
 
         static void _createSceneFile(const FilePath& filePath);
 

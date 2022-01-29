@@ -2063,7 +2063,7 @@ namespace otto
         if (index != mSize)
             mData[index] = newChar;
 
-        return index;
+        return index + 1 < mSize ? index + 1 : mSize;
     }
 
     uint64 String::_replaceFirst(const char8* oldString, const char8* newString, uint64 startIndex)
@@ -2096,7 +2096,8 @@ namespace otto
             std::memcpy(mData + index, newString, newLen);
         }
 
-        return index;
+        auto i = index + newLen;
+        return i < mSize ? i : mSize;
     }
 
     uint64 String::_replaceFirst(const String& oldString, const String& newString, uint64 startIndex)
@@ -2126,7 +2127,8 @@ namespace otto
             std::memcpy(mData + index, newString.mData, newString.mSize);
         }
 
-        return index;
+        auto i = index + newString.mSize;
+        return i < mSize ? i : mSize;
     }
 
     uint64 String::_replaceFirstIgnoreCase(char8 oldChar, char8 newChar, uint64 startIndex)
@@ -2136,7 +2138,7 @@ namespace otto
         if (index != mSize)
             mData[index] = newChar;
 
-        return index;
+        return index + 1 < mSize ? index + 1 : mSize;
     }
 
     uint64 String::_replaceFirstIgnoreCase(const char8* oldString, const char8* newString, uint64 startIndex)
@@ -2169,7 +2171,8 @@ namespace otto
             std::memcpy(mData + index, newString, newLen);
         }
 
-        return index;
+        auto i = index + newLen;
+        return i < mSize ? i : mSize;
     }
 
     uint64 String::_replaceFirstIgnoreCase(const String& oldString, const String& newString, uint64 startIndex)
@@ -2199,7 +2202,8 @@ namespace otto
             std::memcpy(mData + index, newString.mData, newString.mSize);
         }
 
-        return index;
+        auto i = index + newString.mSize;
+        return i < mSize ? i : mSize;
     }
 
     String String::valueOf(bool value)

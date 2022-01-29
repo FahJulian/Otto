@@ -5,6 +5,8 @@ LogFileLevel: ALL
 MSVC_Version: 14.29.30133
 
 Components: [
+    otto/components/TransformComponent
+
     components/TestComponent
     components/TestComponent2
 ]

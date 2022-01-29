@@ -90,8 +90,6 @@ namespace otto
             log<Args...>(TRACE, (args)...);
         }
 
-        static Log* getInstance() { return sInstance; }
-
     private:
         Log()
             : mFilePath(), mConsoleLevel(Log::DISABLED), mFileLevel(Log::DISABLED), mConsoleStream(nullptr), mFileStream()
@@ -109,6 +107,8 @@ namespace otto
             stream << std::endl;
         }
 
+        static Log* getInstance() { return sInstance; }
+
         FilePath mFilePath;
         uint8 mConsoleLevel;
         uint8 mFileLevel;
@@ -118,6 +118,7 @@ namespace otto
         static Log* sInstance;
 
         friend class Application;
+        friend class SceneLoader;
     };
 
 } // namespace otto
