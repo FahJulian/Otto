@@ -3,6 +3,7 @@
 #include "otto/base.h"
 #include "otto/scene/scene.h"
 #include "otto/util/result.h"
+#include "otto/util/shared.h"
 #include "otto/util/dynamic_array.h"
 #include "otto/util/platform/file_path.h"
 

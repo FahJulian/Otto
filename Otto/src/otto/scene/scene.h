@@ -4,7 +4,6 @@
 #include "otto/scene/view.h"
 #include "otto/util/shared.h"
 #include "otto/scene/entity.h"
-#include "otto/util/optional.h"
 #include "otto/debug/log/log.h"
 #include "otto/core/application.h"
 #include "otto/event/event_listener.h"

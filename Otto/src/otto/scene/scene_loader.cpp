@@ -2,6 +2,7 @@
 
 #include "otto/util/file.h"
 #include "otto/math/math.h"
+#include "otto/util/optional.h"
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
 
@@ -36,6 +37,45 @@ namespace otto
             }
         };
 
+        struct SystemInitArgument
+        {
+            enum Type
+            {
+                SCENE,
+                VIEW,
+                MULTIVIEW
+            };
+
+            Type type;
+
+            union
+            {
+                String viewType;
+
+                struct
+                {
+                    String viewType1;
+                    String viewType2;
+                };
+            };
+
+            SystemInitArgument()
+                : viewType1(), viewType2()
+            {
+            }
+
+            SystemInitArgument(const SystemInitArgument& other)
+                :type(other.type), viewType1(other.viewType1), viewType2(other.viewType2)
+            {
+            }
+
+            ~SystemInitArgument()
+            {
+                viewType1.~String();
+                viewType2.~String();
+            }
+        };
+
         struct _Event
         {
             FilePath relativeFilePath;
@@ -64,6 +104,8 @@ namespace otto
             FilePath relativeFilePath;
             String name;
             DynamicArray<_Function> memberFunctions;
+            bool hasInitFunction;
+            DynamicArray<SystemInitArgument> initArguments;
         };
 
         void _removeComments(String& code)
@@ -222,6 +264,8 @@ namespace otto
     static DynamicArray<_Behaviour> sBehaviours;
     static DynamicArray<_System> sSystems;
     static DynamicArray<_Event> sEvents;
+    static DynamicArray<String> sRequiredViews;
+    static DynamicArray<Pair<String, String>> sRequiredMultiViews;
 #endif
 
     void SceneLoader::init(const DynamicArray<String>& components, const DynamicArray<String>& behaviours,
@@ -254,6 +298,12 @@ namespace otto
                 continue;
             }
 
+            if (functions.getValue().contains(_Function{ "onInit", "void", {} }))
+            {
+                if (!sRequiredViews.contains(behaviourName))
+                    sRequiredViews.add(behaviourName);
+            }
+
             sBehaviours.add({ behaviour, behaviourName, functions.getValue(), false, _hasDeserializationFunction(filePath, behaviourName) });
         }
 
@@ -271,7 +321,102 @@ namespace otto
                 continue;
             }
 
-            sSystems.add({ system, systemName, functions.getValue() });
+            bool hasInitFunction = false;
+            DynamicArray<SystemInitArgument> initArguments;
+
+            for (auto function : functions.getValue())
+            {
+                if (function.returnType == "void" && function.name == "onInit")
+                {
+                    if (hasInitFunction == true)
+                    {
+                        Log::warn("System ", system, " has multiple init functions.");
+                        continue;
+                    }
+
+                    hasInitFunction = true;
+
+                    for (auto& argumentType : function.argumentTypes)
+                    {
+                        SystemInitArgument argument = SystemInitArgument();
+
+                        if (argumentType == "Shared<Scene>")
+                        {
+                            argument.type = SystemInitArgument::SCENE;
+                        }
+                        else if (argumentType.startsWith("MultiView"))
+                        {
+                            argument.type = SystemInitArgument::MULTIVIEW;
+
+                            uint64 templateStart = argumentType.findFirstOf('<');
+                            uint64 templateEnd = argumentType.findLastOf('>');
+
+                            if (templateStart == argumentType.getSize() || templateEnd == argumentType.getSize() ||
+                                argumentType.findFirstOf('<', templateStart + 1) != argumentType.getSize() || argumentType.findLastOf('>', templateEnd) != argumentType.getSize())
+                            {
+                                Log::warn("  SystemInitFunction for System " + system);
+                                hasInitFunction = false;
+                                break;
+                            }
+
+                            uint64 commaIndex = argumentType.findFirstOf(',');
+                            if (commaIndex == argumentType.getSize() || argumentType.findFirstOf(',', commaIndex + 1) != argumentType.getSize())
+                            {
+                                Log::warn("Could not parse SystemInitFunction for System " + system);
+                                hasInitFunction = false;
+                                break;
+                            }
+
+                            argument.viewType1 = String::subString(argumentType, templateStart + 1, commaIndex).trim();
+                            argument.viewType2 = String::subString(argumentType, commaIndex + 1, templateEnd).trim();
+
+                            if (!sRequiredMultiViews.contains(Pair<String, String>{ argument.viewType1, argument.viewType2 }))
+                            {
+                                if (sRequiredMultiViews.contains(Pair<String, String>{ argument.viewType2, argument.viewType1 }))
+                                {
+                                    Log::warn("System ", system, " required MutliView <", argument.viewType1, ", ", argument.viewType2, ">, but MultiView <",
+                                        argument.viewType2, ", ", argument.viewType1, "> is already used by another System. Consider switching the order "
+                                        "of the components to improve performance.");
+                                }
+
+                                sRequiredMultiViews.add({ argument.viewType1, argument.viewType2 });
+                            }
+                        }
+                        else if (argumentType.startsWith("View"))
+                        {
+                            argument.type = SystemInitArgument::VIEW;
+
+                            uint64 templateStart = argumentType.findFirstOf('<');
+                            uint64 templateEnd = argumentType.findLastOf('>');
+
+                            if (templateStart == argumentType.getSize() || templateEnd == argumentType.getSize() ||
+                                argumentType.findFirstOf('<', templateStart + 1) != argumentType.getSize() || 
+                                argumentType.findLastOf('>', templateEnd) != argumentType.getSize() ||
+                                argumentType.findFirstOf(',') != argumentType.getSize())
+                            {
+                                Log::warn("Could not parse SystemInitFunction for System " + system);
+                                hasInitFunction = false;
+                                break;
+                            }
+
+                            argument.viewType = String::subString(argumentType, templateStart + 1, templateEnd).trim();
+
+                            if (!sRequiredViews.contains(argument.viewType))
+                                sRequiredViews.add(argument.viewType);
+                        }
+                        else
+                        {
+                            Log::warn("Could not parse SystemInitFunction for System " + system);
+                            hasInitFunction = false;
+                            break;
+                        }
+
+                        initArguments.add(argument);
+                    }
+                }
+            }
+
+            sSystems.add({ system, systemName, functions.getValue(), hasInitFunction, initArguments });
         }
 
         for (auto& e : events)
@@ -337,17 +482,6 @@ namespace otto
     {
         String code;
 
-        DynamicArray<String> requiredViews;
-
-        for (auto& behaviour : sBehaviours)
-        {
-            if (behaviour.memberFunctions.contains(_Function{ "onInit", "void", {} }))
-            {
-                if (!requiredViews.contains(behaviour.name))
-                    requiredViews.add(behaviour.name);
-            }
-        }
-
         code.append("#include \"C:/dev/otto/otto/src/otto/base.h\"\n");
         code.append("#include \"otto/scene/scene.h\"\n");
         code.append("#include \"otto/event/event_dispatcher.h\"\n");
@@ -394,8 +528,14 @@ namespace otto
 
         code.append('\n');
 
-        for (auto& viewType : requiredViews)
+        for (auto& viewType : sRequiredViews)
             code.append("        View<" + viewType + "> " + String::untitle(viewType) + "View = View<" + viewType + ">(&" + String::untitle(viewType) + "Pool);\n");
+
+        code.append('\n');
+
+        for (auto& [type1, type2]: sRequiredMultiViews)
+            code.append("        MultiView<" + type1 + ", " + type2 + "> " + String::untitle(type1) + "_" + String::untitle(type2) + "View = "
+                "MultiView<" + type1 + ", " + type2 + ">(&" + String::untitle(type1) + "Pool, &" + String::untitle(type2) + "Pool);\n");
 
         code.append("    };\n");
 
@@ -454,6 +594,48 @@ namespace otto
 
         code.append('\n');
 
+        code.append("    OTTO_RCR_API void Scene::init()\n");
+        code.append("    {\n");
+
+        for (auto& behaviour : sBehaviours)
+        {
+            if (behaviour.memberFunctions.contains(_Function{ "onInit", "void", {} }))
+            {
+                code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
+                code.append("            behaviour.onInit();\n");
+            }
+        }
+
+        for (auto& system : sSystems)
+        {
+            if (system.hasInitFunction)
+            {
+                code.append("        mData->" + String::untitle(system.name) + ".onInit(");
+
+                bool first = true;
+                for (auto& argument : system.initArguments)
+                {
+                    if (!first)
+                        code.append(", ");
+
+                    if (argument.type == SystemInitArgument::Type::SCENE)
+                        code.append("this");
+                    else if (argument.type == SystemInitArgument::Type::VIEW)
+                        code.append("&mData->" + String::untitle(argument.viewType) + "View");
+                    else
+                        code.append("&mData->" + String::untitle(argument.viewType1) + "_" + String::untitle(argument.viewType2) + "View");
+
+                    first = false;
+                }
+
+                code.append(");\n");
+            }
+        }
+
+        code.append("    }\n");
+
+        code.append('\n');
+
         code.append("    OTTO_RCR_API void Scene::update(float32 delta)\n"
             "    {\n"
             "    }\n"
@@ -475,7 +657,7 @@ namespace otto
         for (auto& component : sComponents)
         {
             code.append("        if (componentName == \"" + component.name + "\")\n");
-            code.append("            mData->" + String::untitle(component.name) + "Pool.addComponent(entity, deserializeComponent<" + component.name + ">(args, entities));\n");
+            code.append("            mData->" + String::untitle(component.name) + "Pool.addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
         }
 
         code.append("    }\n");
@@ -622,43 +804,7 @@ namespace otto
             code.append('\n');
         }
 
-        code.append("    template<typename C>\n"
-            "    OTTO_RCR_API View<C>& Scene::view()\n"
-            "    {\n"
-            "        OTTO_ASSERT(false, \"View is not added.\");\n"
-            "    }\n"
-        );
-
-        code.append('\n');
-
-        for (auto& viewType : requiredViews)
-        {
-            code.append("    template<>\n");
-            code.append("    OTTO_RCR_API View<" + viewType + ">& Scene::view<" + viewType + ">()\n");
-            code.append("    {\n");
-            code.append("        return mData->" + String::untitle(viewType) + "View;\n");
-            code.append("    }\n");
-
-            code.append('\n');
-        }
-
         //code.append('\n');
-
-        code.append("    OTTO_RCR_API void Scene::init()\n");
-        code.append("    {\n");
-
-        for (auto& behaviour : sBehaviours)
-        {
-            if (behaviour.memberFunctions.contains(_Function{ "onInit", "void", {} }))
-            {
-                code.append("        for (auto* behaviour : view<" + behaviour.name + ">())\n");
-                code.append("            behaviour->onInit();\n");
-            }
-        }
-
-        code.append("    }\n");
-
-        code.append('\n');
 
         code.append("} // namespace otto\n");
 

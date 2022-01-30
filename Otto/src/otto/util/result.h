@@ -1,5 +1,7 @@
 #pragma once
 
+#include "otto/base.h"
+
 namespace otto
 {
     template<typename R, typename E>

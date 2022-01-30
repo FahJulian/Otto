@@ -11,3 +11,4 @@ client.dll
 client.lib
 *.idb
 *.pdb
+c_cpp_properties.json

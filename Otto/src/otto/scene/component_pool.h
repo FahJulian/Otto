@@ -41,6 +41,8 @@ namespace otto
 
         template<typename C>
         friend class View;
+        template<typename C1, typename C2>
+        friend class MultiView;
     };
 
 } // namespace otto

@@ -3,27 +3,27 @@
 #include <iterator>
 
 #include "otto/base.h"
-#include "otto/util/pair.h"
+#include "otto/util/triple.h"
 #include "otto/scene/component_pool.h"
 
 namespace otto
 {
-    template<typename C>
-    class View
+    template<typename C1, typename C2>
+    class MultiView
     {
     public:
         struct Iterator
         {
         private:
             using iterator_category = std::forward_iterator_tag;
-            using value_type = Pair<Entity, C&>;
-            using reference = Pair<Entity, C&>&;
-            using pointer = Pair<Entity, C&>*;
+            using value_type = Triple<Entity, C1&, C2&>;
+            using reference = Triple<Entity, C1&, C2&>&;
+            using pointer = Triple<Entity, C1&, C2&>*;
 
             uint64 mIndex;
-            View<C>* mView;
+            MultiView<C1, C2>* mView;
 
-            Iterator(View<C>* view, uint64 index)
+            Iterator(MultiView<C1, C2>* view, uint64 index)
                 : mView(view), mIndex(index)
             {
                 mView->mActiveIterators.add(&mIndex);
@@ -36,11 +36,12 @@ namespace otto
                 mView->mActiveIterators.add(&mIndex);
             }
 
-            value_type operator*()
-            {
+            value_type operator*() 
+            { 
                 return {
-                    mView->mPool->mComponents.getData()[mIndex].first,
-                    mView->mPool->mComponents.getData()[mIndex].second
+                    mView->mEntities[mIndex],
+                    mView->mPool1[mView->mEntities[mIndex]],
+                    mView->mPool2[mView->mEntities[mIndex]]
                 };
             }
 
@@ -59,19 +60,26 @@ namespace otto
                 mView->mActiveIterators.remove(mView->mActiveIterators.indexOf(&mIndex));
             }
 
-            template<typename C>
-            friend class View;
+            template<typename C1, typename C2>
+            friend class MultiView;
         };
-            
+
     private:
-        View(ComponentPool<C>* pool)
-            : mPool(pool)
+        MultiView(ComponentPool<C1>* pool1, ComponentPool<C2>* pool2)
+            : mPool1(pool1), mPool2(pool2)
         {
+            for (uint64 i = 0; i < mPool1->mComponents.getSize(); i++)
+            {
+                Entity entity = mPool1->mComponents.getData()[i].first;
+
+                if (mPool2->mComponents.containsKey(entity))
+                    mEntities.add(entity);
+            }
         }
 
     public:
-        View(const View& other) = delete;
-        View& operator=(const View& other) = delete;
+        MultiView(const MultiView& other) = delete;
+        MultiView& operator=(const MultiView& other) = delete;
 
         Iterator begin()
         {
@@ -80,26 +88,45 @@ namespace otto
 
         Iterator end()
         {
-            return Iterator(this, mPool->mComponents.getSize());
-        }
-
-        uint64 getSize() const
-        {
-            return mPool->mComponents.getSize();
+            return Iterator(this, getSize());
         }
 
     private:
-        void onComponentRemoved(uint64 index)
+        void onComponent1Added(Entity entity)
         {
+            if (mPool2->mComponents.containsKey(entity))
+                mEntities.add(entity);
+        }
+
+        void onComponent2Added(Entity entity)
+        {
+            if (mPool1->mComponents.containsKey(entity))
+                mEntities.add(entity);
+        }
+
+        void onComponentRemoved(Entity entity)
+        {
+            uint64 index = mEntities.indexOf(entity);
+
+            if (index == mEntities.getSize())
+                return;
+
             for (uint64* iteratorIndex : mActiveIterators)
             {
                 if (*iteratorIndex >= index)
                     (*iteratorIndex)--;
             }
+        }   
+
+        uint64 getSize() const
+        {
+            return mEntities.getSize();
         }
 
         DynamicArray<uint64*> mActiveIterators;
-        ComponentPool<C>* mPool;
+        DynamicArray<Entity> mEntities;
+        ComponentPool<C1>* mPool1;
+        ComponentPool<C2>* mPool2;
 
         friend struct SceneData;
     };

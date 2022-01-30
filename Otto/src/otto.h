@@ -25,6 +25,9 @@
 
 #include "otto/core/platform/time.h"
 
+#include "otto/scene/view.h"
+#include "otto/scene/scene.h"
+#include "otto/scene/multi_view.h"
 #include "otto/scene/serialization.h"
 
 namespace otto
