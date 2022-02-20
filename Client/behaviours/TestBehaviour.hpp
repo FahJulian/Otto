@@ -1,4 +1,5 @@
 #include <otto.h>
+#include "events/TestEvent.hpp"
 
 using namespace otto;
 
@@ -16,6 +17,11 @@ public:
     }
 
     void onDestroy()
+    {
+
+    }
+
+    void onEvent(const TestEvent & e)
     {
 
     }

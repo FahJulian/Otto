@@ -109,6 +109,16 @@ namespace otto {
             add(std::forward<Args>(args)...);
         }
 
+        bool operator==(const DynamicArray& other)
+        {
+            return equals(other);
+        }
+
+        bool operator!=(const DynamicArray& other)
+        {
+            return !equals(other);
+        }
+
         void operator+=(const T& value)
         {
             add(value);
@@ -126,6 +136,20 @@ namespace otto {
             OTTO_ASSERT(index < mSize, "Index out of range");
 
             return mData[index];
+        }
+
+        bool equals(const DynamicArray& other)
+        {
+            if (other.mSize != mSize)
+                return false;
+
+            for (uint64 i = 0; i < mSize; i++)
+            {
+                if (mData[i] != other.mData[i])
+                    return false;
+            }
+
+            return true;
         }
 
         template<typename... Args>

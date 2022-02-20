@@ -4,7 +4,8 @@ using namespace otto;
 
 class TestSystem2
 {
-    void onUpdate(float64 delta)        // OR: float32 delta
+public:
+    void onUpdate(float32 delta)        // OR: float32 delta
     {
         
     }

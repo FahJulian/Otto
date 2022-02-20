@@ -69,15 +69,21 @@ namespace otto
 
     OTTO_RCR_API void Scene::init()
     {
+        mData->testSystem.onInit(this, &mData->testComponent_testComponent2View, &mData->testComponentView);
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onInit();
         for (auto [entity, behaviour] : mData->testBehaviour2View)
             behaviour.onInit();
-        mData->testSystem.onInit(this, &mData->testComponent_testComponent2View, &mData->testComponentView);
     }
 
     OTTO_RCR_API void Scene::update(float32 delta)
     {
+        mData->testSystem.onUpdate(delta);
+        mData->testSystem2.onUpdate(delta);
+        for (auto [entity, behaviour] : mData->testBehaviourView)
+            behaviour.onUpdate(delta);
+        for (auto [entity, behaviour] : mData->testBehaviour2View)
+            behaviour.onUpdate(delta);
     }
 
     OTTO_RCR_API Entity Scene::addEntity()
@@ -140,12 +146,16 @@ namespace otto
     template<>
     OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e)
     {
+        mData->testSystem.onEvent(e);
+        for (auto [entity, behaviour] : mData->testBehaviourView)
+            behaviour.onEvent(e);
         mData->testEventDispatcher.dispatchEvent(e);
     }
 
     template<>
     OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e)
     {
+        mData->testSystem.onEvent(e);
         mData->testEvent2Dispatcher.dispatchEvent(e);
     }
 

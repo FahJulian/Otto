@@ -80,6 +80,8 @@ namespace otto
         {
             FilePath relativeFilePath;
             String name;
+
+            bool operator==(const _Event& other) { return relativeFilePath == other.relativeFilePath; }
         };
 
         struct _Component
@@ -97,6 +99,9 @@ namespace otto
             DynamicArray<_Function> memberFunctions;
             bool hasSerializationFunction;
             bool hasDeserializationFunction;
+            bool hasInitFunction;
+            bool hasUpdateFunction;
+            DynamicArray<_Event> eventFunctions;
         };
 
         struct _System
@@ -106,6 +111,8 @@ namespace otto
             DynamicArray<_Function> memberFunctions;
             bool hasInitFunction;
             DynamicArray<SystemInitArgument> initArguments;
+            bool hasUpdateFunction;
+            DynamicArray<_Event> eventFunctions;
         };
 
         void _removeComments(String& code)
@@ -284,6 +291,14 @@ namespace otto
             sComponents.add({ component, componentName, false, _hasDeserializationFunction(filePath, componentName) });
         }
 
+        for (auto& e : events)
+        {
+            uint64 lastSeperator = e.findLastOf('/');
+            String eventName = lastSeperator != e.getSize() ? String::subString(e, lastSeperator + 1) : e;
+
+            sEvents.add({ e, eventName });
+        }
+
         for (auto& behaviour : behaviours)
         {
             uint64 lastSeperator = behaviour.findLastOf('/');
@@ -291,6 +306,9 @@ namespace otto
             FilePath filePath = behaviour.startsWith("otto/") ? "C:/dev/Otto/Otto/src/" + behaviour + ".hpp" : Application::getRootDirectory() + behaviour + ".hpp";
 
             auto functions = _findMemberFunctions(filePath, behaviourName);
+            bool hasInitFunction;
+            bool hasUpdateFunction;
+            DynamicArray<_Event> eventFunctions;
 
             if (!functions.hasValue())
             {
@@ -298,13 +316,30 @@ namespace otto
                 continue;
             }
 
-            if (functions.getValue().contains(_Function{ "onInit", "void", {} }))
+            if (functions.getValue().contains(_Function("onInit", "void", {})))
+                hasInitFunction = true;
+            if (functions.getValue().contains(_Function("onUpdate", "void", { "float32" })))
+                hasUpdateFunction = true;
+
+            for (auto& function : functions.getValue())
+            {
+                if (function.returnType == "void" && function.name == "onEvent" && function.argumentTypes.getSize() == 1)
+                {
+                    for (auto& e : sEvents)
+                    {
+                        if (function.argumentTypes[0].contains(" " + e.name + " ") || function.argumentTypes[0].contains(" " + e.name + "& "))
+                            eventFunctions.add(e);
+                    }
+                }
+            }
+
+            if (hasInitFunction || hasUpdateFunction || eventFunctions.getSize() != 0)
             {
                 if (!sRequiredViews.contains(behaviourName))
                     sRequiredViews.add(behaviourName);
             }
 
-            sBehaviours.add({ behaviour, behaviourName, functions.getValue(), false, _hasDeserializationFunction(filePath, behaviourName) });
+            sBehaviours.add({ behaviour, behaviourName, functions.getValue(), false, _hasDeserializationFunction(filePath, behaviourName), hasInitFunction, hasUpdateFunction, eventFunctions });
         }
 
         for (auto& system : systems)
@@ -322,11 +357,31 @@ namespace otto
             }
 
             bool hasInitFunction = false;
+            bool hasUpdateFunction = false;
             DynamicArray<SystemInitArgument> initArguments;
+            DynamicArray<_Event> eventFunctions;
 
             for (auto function : functions.getValue())
             {
-                if (function.returnType == "void" && function.name == "onInit")
+                if (function.returnType == "void" && function.name == "onUpdate" && function.argumentTypes.equals({ "float32" }))
+                {
+                    if (hasUpdateFunction)
+                    {
+                        Log::warn("System ", system, " has multiple update functions.");
+                        continue;
+                    }
+
+                    hasUpdateFunction = true;
+                }
+                else if (function.returnType == "void" && function.name == "onEvent" && function.argumentTypes.getSize() == 1)
+                {
+                    for (auto& e : sEvents)
+                    {
+                        if (function.argumentTypes[0].contains(" " + e.name + " ") || function.argumentTypes[0].contains(" " + e.name + "& "))
+                            eventFunctions.add(e);
+                    }
+                }
+                else if (function.returnType == "void" && function.name == "onInit")
                 {
                     if (hasInitFunction == true)
                     {
@@ -416,15 +471,7 @@ namespace otto
                 }
             }
 
-            sSystems.add({ system, systemName, functions.getValue(), hasInitFunction, initArguments });
-        }
-
-        for (auto& e : events)
-        {
-            uint64 lastSeperator = e.findLastOf('/');
-            String eventName = lastSeperator != e.getSize() ? String::subString(e, lastSeperator + 1) : e;
-
-            sEvents.add({ e, eventName });
+            sSystems.add({ system, systemName, functions.getValue(), hasInitFunction, initArguments, hasUpdateFunction, eventFunctions });
         }
 #endif
 
@@ -597,15 +644,6 @@ namespace otto
         code.append("    OTTO_RCR_API void Scene::init()\n");
         code.append("    {\n");
 
-        for (auto& behaviour : sBehaviours)
-        {
-            if (behaviour.memberFunctions.contains(_Function{ "onInit", "void", {} }))
-            {
-                code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
-                code.append("            behaviour.onInit();\n");
-            }
-        }
-
         for (auto& system : sSystems)
         {
             if (system.hasInitFunction)
@@ -632,14 +670,38 @@ namespace otto
             }
         }
 
+        for (auto& behaviour : sBehaviours)
+        {
+            if (behaviour.hasInitFunction)
+            {
+                code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
+                code.append("            behaviour.onInit();\n");
+            }
+        }
+
         code.append("    }\n");
 
         code.append('\n');
 
-        code.append("    OTTO_RCR_API void Scene::update(float32 delta)\n"
-            "    {\n"
-            "    }\n"
-        );
+        code.append("    OTTO_RCR_API void Scene::update(float32 delta)\n");
+        code.append("    {\n");
+
+        for (auto& system : sSystems)
+        {
+            if (system.hasUpdateFunction)
+                code.append("        mData->" + String::untitle(system.name) + ".onUpdate(delta);\n");
+        }
+
+        for (auto& behaviour : sBehaviours)
+        {
+            if (behaviour.hasUpdateFunction)
+            {
+                code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
+                code.append("            behaviour.onUpdate(delta);\n");
+            }
+        }
+
+        code.append("    }\n");
 
         code.append('\n');
 
@@ -718,6 +780,23 @@ namespace otto
             code.append("    template<>\n");
             code.append("    OTTO_RCR_API void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e)\n");
             code.append("    {\n");
+
+            for (auto& system : sSystems)
+            {
+                if (system.eventFunctions.contains(e))
+                    code.append("        mData->" + String::untitle(system.name) + ".onEvent(e);\n");
+            }
+
+            for (auto& behaviour : sBehaviours)
+            {
+                if (behaviour.eventFunctions.contains(e))
+                {
+                    code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
+                    code.append("            behaviour.onEvent(e);\n");
+                }
+            }
+            
+
             code.append("        mData->" + String::untitle(e.name) + "Dispatcher.dispatchEvent(e);\n");
             code.append("    }\n");
 

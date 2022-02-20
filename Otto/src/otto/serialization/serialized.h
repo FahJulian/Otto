@@ -196,7 +196,6 @@ namespace otto
         DynamicArray<Serialized> mList;
         Map<String, Serialized> mDictionary;
 
-        friend struct OttoFile;
         friend class Serializer;
     };
 

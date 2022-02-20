@@ -1,7 +1,7 @@
 #include <otto.h>
 
-// #include "components/TestComponent.hpp"
-// #include "components/TestComponent2.hpp"
+#include "events/TestEvent.hpp"
+#include "events/TestEvent2.hpp"
 
 using namespace otto;
 
@@ -15,9 +15,19 @@ public:
         mView2 = view2;
     }
 
-    void onUpdate(float64 delta)        // OR: float32 delta
+    void onUpdate(float32 delta)        // OR: float32 delta
     {
         
+    }
+
+    void onEvent(const TestEvent& e)
+    {
+
+    }
+
+    void onEvent(const TestEvent2& e)
+    {
+
     }
 
 private:
