@@ -17,7 +17,7 @@ public:
 
     void onUpdate(float32 delta)        // OR: float32 delta
     {
-        
+        Log::info("Updating TestSystem...");
     }
 
     void onEvent(const TestEvent& e)

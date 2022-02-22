@@ -1,3 +1,4 @@
+#define OTTO_GENERATED_CODE
 #include "C:/dev/otto/otto/src/otto/base.h"
 #include "otto/scene/scene.h"
 #include "otto/event/event_dispatcher.h"

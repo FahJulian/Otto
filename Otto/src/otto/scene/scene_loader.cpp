@@ -246,7 +246,16 @@ namespace otto
             uint64 level = 0;
             for (uint64 i = 0; i < code.getSize(); i++)
             {
-                if (code[i] == '(')
+                if (code[i] == '{')
+                {
+                    uint64 potentialNamespaceNameBegin = code.findLastOfWhiteSpace(code.findLastNotOfWhiteSpace(i)) + 1;
+                    uint64 potentialNamespaceEnd = code.findLastNotOfWhiteSpace(potentialNamespaceNameBegin);
+                    if (String::subString(code, code.findLastOfWhiteSpace(potentialNamespaceEnd) + 1, potentialNamespaceEnd + 1) != "namespace")
+                        level++;
+                }
+                else if (code[i] == '}' && level != 0)
+                    level--;
+                else if (level == 0 && code[i] == '(')
                 {
                     auto function = _extractFunction(code, i);
 
@@ -529,6 +538,7 @@ namespace otto
     {
         String code;
 
+        code.append("#define OTTO_GENERATED_CODE\n");
         code.append("#include \"C:/dev/otto/otto/src/otto/base.h\"\n");
         code.append("#include \"otto/scene/scene.h\"\n");
         code.append("#include \"otto/event/event_dispatcher.h\"\n");

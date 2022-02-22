@@ -27,6 +27,7 @@ namespace otto
 
         bool hasError() const { return _hasError; }
         const E& getError() const { return error; }
+        R& getResult() { return result; }
         const R& getResult() const { return result; }
 
     private:

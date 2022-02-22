@@ -70,7 +70,6 @@ namespace otto
 
 		OTTO_RCR_MEMBER_FUNCTION_4_ARGS(void, addComponent, Entity, entity, const String&, componentName, const Serialized&, args, const EntityMap&, entities);
 
-
 		Scene(SceneData* data)
 			: mData(data)
 		{

@@ -12,7 +12,7 @@ public:
 
     void onUpdate(float32 delta)        // OPTIONAL: onUpdate(float64 delta)
     {
-
+        Log::info("Updating TestBehaviour " + String::valueOf((ptr64)this) + "...");
     }
 
     void onDestroy()

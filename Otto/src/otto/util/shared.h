@@ -14,7 +14,7 @@ namespace otto
         }
 
         Shared(T* pointer)
-            : mPointer(pointer), mNCopies(pointer != nullptr ? new uint64(0) : nullptr)
+            : mPointer(pointer), mNCopies(pointer != nullptr ? new uint64(1) : nullptr)
         {
         }
 
