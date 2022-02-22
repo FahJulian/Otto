@@ -10,12 +10,13 @@ class TestSystem
 public:
     void onInit(Shared<Scene> scene, MultiView<TestComponent, TestComponent2>* view1, View<TestComponent>* view2)
     {
+        Log::info("Initializing TestSystem");
         mScene = scene;
         mView1 = view1;
         mView2 = view2;
     }
 
-    void onUpdate(float32 delta)        // OR: float32 delta
+    void onUpdate(float32 delta)       
     {
         Log::info("Updating TestSystem...");
     }

@@ -1,4 +1,6 @@
 Entity1: 
+    TestBehaviour:
+    TestBehaviour2:
     TestComponent: {
         variable1: 1.0
         variable2: 234

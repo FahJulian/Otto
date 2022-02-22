@@ -8,5 +8,6 @@ int main()
         return -1;
 
     auto scene = otto::SceneLoader::loadScene(otto::Application::getRootDirectory() + "scenes/scene_concept.otto");
+    scene.getResult()->init();
     scene.getResult()->update(3.0f);
 }

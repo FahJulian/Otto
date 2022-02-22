@@ -8,12 +8,12 @@ class TestBehaviour : public Behaviour
 public:
     void onInit()
     {
-
+        Log::info("Initializing TestBehaviour");
     }
 
-    void onUpdate(float32 delta)        // OPTIONAL: onUpdate(float64 delta)
+    void onUpdate(float32 delta)   
     {
-        Log::info("Updating TestBehaviour " + String::valueOf((ptr64)this) + "...");
+        Log::info("Updating TestBehaviour...");
     }
 
     void onDestroy()

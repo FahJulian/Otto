@@ -71,6 +71,7 @@ namespace otto
     OTTO_RCR_API void Scene::init()
     {
         mData->testSystem.onInit(this, &mData->testComponent_testComponent2View, &mData->testComponentView);
+        mData->testSystem2.onInit();
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onInit();
         for (auto [entity, behaviour] : mData->testBehaviour2View)
@@ -100,6 +101,10 @@ namespace otto
             mData->testComponentPool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
         if (componentName == "TestComponent2")
             mData->testComponent2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+        if (componentName == "TestBehaviour")
+            mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
+        if (componentName == "TestBehaviour2")
+            mData->testBehaviour2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour2>(args, entities));
     }
 
     template<typename E>

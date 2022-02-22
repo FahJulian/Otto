@@ -732,6 +732,12 @@ namespace otto
             code.append("            mData->" + String::untitle(component.name) + "Pool.addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
         }
 
+        for (auto& behaviour : sBehaviours)
+        {
+            code.append("        if (componentName == \"" + behaviour.name + "\")\n");
+            code.append("            mData->" + String::untitle(behaviour.name) + "Pool.addComponent(entity, deserializeComponentOrBehaviour<" + behaviour.name + ">(args, entities));\n");
+        }
+
         code.append("    }\n");
 
         code.append('\n');
