@@ -19,11 +19,12 @@ public:
     void onUpdate(float32 delta)       
     {
         Log::info("Updating TestSystem...");
+        mScene->dispatchEvent(TestEvent());
     }
 
     void onEvent(const TestEvent& e)
     {
-
+        Log::info("TestSystem::onTestEvent");
     }
 
     void onEvent(const TestEvent2& e)

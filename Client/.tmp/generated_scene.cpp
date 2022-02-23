@@ -2,7 +2,52 @@
 #include "C:/dev/otto/otto/src/otto/base.h"
 #include "otto/scene/scene.h"
 #include "otto/event/event_dispatcher.h"
-#include <iostream>
+
+using namespace otto;
+
+struct TransformComponent;
+struct TestComponent;
+struct TestComponent2;
+struct TestEvent;
+struct TestEvent2;
+
+template<>
+OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
+template<>
+OTTO_RCR_API void Scene::removeComponent<TransformComponent>(Entity entity);
+template<>
+OTTO_RCR_API TransformComponent& Scene::getComponent<TransformComponent>(Entity entity);
+template<>
+OTTO_RCR_API bool Scene::hasComponent<TransformComponent>(Entity entity);
+template<>
+OTTO_RCR_API void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component);
+template<>
+OTTO_RCR_API void Scene::removeComponent<TestComponent>(Entity entity);
+template<>
+OTTO_RCR_API TestComponent& Scene::getComponent<TestComponent>(Entity entity);
+template<>
+OTTO_RCR_API bool Scene::hasComponent<TestComponent>(Entity entity);
+template<>
+OTTO_RCR_API void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component);
+template<>
+OTTO_RCR_API void Scene::removeComponent<TestComponent2>(Entity entity);
+template<>
+OTTO_RCR_API TestComponent2& Scene::getComponent<TestComponent2>(Entity entity);
+template<>
+OTTO_RCR_API bool Scene::hasComponent<TestComponent2>(Entity entity);
+
+template<>
+OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e);
+template<>
+OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
 
 #include "otto\components\TransformComponent.hpp"
 #include "components\TestComponent.hpp"

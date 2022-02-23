@@ -542,7 +542,41 @@ namespace otto
         code.append("#include \"C:/dev/otto/otto/src/otto/base.h\"\n");
         code.append("#include \"otto/scene/scene.h\"\n");
         code.append("#include \"otto/event/event_dispatcher.h\"\n");
-        code.append("#include <iostream>\n");
+        code.append('\n');
+
+        code.append("using namespace otto;\n\n");
+
+        for (auto& component : sComponents)
+            code.append("struct " + component.name + ";\n");
+        for (auto& e : sEvents)
+            code.append("struct " + e.name + ";\n");
+
+        code.append('\n');
+
+        for (auto& component : sComponents)
+        {
+            code.append("template<>\n"
+                "OTTO_RCR_API void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component);\n");
+            code.append("template<>\n"
+                "OTTO_RCR_API void Scene::removeComponent<" + component.name + ">(Entity entity);\n");
+            code.append("template<>\n"
+                "OTTO_RCR_API " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity);\n");
+            code.append("template<>\n"
+                "OTTO_RCR_API bool Scene::hasComponent<" + component.name + ">(Entity entity);\n");
+        }
+
+        code.append('\n');
+
+        for (auto& e : sEvents)
+        {
+            code.append("template<>\n"
+                "OTTO_RCR_API void Scene::addEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
+            code.append("template<>\n"
+                "OTTO_RCR_API void Scene::removeEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
+            code.append("template<>\n"
+                "OTTO_RCR_API void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e);\n");
+        }
+
         code.append('\n');
 
         for (auto& component : sComponents)
