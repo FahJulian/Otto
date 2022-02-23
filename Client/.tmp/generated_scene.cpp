@@ -3,13 +3,13 @@
 #include "otto/scene/scene.h"
 #include "otto/event/event_dispatcher.h"
 
+#include "otto\components\TransformComponent.hpp"
+#include "components\TestComponent.hpp"
+#include "components\TestComponent2.hpp"
+#include "events\TestEvent.hpp"
+#include "events\TestEvent2.hpp"
 using namespace otto;
 
-struct TransformComponent;
-struct TestComponent;
-struct TestComponent2;
-struct TestEvent;
-struct TestEvent2;
 
 template<>
 OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
@@ -49,15 +49,10 @@ OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<Tes
 template<>
 OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
 
-#include "otto\components\TransformComponent.hpp"
-#include "components\TestComponent.hpp"
-#include "components\TestComponent2.hpp"
 #include "behaviours\TestBehaviour.hpp"
 #include "behaviours\TestBehaviour2.hpp"
 #include "systems\TestSystem.hpp"
 #include "systems\TestSystem2.hpp"
-#include "events\TestEvent.hpp"
-#include "events\TestEvent2.hpp"
 
 namespace otto
 {
@@ -81,8 +76,9 @@ namespace otto
         View<TestBehaviour> testBehaviourView = View<TestBehaviour>(&testBehaviourPool);
         View<TestBehaviour2> testBehaviour2View = View<TestBehaviour2>(&testBehaviour2Pool);
         View<TestComponent> testComponentView = View<TestComponent>(&testComponentPool);
+        View<TransformComponent> transformComponentView = View<TransformComponent>(&transformComponentPool);
 
-        MultiView<TestComponent, TestComponent2> testComponent_testComponent2View = MultiView<TestComponent, TestComponent2>(&testComponentPool, &testComponent2Pool);
+        MultiView<TestComponent, TransformComponent> testComponent_transformComponentView = MultiView<TestComponent, TransformComponent>(&testComponentPool, &transformComponentPool);
     };
 
     template<typename C>
@@ -115,7 +111,7 @@ namespace otto
 
     OTTO_RCR_API void Scene::init()
     {
-        mData->testSystem.onInit(this, &mData->testComponent_testComponent2View, &mData->testComponentView);
+        mData->testSystem.onInit(this, &mData->testComponent_transformComponentView, &mData->testComponentView, &mData->transformComponentView);
         mData->testSystem2.onInit();
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onInit();
@@ -141,11 +137,11 @@ namespace otto
     OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)
     {
         if (componentName == "TransformComponent")
-            mData->transformComponentPool.addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
+            addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
         if (componentName == "TestComponent")
-            mData->testComponentPool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
+            addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
         if (componentName == "TestComponent2")
-            mData->testComponent2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+            addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
         if (componentName == "TestBehaviour")
             mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
         if (componentName == "TestBehaviour2")
@@ -220,12 +216,14 @@ namespace otto
     OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component)
     {
         mData->transformComponentPool.addComponent(entity, component);
+        mData->testComponent_transformComponentView.onComponent2Added(entity);
     }
 
     template<>
     OTTO_RCR_API void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component)
     {
         mData->testComponentPool.addComponent(entity, component);
+        mData->testComponent_transformComponentView.onComponent1Added(entity);
     }
 
     template<>

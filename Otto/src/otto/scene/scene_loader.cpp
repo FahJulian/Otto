@@ -544,12 +544,12 @@ namespace otto
         code.append("#include \"otto/event/event_dispatcher.h\"\n");
         code.append('\n');
 
-        code.append("using namespace otto;\n\n");
-
         for (auto& component : sComponents)
-            code.append("struct " + component.name + ";\n");
+            code.append("#include \"" + component.relativeFilePath.toString() + ".hpp\"\n");
         for (auto& e : sEvents)
-            code.append("struct " + e.name + ";\n");
+            code.append("#include \"" + e.relativeFilePath.toString() + ".hpp\"\n");
+
+        code.append("using namespace otto;\n\n");
 
         code.append('\n');
 
@@ -579,14 +579,10 @@ namespace otto
 
         code.append('\n');
 
-        for (auto& component : sComponents)
-            code.append("#include \"" + component.relativeFilePath.toString() + ".hpp\"\n");
         for (auto& behaviour : sBehaviours)
             code.append("#include \"" + behaviour.relativeFilePath.toString() + ".hpp\"\n");
         for (auto& system : sSystems)
             code.append("#include \"" + system.relativeFilePath.toString() + ".hpp\"\n");
-        for (auto& e : sEvents)
-            code.append("#include \"" + e.relativeFilePath.toString() + ".hpp\"\n");
 
         code.append('\n');
 
@@ -763,7 +759,7 @@ namespace otto
         for (auto& component : sComponents)
         {
             code.append("        if (componentName == \"" + component.name + "\")\n");
-            code.append("            mData->" + String::untitle(component.name) + "Pool.addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
+            code.append("            addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
         }
 
         for (auto& behaviour : sBehaviours)
@@ -868,6 +864,14 @@ namespace otto
             code.append("    OTTO_RCR_API void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component)\n");
             code.append("    {\n");
             code.append("        mData->" + String::untitle(component.name) + "Pool.addComponent(entity, component);\n");
+
+            for (auto& [type1, type2] : sRequiredMultiViews)
+            {
+                if (type1 == component.name)
+                    code.append("        mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent1Added(entity);\n");
+                else if (type2 == component.name)
+                    code.append("        mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent2Added(entity);\n");
+            }
             code.append("    }\n");
 
             code.append('\n');

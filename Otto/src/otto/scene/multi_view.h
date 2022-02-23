@@ -40,8 +40,8 @@ namespace otto
             { 
                 return {
                     mView->mEntities[mIndex],
-                    mView->mPool1[mView->mEntities[mIndex]],
-                    mView->mPool2[mView->mEntities[mIndex]]
+                    mView->mPool1->mComponents[mView->mEntities[mIndex]],
+                    mView->mPool2->mComponents[mView->mEntities[mIndex]]
                 };
             }
 
@@ -128,6 +128,7 @@ namespace otto
         ComponentPool<C1>* mPool1;
         ComponentPool<C2>* mPool2;
 
+        friend class Scene;
         friend struct SceneData;
     };
 

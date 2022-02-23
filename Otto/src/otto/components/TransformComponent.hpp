@@ -21,9 +21,12 @@ namespace otto
 
         Log::debug("Okaaay lets go");
 
-        c.translation = args.get<Vec3f32>("translation");
-        c.rotation = args.get<Vec3f32>("rotation");
-        c.scale = args.get<Vec3f32>("scale");
+        if (args.contains("translation"))
+            c.translation = args.get<Vec3f32>("translation");
+        if (args.contains("rotation"))
+            c.rotation = args.get<Vec3f32>("rotation");
+        if (args.contains("scale"))
+            c.scale = args.get<Vec3f32>("scale");
 
         return c;
     }

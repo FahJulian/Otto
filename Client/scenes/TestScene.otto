@@ -6,6 +6,7 @@ Entity1:
         variable2: 234
     }
     TestComponent:
+        tag: Test Tag
         variable1: This is also a viable value // This is a comment
         variable2: [ // This is a list
             String 1
@@ -36,3 +37,39 @@ Entity2:
     Component1: {
         variable1: "String",    
     }
+
+Entity3:
+    TestComponent:
+        tag: Test Tag 3
+    TransformComponent:
+        translation: 30, 40, 50
+
+Entity4:
+    TestComponent:
+        tag: Test Tag 4
+    TransformComponent:
+        translation: 40, 40, 50
+
+Entity5:
+    TestComponent:
+        tag: Test Tag 5
+    TransformComponent:
+        translation: 50, 40, 50
+
+Entity6:
+    TestComponent:
+        tag: Test Tag 6
+    TransformComponent:
+        translation: 60, 40, 50
+
+Entity7:
+    TestComponent:
+        tag: Test Tag 7
+    TransformComponent:
+        translation: 70, 40, 50
+
+Entity8:
+    TestComponent:
+        tag: Test Tag 8
+    TransformComponent:
+        translation: 80, 40, 50
