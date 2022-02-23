@@ -20,8 +20,6 @@ public:
 
     void onUpdate(float32 delta)       
     {
-        for (auto [entity, component1, component2] : *mView1)
-            Log::info(component1.tag, ": ", component2.translation.x, ", ", entity);
     }
 
     void onEvent(const TestEvent& e)

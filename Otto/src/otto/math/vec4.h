@@ -10,7 +10,10 @@ namespace otto
     class Vec4
     {
     public:
-        constexpr Vec4() = default;
+        constexpr Vec4()
+            : Vec4(T(0))
+        {
+        }
 
         constexpr Vec4(T t)
             : mX(t), mY(t), mZ(t), mW(t)

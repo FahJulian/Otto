@@ -9,7 +9,10 @@ namespace otto
     template<typename T>
     struct Vec2
     {
-        constexpr Vec2() = default;
+        constexpr Vec2()
+            : Vec2(T(0))
+        {
+        }
 
         constexpr Vec2(T t)
             : mX(t), mY(t)

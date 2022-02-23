@@ -8,7 +8,11 @@ namespace otto
     class Mat3x3
     {
     public:
-        constexpr Mat3x3() = default;
+        constexpr Mat3x3()
+            : Mat3x3(T(0))
+        {
+
+        }
 
         constexpr Mat3x3(T t)
             : m11(t), m22(t), m33(t)

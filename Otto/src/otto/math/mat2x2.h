@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include <iostream>
 
 #include "otto/math/vec2.h"
 
@@ -10,7 +10,10 @@ namespace otto
     class Mat2x2
     {
     public:
-        constexpr Mat2x2() = default;
+        constexpr Mat2x2()
+            : Mat2x2(T(0))
+        {
+        }
 
         constexpr Mat2x2(T value)
             : m11(value), m22(value)

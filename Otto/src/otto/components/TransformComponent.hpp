@@ -2,7 +2,6 @@
 
 #include "otto/base.h"
 #include "otto/math/vec3.h"
-#include "otto/debug/log/log.h"
 #include "otto/scene/serialization.h"
 
 namespace otto
@@ -18,8 +17,6 @@ namespace otto
     TransformComponent deserializeComponent(const Serialized& args, const Map<String, Entity>& entities)
     {
         TransformComponent c;
-
-        Log::debug("Okaaay lets go");
 
         if (args.contains("translation"))
             c.translation = args.get<Vec3f32>("translation");

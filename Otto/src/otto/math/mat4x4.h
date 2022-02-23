@@ -9,7 +9,10 @@ namespace otto
     class Mat4x4
     {
     public:
-        constexpr Mat4x4() = default;
+        constexpr Mat4x4()
+            : Mat4x4(T(0))
+        {
+        }
 
         constexpr Mat4x4(T t)
             : m11(t), m22(t), m33(t), m44(t)
