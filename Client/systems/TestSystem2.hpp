@@ -12,6 +12,5 @@ public:
 
     void onUpdate(float32 delta)      
     {
-        Log::info("Updating TestSystem2...");
     }
 };

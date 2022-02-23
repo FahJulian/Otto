@@ -8,9 +8,21 @@
 #define NONE {}
 
 #ifdef OTTO_DEBUG
+
 #define OTTO_ASSERT(b, message) if (!(b)) throw std::runtime_error(message);
 #else
 #define OTTO_ASSERT(b, ...)
+
+#endif
+
+#ifdef OTTO_DEBUG
+
+#ifndef OTTO_COUNT_FPS
+#ifndef OTTO_PREVENT_COUNT_FPS
+#define OTTO_COUNT_FPS
+#endif
+#endif
+
 #endif
 
 

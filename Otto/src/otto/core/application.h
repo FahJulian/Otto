@@ -5,7 +5,7 @@
 #include "otto/debug/log/log.h"
 #include "otto/util/platform/file_path.h"
 
-#define OTTO_DYNAMIC // TODO: Remove
+extern int main();
 
 namespace otto
 {
@@ -19,6 +19,7 @@ namespace otto
             uint8 logConsoleLevel = Log::ALL;
             uint8 logFileLevel = Log::ALL;
             String msvcVersion;
+            String startScene;
             DynamicArray<String> components;
             DynamicArray<String> behaviours;
             DynamicArray<String> systems;
@@ -31,6 +32,7 @@ namespace otto
             ROOT_DIRECTORY_NOT_FOUND,
             LOG_FILE_PATH_NOT_FOUND,
             MSVC_VERSION_NOT_FOUND,
+            START_SCENE_NOT_FOUND,
         };
 
         Application()
@@ -38,22 +40,25 @@ namespace otto
         }
 
     public:
-        static bool init(const FilePath& settingsFilePath);
-
         static const FilePath& getRootDirectory();
         static const FilePath& getCoreRootDirectory();
-
-        static void destroy();
 
 #ifdef OTTO_DYNAMIC
         static FilePath _getClientDllPath();
 #endif
 
     private:
+        static bool init(const FilePath& settingsFilePath);
+
+        static void run();
+
+        static void destroy();
+
         static Result<Settings, SettingsError> _loadSettings(const FilePath& filePath);
 
         FilePath mRootDirectory;
 
+        friend int ::main();
         friend class Scene;
     };
 

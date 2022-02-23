@@ -522,7 +522,7 @@ namespace otto
         _createSceneFile(Application::getRootDirectory() + ".tmp/generated_scene.cpp");
 
         bool success = DllReloader::reloadDll(Application::getRootDirectory() + ".tmp/client.dll", true, {
-            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "OTTO_DEBUG" });
+            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "OTTO_DEBUG", "OTTO_DYNAMIC"});
 
         if (!success)
             return false;

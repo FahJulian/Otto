@@ -4,10 +4,13 @@
 
 int main()
 {
-    if (!otto::Application::init("C:/dev/Otto/Client/app_settings_concept.otto"))
-        return -1;
+    if (!otto::Application::init("C:/dev/Otto/Client/AppSettings.otto"))
+        return -1;      
 
-    auto scene = otto::SceneLoader::loadScene(otto::Application::getRootDirectory() + "scenes/scene_concept.otto");
-    scene.getResult()->init();
-    scene.getResult()->update(3.0f);
+    otto::Application::run();
+
+    otto::Application::destroy();
+    //auto scene = otto::SceneLoader::loadScene(otto::Application::getRootDirectory() + "scenes/scene_concept.otto");
+    //scene.getResult()->init();
+    //scene.getResult()->update(3.0f);
 }

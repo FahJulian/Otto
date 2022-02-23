@@ -12,13 +12,9 @@
 
 #pragma warning(disable: 4005)
 
-#define OTTO_DYNAMIC
-
 #ifdef OTTO_DYNAMIC
 
-#ifndef OTTO_RCR_DLL_PATH
 #define OTTO_RCR_DLL_PATH Application::_getClientDllPath()
-#endif
 
 #include "otto/util/dll_reloading/dll_reloading.h"
 

@@ -10,6 +10,7 @@
 #include "otto/debug/log/log.h"
 #include "otto/scene/scene.h"
 #include "otto/util/file.h"
+#include "scene_manager.h"
 
 namespace otto
 {
@@ -17,7 +18,17 @@ namespace otto
     {
     } sLogLevelParsingError;
 
+    static const uint32 UPDATE_CAP = 60;
+    static const float64 sSecondsPerUpdate = 1.0 / UPDATE_CAP;
+
     static bool sInitialized = false;
+    static bool sRunning = false;
+
+#ifdef OTTO_COUNT_FPS
+    static const float64 FPS_UPDATES_PER_SECOND = 1.0;
+    static const float64 SECONDS_PER_FPS_UPDATE = 1.0 / FPS_UPDATES_PER_SECOND;
+#endif
+        
     static Application* sApplication;
     static const FilePath CORE_ROOT_DIRECTORY = "C:/ProgramData/Otto/";
 
@@ -108,9 +119,55 @@ namespace otto
             return false;
 #endif
 
+        if (!SceneManager::setScene(sApplication->mRootDirectory + settings.startScene + ".otto"))
+            return false;
+
+        SceneManager::sCurrentScene->init();
+
         sInitialized = true;
 
         return true;
+    }
+
+    void Application::run()
+    {
+        sRunning = true;
+
+        float64 totalDelta = 0.0;
+        float64 startTime = Time::getTime64();
+
+#ifdef OTTO_COUNT_FPS
+        float64 fpsTimer = 0.0;
+        uint32 frames = 0;
+        //uint32 lastFpsLength = 0;   
+#endif
+
+        while (sRunning)
+        {
+            if (totalDelta >= sSecondsPerUpdate)
+            {
+                SceneManager::sCurrentScene->update(static_cast<float32>(totalDelta));
+                totalDelta -= sSecondsPerUpdate;
+            }
+
+            float64 endTime = Time::getTime64();
+            float64 delta = endTime - startTime;
+
+#ifdef OTTO_COUNT_FPS
+            frames++;
+            fpsTimer += delta;
+
+            if (fpsTimer >= SECONDS_PER_FPS_UPDATE)
+            {
+                fpsTimer -= SECONDS_PER_FPS_UPDATE;
+                Log::debug("FPS: ", frames);
+                frames = 0;
+            }
+#endif
+
+            totalDelta += delta;
+            startTime = endTime;
+        }
     }
 
     const FilePath& Application::getRootDirectory()
@@ -168,6 +225,11 @@ namespace otto
             if (!logFileLevel.hasError())
                 settings.logFileLevel = logFileLevel.getResult();
         }
+
+        if (!file.contains("StartScene"))
+            return SettingsError::START_SCENE_NOT_FOUND;
+        else
+            settings.startScene = file.get<String>("StartScene");
 
         if (file.contains("Components"))
         {

@@ -18,8 +18,6 @@ public:
 
     void onUpdate(float32 delta)       
     {
-        Log::info("Updating TestSystem...");
-        mScene->dispatchEvent(TestEvent());
     }
 
     void onEvent(const TestEvent& e)
