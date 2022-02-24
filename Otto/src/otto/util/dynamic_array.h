@@ -25,7 +25,7 @@ namespace otto {
         {
         }
 
-        DynamicArray(T* data, uint64 elementCount)
+        explicit DynamicArray(T* data, uint64 elementCount)
             : mSize(elementCount), mCapacity(elementCount), mData(_allocateMemory(mCapacity))
         {
             for (uint64 i = 0; i < elementCount; i++)

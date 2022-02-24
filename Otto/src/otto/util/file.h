@@ -41,6 +41,8 @@ namespace otto
         {
         }
 
+        ~BinaryFile();
+
         void moveCursor(uint64 offset);
 
         bool close();
@@ -97,11 +99,8 @@ namespace otto
         Mode mMode = Mode::CLOSED;
         FilePath mFilePath;
 
-        union
-        {
-            std::ifstream mInputStream;
-            std::ofstream mOutputStream;
-        };
+        std::ifstream mInputStream;
+        std::ofstream mOutputStream;
     };
 
 } // namespace otto

@@ -46,6 +46,11 @@ namespace otto
         return String::split(read(), '\n');
     }
 
+    BinaryFile::~BinaryFile()
+    {
+        close();
+    }
+
     void BinaryFile::moveCursor(uint64 offset)
     {
         if (mMode == Mode::READ)

@@ -17,7 +17,7 @@ namespace otto {
         {
         }
 
-        Map(const std::initializer_list<Pair<K, V>> values)
+        Map(const std::initializer_list<Pair<K, V>>& values)
             : mData(values)
         {
         }

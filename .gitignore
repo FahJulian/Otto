@@ -12,3 +12,4 @@ client.lib
 *.idb
 *.pdb
 c_cpp_properties.json
+binotto_filetypes/

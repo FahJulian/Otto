@@ -15,12 +15,12 @@ namespace otto
         }
 
         constexpr Vec2(T t)
-            : mX(t), mY(t)
+            : x(t), y(t)
         {
         }
 
         constexpr Vec2(T x, T y)
-            : mX(x), mY(y)
+            : x(x), y(y)
         {
         }
 
@@ -31,62 +31,61 @@ namespace otto
         template<typename F>
         Vec2& operator+=(const Vec2<F>& v)
         {
-            mX += v.mX;
-            mY += v.mY;
+            x += v.x;
+            y += v.y;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator+=(F f)
         {
-            mX += f;
-            mY += f;
+            x += f;
+            y += f;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator*=(F f)
         {
-            mX *= f;
-            mY *= f;
+            x *= f;
+            y *= f;
         }
 
         template<typename F, typename G>
         friend Vec2 operator+(const Vec2<F>& v1, const Vec2<G>& v2)
         {
-            return { v1.mX + v2.mX, v1.mY + v2.mY };
+            return { v1.x + v2.x, v1.y + v2.y };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(F f, const Vec2& v)
         {
-            return { f + v.mX, f + v.mY };
+            return { f + v.x, f + v.y };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(const Vec2& v, F f)
         {
-            return { v.mX + f, v.mY + f };
+            return { v.x + f, v.y + f };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(F f, const Vec2& v)
         {
-            return { f * v.mX, f * v.mY };
+            return { f * v.x, f * v.y };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(const Vec2& v, F f)
         {
-            return { v.mX * f, v.mY * f };
+            return { v.x * f, v.y * f };
         }
 
         friend std::ostream& operator<<(std::ostream& stream, const Vec2& v)
         {
-            return (stream << '(' << v.mX << ", " << v.mY << ')');
+            return (stream << '(' << v.x << ", " << v.y << ')');
         }
 
-    private:
-        T mX = T();
-        T mY = T();
+        T x = T();
+        T y = T();
     };
 
     using Vec2f32 = Vec2<float32>;
