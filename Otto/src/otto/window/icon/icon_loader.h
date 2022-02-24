@@ -11,6 +11,10 @@ namespace otto {
 
 	class IconLoader 
 	{
+	private:
+		IconLoader() = delete;
+		IconLoader(const IconLoader& other) = delete;
+
 	public:
 		enum IconLoadingError
 		{
