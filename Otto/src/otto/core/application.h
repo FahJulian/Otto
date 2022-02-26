@@ -4,6 +4,7 @@
 #include "otto/util/result.h"
 #include "otto/debug/log/log.h"
 #include "otto/util/platform/file_path.h"
+#include "otto/window/events.h"
 
 extern int main();
 
@@ -54,9 +55,23 @@ namespace otto
 
         static void run();
 
+        static void stop();
+
         static void destroy();
 
         static Result<Settings, SettingsError> _loadSettings(const FilePath& filePath);
+
+        static void _onKeyPressed(const _KeyPressedEvent& e);
+        static void _onKeyReleased(const _KeyReleasedEvent& e);
+        static void _onMouseButtonPressed(const _MouseButtonPressedEvent& e);
+        static void _onMouseButtonReleased(const _MouseButtonReleasedEvent& e);
+        static void _onMouseMoved(const _MouseMovedEvent& e);
+        static void _onMouseDragged(const _MouseDraggedEvent& e);
+        static void _onMouseScrolled(const _MouseScrolledEvent& e);
+        static void _onWindowClosed(const _WindowClosedEvent& e);
+        static void _onWindowResized(const _WindowResizedEvent& e);
+        static void _onWindowGainedFocus(const _WindowGainedFocusEvent& e);
+        static void _onWindowLostFocus(const _WindowLostFocusEvent& e);
 
         FilePath mRootDirectory;
 

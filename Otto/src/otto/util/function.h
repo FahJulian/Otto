@@ -33,7 +33,7 @@ namespace otto
         }
 
         Function(NonMemberFunction Function)
-            : mObject(0), mFunction(*reinterpret_cast<ptr64*>(&Function)),
+            : mObject(0), mFunction(*reinterpret_cast<const ptr64*>(&Function)),
             mFunctionCaller(Function != nullptr ? &Function::_callFunction : nullptr)
         {
         }

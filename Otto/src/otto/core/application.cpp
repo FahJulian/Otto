@@ -5,6 +5,7 @@
 #include "otto/util/dll_reloading/dll_reloading.h"
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
+#include "otto/window/icon/icon_loader.h"
 #include "otto/core/platform/time.h"
 #include "otto/scene/scene_loader.h"
 #include "otto/core/scene_manager.h"
@@ -114,20 +115,34 @@ namespace otto
         dllSettings.configuration = DllReloader::Configuration::DEBUG;
         dllSettings.libs = { "otto.lib" };
 
-        Window::init(settings.rootDirectory + settings.windowSettingsPath);
-
         DllReloader::init(dllSettings);
 
         if (!SceneLoader::reloadDll())
             return false;
-#endif
 
         if (!SceneManager::setScene(sApplication->mRootDirectory + settings.startScene + ".otto"))
             return false;
 
+        Window::init(settings.rootDirectory + settings.windowSettingsPath, {
+            Application::_onKeyPressed,
+            Application::_onKeyReleased,
+            Application::_onMouseButtonPressed,
+            Application::_onMouseButtonReleased,
+            Application::_onMouseMoved,
+            Application::_onMouseDragged,
+            Application::_onMouseScrolled,
+            Application::_onWindowClosed,
+            Application::_onWindowResized,
+            Application::_onWindowGainedFocus,
+            Application::_onWindowLostFocus,
+        });
+#endif
+
         SceneManager::sCurrentScene->init();
 
         sInitialized = true;
+
+        Window::setTitle("Test");
 
         return true;
     }
@@ -151,6 +166,8 @@ namespace otto
             {
                 SceneManager::sCurrentScene->update(static_cast<float32>(totalDelta));
                 totalDelta -= sSecondsPerUpdate;
+
+                Window::pollEvents();
             }
 
             float64 endTime = Time::getTime64();
@@ -183,8 +200,18 @@ namespace otto
         return CORE_ROOT_DIRECTORY;
     }
 
+    void Application::stop()
+    {
+        sRunning = false;
+    }
+
     void Application::destroy()
     {
+        IconLoader::destroy();
+
+        Window::saveSettings();
+        Window::destroy();
+
 #ifdef OTTO_DYNAMIC
         DllReloader::destroy();
 #endif
@@ -269,6 +296,65 @@ namespace otto
 
         return settings;
     }
+
+    void Application::_onKeyPressed(const _KeyPressedEvent& e)
+    {
+    }
+
+    void Application::_onKeyReleased(const _KeyReleasedEvent& e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onMouseButtonPressed(const _MouseButtonPressedEvent& e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onMouseButtonReleased(const _MouseButtonReleasedEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onMouseMoved(const _MouseMovedEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onMouseDragged(const _MouseDraggedEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onMouseScrolled(const _MouseScrolledEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onWindowClosed(const _WindowClosedEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+
+        Application::stop();
+    }
+
+    void Application::_onWindowResized(const _WindowResizedEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+
+        // Render
+    }
+
+    void Application::_onWindowGainedFocus(const _WindowGainedFocusEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
+    void Application::_onWindowLostFocus(const _WindowLostFocusEvent & e)
+    {
+        SceneManager::sCurrentScene->dispatchEvent(e);
+    }
+
 
 #ifdef OTTO_DYNAMIC
     FilePath Application::_getClientDllPath()

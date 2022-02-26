@@ -27,9 +27,9 @@ public:
         Log::info("TestSystem::onTestEvent");
     }
 
-    void onEvent(const TestEvent2& e)
+    void onEvent(const MouseMovedEvent& e)
     {
-
+        Log::info("Mouse moved to (", e.x, ", ", e.y, ")");
     }
 
 private:

@@ -173,24 +173,24 @@ namespace otto
 		return settings;
 	}
 
-	void WindowSettingsLoader::_saveWindowSettingsToSerialized(const WindowSettings& windowSettings, Serialized& serialized)
+	void WindowSettingsLoader::_saveWindowSettingsToSerialized(const WindowSettings& settings, Serialized& serialized)
 	{
-		serialized.insert("title", windowSettings.title);
-		serialized.insert("saveTitle", windowSettings.saveTitle);
-		serialized.insert("clearColor", windowSettings.clearColor);
-		serialized.insert("saveClearColor", windowSettings.saveClearColor);
-		serialized.insert("width", windowSettings.width);
-		serialized.insert("height", windowSettings.height);
-		serialized.insert("saveSize", windowSettings.saveSize);
-		serialized.insert("windowMode", windowSettings.windowMode);
-		serialized.insert("saveWindowMode", windowSettings.saveWindowMode);
-		serialized.insert("resizable", windowSettings.resizable);
-		serialized.insert("closeButton", windowSettings.closeButton);
-		serialized.insert("closeOnAltF4", windowSettings.closeOnAltF4);
-		serialized.insert("minimized", windowSettings.minimized);
-		serialized.insert("maximized", windowSettings.saveWindowMode);
-		serialized.insert("saveMinimized", windowSettings.saveMinimized);
-		serialized.insert("saveMaximized", windowSettings.saveMaximized);
+		serialized.insert("title", settings.title);
+		serialized.insert("saveTitle", settings.saveTitle);
+		serialized.insert("clearColor", settings.clearColor);
+		serialized.insert("saveClearColor", settings.saveClearColor);
+		serialized.insert("width", settings.width);
+		serialized.insert("height", settings.height);
+		serialized.insert("saveSize", settings.saveSize);
+		serialized.insert("windowMode", settings.windowMode);
+		serialized.insert("saveWindowMode", settings.saveWindowMode);
+		serialized.insert("resizable", settings.resizable);
+		serialized.insert("closeButton", settings.closeButton);
+		serialized.insert("closeOnAltF4", settings.closeOnAltF4);
+		serialized.insert("minimized", settings.minimized);
+		serialized.insert("maximized", settings.saveWindowMode);
+		serialized.insert("saveMinimized", settings.saveMinimized);
+		serialized.insert("saveMaximized", settings.saveMaximized);
 	}
 
 	void WindowSettingsLoader::_saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file)
@@ -215,6 +215,33 @@ namespace otto
 
 		IconLoader::_saveIconSetToBinotto(settings.icons, file);
 		IconLoader::_saveCursorSetToBinotto(settings.cursors, file);
+	}
+
+	void WindowSettingsLoader::_saveWindowSettingsToOtto(const WindowSettings& settings, Serialized serialized, const FilePath& filePath)
+	{
+		if (settings.saveSize)
+		{
+			if (serialized.contains("size"))
+				serialized.insert("size", Vec2i16(settings.unmaximizedWidth, settings.unmaximizedHeight));
+			else
+			{
+				serialized.insert("width", settings.unmaximizedWidth);
+				serialized.insert("beight", settings.unmaximizedHeight);
+			}
+		}
+
+		if (settings.saveTitle)
+			serialized.insert("title", settings.title);
+		if (settings.saveWindowMode)
+			serialized.insert("windowMode", uint8(settings.windowMode));
+		if (settings.saveClearColor)
+			serialized.insert("clearColor", settings.clearColor);
+		if (settings.saveMaximized)
+			serialized.insert("maximized", settings.maximized);
+		if (settings.saveMinimized)
+			serialized.insert("minimized", settings.minimized);
+
+		File(filePath).write(serialized.toString());
 	}
 
 	/*

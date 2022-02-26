@@ -33,9 +33,11 @@ namespace otto
 
 		static WindowSettings _loadWindowSettingsFromBinotto(const BinaryFile& file);
 
-		static void _saveWindowSettingsToSerialized(const WindowSettings& windowSettings, Serialized& serialized);
+		static void _saveWindowSettingsToSerialized(const WindowSettings& settings, Serialized& serialized);
 
-		static void _saveWindowSettingsToBinotto(const WindowSettings& windowSettings, BinaryFile& file);
+		static void _saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file);
+
+		static void _saveWindowSettingsToOtto(const WindowSettings& settings, Serialized initialSettings, const FilePath& filePath);
 
 		friend class Window;
 	};

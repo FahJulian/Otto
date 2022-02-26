@@ -32,3 +32,15 @@
 #include "otto/scene/behaviour.h"
 
 #include "otto/window/events.h"
+
+#include "otto/events/key/KeyPressedEvent.hpp"
+#include "otto/events/key/KeyReleasedEvent.hpp"
+#include "otto/events/mouse/MouseButtonPressedEvent.hpp"
+#include "otto/events/mouse/MouseButtonReleasedEvent.hpp"
+#include "otto/events/mouse/MouseMovedEvent.hpp"
+#include "otto/events/mouse/MouseDraggedEvent.hpp"
+#include "otto/events/mouse/MouseScrolledEvent.hpp"
+#include "otto/events/window/WindowClosedEvent.hpp"
+#include "otto/events/window/WindowResizedEvent.hpp"
+#include "otto/events/window/WindowGainedFocusEvent.hpp"
+#include "otto/events/window/WindowLostFocusEvent.hpp"

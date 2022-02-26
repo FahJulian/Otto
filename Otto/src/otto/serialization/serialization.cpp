@@ -2,6 +2,12 @@
 
 namespace otto
 {
+	template<>
+	Serialized serialize(const String& string)
+	{
+		return Serialized(string);
+	}
+
 	template<typename T> requires std::is_integral_v<T>
 	Serialized serialize(const Vec2<T>& v)
 	{
@@ -19,6 +25,12 @@ namespace otto
 	{
 		ColorCode colorCode = color.toColorCode();
 		return String::valueOf(colorCode, 16);
+	}
+
+	template<>
+	String deserialize(const Serialized& serialized)
+	{
+		return serialized.toString();
 	}
 
 	template<typename T> requires std::is_integral_v<T>

@@ -8,6 +8,8 @@
 #include "otto/window/icon/cursor.h"
 #include "otto/window/window_mode.h"
 
+typedef unsigned long DWORD;
+
 namespace otto
 {
 	struct WindowSettings
@@ -38,6 +40,14 @@ namespace otto
 
 		Map<String, Icon> icons;
 		Map<String, Cursor> cursors;
+
+		uint16 unmaximizedWidth = 0;
+		uint16 unmaximizedHeight = 0;
+		uint16 monitorWidth = 0;
+		uint16 monitorHeight = 0;
+
+		DWORD windowedStyle = 0;
+		DWORD windowedExStyle = 0;
 	};
 
 } // namespace otto

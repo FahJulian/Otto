@@ -1,4 +1,7 @@
-Title: Client 
-ClearColor: 0xFF000000
+Title: Test
+ClearColor: ff0000ff
 Width: 500
 Height: 500
+beight: 500
+windowMode: 0
+maximized: false

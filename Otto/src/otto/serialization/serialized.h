@@ -24,8 +24,8 @@ namespace otto
         {
         }
 
-        explicit Serialized(Type type)
-            : mType(type)
+        explicit Serialized(Type type, bool isTopLevel = false)
+            : mType(type), mIsTopLevel(isTopLevel)
         {
         }
 
@@ -203,12 +203,14 @@ namespace otto
                 return mValue;
 
             case Type::DICTIONARY:
-                s = "{\n";
+                if (!mIsTopLevel)
+                    s = "{\n";
 
                 for (auto& [key, value] : mDictionary)
                     s.append(key).append(": ").append(value.toString()).append('\n');
 
-                s.append('}');
+                if (!mIsTopLevel)
+                    s.append('}');
 
                 return s;
 
@@ -233,6 +235,7 @@ namespace otto
 
     private:
         Type mType;
+        bool mIsTopLevel = false;
 
         String mValue;
         DynamicArray<Serialized> mList;
