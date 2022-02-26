@@ -43,18 +43,18 @@ namespace otto
 
         ~BinaryFile();
 
-        void moveCursor(uint64 offset);
+        void moveCursor(uint64 offset) const;
 
         bool close();
 
-        void read(uint8* dst, uint64 size);
-        void readCompressed(uint8* dst, uint64 size);
+        void read(uint8* dst, uint64 size) const;
+        void readCompressed(uint8* dst, uint64 size) const;
 
-        void write(uint8* data, uint64 size);
-        void writeCompressed(uint8* data, uint64 originalSize);
+        void write(const uint8* data, uint64 size);
+        void writeCompressed(const uint8* data, uint64 originalSize);
 
         template<typename T>
-        T read()
+        T read() const
         {
             T t;
             read(reinterpret_cast<uint8*>(&t), sizeof(T));
@@ -63,7 +63,7 @@ namespace otto
         }
             
         template<typename T>
-        T readCompressed()
+        T readCompressed() const
         {
             T t;
             readCompressed(reinterpret_cast<uint8*>(&t), sizeof(T));
@@ -74,13 +74,13 @@ namespace otto
         template<typename T>
         void write(const T& t)
         {
-            write(reinterpret_cast<uint8*>(&t), sizeof(T));
+            write(reinterpret_cast<const uint8*>(&t), sizeof(T));
         }
 
         template<typename T>
         void write(const T* t, uint64 size)
         {
-            write(reinterpret_cast<uint8*>(t), size);
+            write(reinterpret_cast<const uint8*>(t), size);
         }
 
         template<typename T>
@@ -96,11 +96,11 @@ namespace otto
         }
 
     private:
-        Mode mMode = Mode::CLOSED;
+        mutable Mode mMode = Mode::CLOSED;
         FilePath mFilePath;
 
-        std::ifstream mInputStream;
-        std::ofstream mOutputStream;
+        mutable std::ifstream mInputStream;
+        mutable std::ofstream mOutputStream;
     };
 
 } // namespace otto

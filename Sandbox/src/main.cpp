@@ -1,6 +1,4 @@
-#include "otto/base.h"
-#include "otto/scene/scene_loader.h"
-#include "otto/core/application.h"
+#include <otto.h>
 
 int main()
 {
@@ -10,7 +8,4 @@ int main()
     otto::Application::run();
 
     otto::Application::destroy();
-    //auto scene = otto::SceneLoader::loadScene(otto::Application::getRootDirectory() + "scenes/scene_concept.otto");
-    //scene.getResult()->init();
-    //scene.getResult()->update(3.0f);
 }

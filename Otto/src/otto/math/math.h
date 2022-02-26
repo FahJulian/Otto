@@ -15,7 +15,7 @@ namespace otto
     extern const float32 ONE_OVER_PI_32;
     extern const float64 ONE_OVER_PI_64;
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T>
     T min(T value1, T value2)
     {
         return value1 < value2 ? value1 : value2;

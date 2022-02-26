@@ -29,11 +29,6 @@
 #include "otto/scene/scene.h"
 #include "otto/scene/multi_view.h"
 #include "otto/scene/serialization.h"
+#include "otto/scene/behaviour.h"
 
-namespace otto
-{
-    struct Behaviour
-    {
-
-    };
-}
+#include "otto/window/events.h"

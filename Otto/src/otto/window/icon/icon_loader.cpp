@@ -5,8 +5,6 @@
 #include <stb/stb_image.h>
 
 #include "otto/debug/log/log.h"
-#include "otto/serialization/serialization.h"
-//#include "Sonic/Window/Window.h"
 
 namespace otto
 {
@@ -21,13 +19,13 @@ namespace otto
 			BinaryFile file = BinaryFile(filePath);
 
 			Icon icon;
-			icon.width = file.read<uint8>();
-			icon.height = file.read<uint8>();
+			icon.width = file.read<uint16>();
+			icon.height = file.read<uint16>();
 
-			icon.bitmap = new uint8[4 * icon.width * icon.height];
+			icon.bitmap = new uint8[uint64(4) * uint64(icon.width) * uint64(icon.height)];
 			sLoadedBitmaps.add(icon.bitmap);
 
-			file.readCompressed(icon.bitmap, 4 * icon.width * icon.height);
+			file.readCompressed(icon.bitmap, uint64(4) * uint64(icon.width) * uint64(icon.height));
 
 			return icon;
 		}
@@ -40,21 +38,21 @@ namespace otto
 			uint32 width;
 			uint32 height;
 
-			uint8* flippedBitmap = stbi_load(filePath.toString().getData(), 
-				reinterpret_cast<int*>(&width), 
-				reinterpret_cast<int*>(&height), 
-				NULL, 
+			uint8* flippedBitmap = stbi_load(filePath.toString().getData(),
+				reinterpret_cast<int*>(&width),
+				reinterpret_cast<int*>(&height),
+				NULL,
 				4
 			);
 
-			icon.width = static_cast<uint8>(width);
-			icon.height = static_cast<uint8>(height);
+			icon.width = static_cast<uint16>(width);
+			icon.height = static_cast<uint16>(height);
 
-			icon.bitmap = new uint8[4 * icon.width * icon.height];
+			icon.bitmap = new uint8[uint64(4) * uint64(icon.width) * uint64(icon.height)];
 			sLoadedBitmaps.add(icon.bitmap);
 
 			// Flip bitmap
-			for (uint64 i = 0; i < icon.width * icon.height; i++)
+			for (uint64 i = 0; i < uint64(icon.width) * uint64(icon.height); i++)
 			{
 				icon.bitmap[4 * i + 0] = flippedBitmap[4 * i + 2];
 				icon.bitmap[4 * i + 1] = flippedBitmap[4 * i + 1];
@@ -78,8 +76,8 @@ namespace otto
 			if (iconAmount != 1)
 				Log::warn("Icon file ", filePath, " contains multiple images. Loading only the first one.");
 
-			icon.width = file.read<uint8>();
-			icon.height = file.read<uint8>();
+			icon.width = static_cast<uint16>(file.read<uint8>());
+			icon.height = static_cast<uint16>(file.read<uint8>());
 
 			if (icon.width == 0)
 				icon.width = 256;
@@ -129,15 +127,15 @@ namespace otto
 			BinaryFile file = BinaryFile(filePath);
 
 			Cursor cursor;
-			cursor.width = file.read<uint8>();
-			cursor.height = file.read<uint8>();
+			cursor.width = file.read<uint16>();
+			cursor.height = file.read<uint16>();
 			cursor.hotspotX = file.read<uint16>();
 			cursor.hotspotY = file.read<uint16>();
 
-			cursor.bitmap = new uint8[4 * cursor.width * cursor.height];
+			cursor.bitmap = new uint8[uint64(4) * uint64(cursor.width) * uint64(cursor.height)];
 			sLoadedBitmaps.add(cursor.bitmap);
 
-			file.readCompressed(cursor.bitmap, 4 * cursor.width * cursor.height);
+			file.readCompressed(cursor.bitmap, uint64(4) * uint64(cursor.width) * uint64(cursor.height));
 
 			return cursor;
 		}
@@ -153,8 +151,8 @@ namespace otto
 			if (cursorAmount != 1)
 				Log::warn("Cursor file ", filePath, " contains multiple images. Loading only the first one");
 
-			cursor.width = file.read<uint8>();
-			cursor.height = file.read<uint8>();
+			cursor.width = static_cast<uint16>(file.read<uint8>());
+			cursor.height = static_cast<uint16>(file.read<uint8>());
 
 			if (cursor.width == 0)
 				cursor.width = 256;
@@ -168,7 +166,7 @@ namespace otto
 
 			file.moveCursor(4);
 
-			uint64 bitmapOffset = static_cast<uint64>(file.read<uint32_t>());
+			uint64 bitmapOffset = uint64(file.read<uint32_t>());
 			file.moveCursor(bitmapOffset - ICO_CUR_HEADER_SIZE + uint64(14));
 
 			uint16 bitsPerPixel = file.read<uint16>();
@@ -184,69 +182,6 @@ namespace otto
 			file.read(cursor.bitmap, bitmapSize);
 
 			return cursor;
-		}
-
-		Map<String, Icon> _loadIconSetFromBinotto(const FilePath& filePath)
-		{
-			BinaryFile file = BinaryFile(filePath);
-
-			Map<String, Icon> icons;
-			uint16 iconAmount = file.read<uint16>();
-			for (uint16 i = 0; i < iconAmount; i++)
-			{
-				Icon icon;
-				String name; 
-
-				uint16 iconNameSize = file.read<uint16>();
-				char8* iconNameData = new char8[iconNameSize];
-				file.read(reinterpret_cast<uint8*>(iconNameData), iconNameSize);
-
-				name = String(iconNameData, iconNameSize);
-				delete[] iconNameData;
-
-				icon.width = file.read<uint8>();
-				icon.height = file.read<uint8>();
-				icon.bitmap = new uint8[4 * icon.width * icon.height];
-				sLoadedBitmaps.add(icon.bitmap);
-
-				file.readCompressed(icon.bitmap, 4 * icon.width * icon.height);
-				icons.insert(name, icon);
-			}
-
-			return icons;
-		}
-
-		Map<String, Cursor> _loadCursorSetFromBinotto(const FilePath& filePath)
-		{
-			BinaryFile file = BinaryFile(filePath);
-
-			Map<String, Cursor> cursors;
-			uint16 cursorAmount = file.read<uint16>();
-			for (uint16 i = 0; i < cursorAmount; i++)
-			{
-				Cursor cursor;
-				String name;
-
-				uint16 cursorNameSize = file.read<uint16>();
-				char8* cursorNameData = new char8[cursorNameSize];
-				file.read(reinterpret_cast<uint8*>(cursorNameData), cursorNameSize);
-
-				name = String(cursorNameData, cursorNameSize);
-				delete[] cursorNameData;
-
-				cursor.width = file.read<uint8>();
-				cursor.height = file.read<uint8>();
-				cursor.hotspotX = file.read<uint16>();
-				cursor.hotspotY = file.read<uint16>();
-
-				cursor.bitmap = new uint8[4 * cursor.width * cursor.height];
-				sLoadedBitmaps.add(cursor.bitmap);
-
-				file.readCompressed(cursor.bitmap, 4 * cursor.width * cursor.height);
-				cursors.insert(name, cursor);
-			}
-
-			return cursors;
 		}
 
 	} // namespace 
@@ -313,23 +248,12 @@ namespace otto
 			if (result.hasError())
 				return IconLoadingError::OTTO_FILE_PARSING_ERROR;
 
-			Map<String, Icon> icons;
-			for (auto& [name, filePath] : result.getResult().getDictionary())
-			{
-				auto icon = loadIcon(filePath.toString().startsWith("otto/") ? 
-					Application::getCoreRootDirectory() + "res/" + filePath.get<String>() : Application::getRootDirectory() + filePath.get<String>());
-
-				if (icon.hasError())
-					return icon.getError();
-
-				icons.insert(name, icon.getResult());
-			}
-
-			return icons;
+			return _loadIconSetFromSerialized(result.getResult());
 		}
 		else if (filePath.toString().endsWith(".binotto"))
 		{
-			return _loadIconSetFromBinotto(filePath);
+			BinaryFile file = BinaryFile(filePath);
+			return _loadIconSetFromBinotto(file);
 		}
 		else
 		{
@@ -345,34 +269,12 @@ namespace otto
 			if (result.hasError())
 				return IconLoadingError::OTTO_FILE_PARSING_ERROR;
 
-			Map<String, Cursor> cursors;
-			for (auto& [name, serialized] : result.getResult().getDictionary())
-			{
-				if (serialized.isValue())
-				{
-					auto cursor = loadCursor(filePath.toString().startsWith("otto/") ?
-						Application::getCoreRootDirectory() + "res/" + serialized.get<String>() : Application::getRootDirectory() + serialized.get<String>());
-
-					if (cursor.hasError())
-						return cursor.getError();
-
-					cursors.insert(name, cursor.getResult());
-				}
-				else if (serialized.isDictionary())
-				{
-					auto result = _loadCursorFromSerialized(serialized);
-					if (result.hasError())
-						return result.getError();
-					else
-						cursors.insert(name, result.getResult());
-				}
-			}
-
-			return cursors;
+			return _loadCursorSetFromSerialized(result.getResult());
 		}
 		else if (filePath.toString().endsWith(".binotto"))
 		{
-			return _loadCursorSetFromBinotto(filePath);
+			BinaryFile file = BinaryFile(filePath);
+			return _loadCursorSetFromBinotto(file);
 		}
 		else
 		{
@@ -386,7 +288,7 @@ namespace otto
 
 		file.write(icon.width);
 		file.write(icon.height);
-		file.writeCompressed(icon.bitmap, 4 * icon.width * icon.height);
+		file.writeCompressed(icon.bitmap, uint64(4) * uint64(icon.width) * uint64(icon.height));
 	}
 
 	void IconLoader::saveCursor(const Cursor& cursor, const FilePath& filePath)
@@ -397,41 +299,19 @@ namespace otto
 		file.write(cursor.height);
 		file.write(cursor.hotspotX);
 		file.write(cursor.hotspotY);
-		file.writeCompressed(cursor.bitmap, 4 * cursor.width * cursor.height);
+		file.writeCompressed(cursor.bitmap, uint64(4) * uint64(cursor.width) * uint64(cursor.height));
 	}
 
 	void IconLoader::saveIconSet(const Map<String, Icon>& icons, const FilePath& filePath)
 	{
 		BinaryFile file = BinaryFile(filePath);
-
-		file.write(static_cast<uint16>(icons.getSize()));
-		for (auto& [name, icon] : icons)
-		{
-			file.write(static_cast<uint16>(name.getSize()));
-			file.write(reinterpret_cast<const uint8*>(name.getData()), name.getSize());
-
-			file.write(icon.width);
-			file.write(icon.height);
-			file.writeCompressed(icon.bitmap, 4 * icon.width * icon.height);
-		}
+		_saveIconSetToBinotto(icons, file);
 	}
 
 	void IconLoader::saveCursorSet(const Map<String, Cursor>& cursors, const FilePath& filePath)
 	{
 		BinaryFile file = BinaryFile(filePath);
-
-		file.write(static_cast<uint16>(cursors.getSize()));
-		for (auto& [name, cursor] : cursors)
-		{
-			file.write(static_cast<uint16>(name.getSize()));
-			file.write(reinterpret_cast<const uint8*>(name.getData()), name.getSize());
-
-			file.write(cursor.width);
-			file.write(cursor.height);
-			file.write(cursor.hotspotX);
-			file.write(cursor.hotspotY);
-			file.writeCompressed(cursor.bitmap, 4 * cursor.width * cursor.height);
-		}
+		_saveCursorSetToBinotto(cursors, file);
 	}
 
 	void IconLoader::destroy()
@@ -442,254 +322,389 @@ namespace otto
 		sLoadedBitmaps.clear();
 	}
 
-
-/*
-	Result<Map<String, Cursor>, IconLoader::IconLoadingError> IconLoader::loadCursorSet(const FilePath& filePath)
+	Result<Map<String, Icon>, IconLoader::IconLoadingError>
+		IconLoader::_loadIconSetFromSerialized(const Serialized& serialized)
 	{
-		// Check if binotto file or otto file
+		Map<String, Icon> icons;
+		for (auto& [name, filePath] : serialized.getDictionary())
+		{
+			auto icon = loadIcon(filePath.get<String>().startsWith("otto/") ?
+				Application::getCoreRootDirectory() + "res/" + filePath.get<String>() : Application::getRootDirectory() + filePath.get<String>());
 
+			if (icon.hasError())
+				return icon.getError();
+
+			icons.insert(name, icon.getResult());
+		}
+
+		return icons;
+	}
+
+	Result<Map<String, Cursor>, IconLoader::IconLoadingError>
+		IconLoader::_loadCursorSetFromSerialized(const Serialized& serialized)
+	{
 		Map<String, Cursor> cursors;
+		for (auto& [name, value] : serialized.getDictionary())
+		{
+			if (value.isValue())
+			{
+				auto cursor = loadCursor(value.get<String>().startsWith("otto/") ?
+					Application::getCoreRootDirectory() + "res/" + value.get<String>() : Application::getRootDirectory() + value.get<String>());
 
-		uint64 cursorAmount = static_cast<uint64>(file.read<uint16>());
+				if (cursor.hasError())
+					return cursor.getError();
 
-		for (uint64 i = 0, cursorAmount = file.read<uint16_t>(); i < cursorAmount; i++)
+				cursors.insert(name, cursor.getResult());
+			}
+			else if (value.isDictionary())
+			{
+				auto result = _loadCursorFromSerialized(value);
+				if (result.hasError())
+					return result.getError();
+				else
+					cursors.insert(name, result.getResult());
+			}
+		}
+
+		return cursors;
+	}
+
+	Map<String, Icon> IconLoader::_loadIconSetFromBinotto(const BinaryFile& file)
+	{
+		Map<String, Icon> icons;
+		uint16 iconAmount = file.read<uint16>();
+		for (uint16 i = 0; i < iconAmount; i++)
+		{
+			Icon icon;
+			String name;
+
+			uint16 iconNameSize = file.read<uint16>();
+			char8* iconNameData = new char8[iconNameSize];
+			file.read(reinterpret_cast<uint8*>(iconNameData), iconNameSize);
+
+			name = String(iconNameData, iconNameSize);
+			delete[] iconNameData;
+
+			icon.width = file.read<uint16>();
+			icon.height = file.read<uint16>();
+			icon.bitmap = new uint8[uint64(4) * uint64(icon.width) * uint64(icon.height)];
+			sLoadedBitmaps.add(icon.bitmap);
+
+			file.readCompressed(icon.bitmap, uint64(4) * uint64(icon.width) * uint64(icon.height));
+			icons.insert(name, icon);
+		}
+
+		return icons;
+	}
+
+	Map<String, Cursor> IconLoader::_loadCursorSetFromBinotto(const BinaryFile& file)
+	{
+		Map<String, Cursor> cursors;
+		uint16 cursorAmount = file.read<uint16>();
+		for (uint16 i = 0; i < cursorAmount; i++)
+		{
+			Cursor cursor;
+			String name;
+
+			uint16 cursorNameSize = file.read<uint16>();
+			char8* cursorNameData = new char8[cursorNameSize];
+			file.read(reinterpret_cast<uint8*>(cursorNameData), cursorNameSize);
+
+			name = String(cursorNameData, cursorNameSize);
+			delete[] cursorNameData;
+
+			cursor.width = file.read<uint16>();
+			cursor.height = file.read<uint16>();
+			cursor.hotspotX = file.read<uint16>();
+			cursor.hotspotY = file.read<uint16>();
+
+			cursor.bitmap = new uint8[uint64(4) * uint64(cursor.width) * uint64(cursor.height)];
+			sLoadedBitmaps.add(cursor.bitmap);
+
+			file.readCompressed(cursor.bitmap, uint64(4) * uint64(cursor.width) * uint64(cursor.height));
+			cursors.insert(name, cursor);
+		}
+
+		return cursors;
+	}
+
+	void IconLoader::_saveIconSetToBinotto(const Map<String, Icon>& icons, BinaryFile& file)
+	{
+		file.write(static_cast<uint16>(icons.getSize()));
+		for (auto& [name, icon] : icons)
+		{
+			file.write(static_cast<uint16>(name.getSize()));
+			file.write(reinterpret_cast<const uint8*>(name.getData()), name.getSize());
+
+			file.write(icon.width);
+			file.write(icon.height);
+			file.writeCompressed(icon.bitmap, uint64(4) * uint64(icon.width) * uint64(icon.height));
+		}
+	}
+
+	void IconLoader::_saveCursorSetToBinotto(const Map<String, Cursor>& cursors, BinaryFile& file)
+	{
+		file.write(static_cast<uint16>(cursors.getSize()));
+		for (auto& [name, cursor] : cursors)
+		{
+			file.write(static_cast<uint16>(name.getSize()));
+			file.write(reinterpret_cast<const uint8*>(name.getData()), name.getSize());
+
+			file.write(cursor.width);
+			file.write(cursor.height);
+			file.write(cursor.hotspotX);
+			file.write(cursor.hotspotY);
+			file.writeCompressed(cursor.bitmap, uint64(4) * uint64(cursor.width) * uint64(cursor.height));
+		}
+	}
+
+	/*
+		Result<Map<String, Cursor>, IconLoader::IconLoadingError> IconLoader::loadCursorSet(const FilePath& filePath)
+		{
+			// Check if binotto file or otto file
+
+			Map<String, Cursor> cursors;
+
+			uint64 cursorAmount = uint64(file.read<uint16>());
+
+			for (uint64 i = 0, cursorAmount = file.read<uint16_t>(); i < cursorAmount; i++)
+			{
+				CursorInfo cursor;
+
+				uint16_t nameSize = file.read<uint16_t>();
+				const char* name = file.read<char>(nameSize);
+
+				cursor.width = file.read<uint16_t>();
+				cursor.height = file.read<uint16_t>();
+				cursor.hotspotX = file.read<uint16_t>();
+				cursor.hotspotY = file.read<uint16_t>();
+
+				cursor.bitmap = file.readCompressed<uint8_t>(uint64(4) * uint64(cursor.width) * uint64(cursor.height));
+
+				cursors.emplace(String(name, nameSize), cursor);
+				delete[] name;
+			}
+
+			return cursors;
+		}
+
+		std::unordered_map<String, CursorInfo> Util::loadCursors(const String& standardCursorSet, const std::unordered_map<String, String> filePaths)
+		{
+			std::unordered_map<String, CursorInfo> cursors;
+
+			for (auto& [name, filePath] : filePaths)
+			{
+				if (Util::endsWith(filePath, ".cur"))
+				{
+					if (std::filesystem::exists(filePath))
+					{
+						cursors.emplace(name, loadCursorFromCur(filePath));
+					}
+					else if (String resourceDirFilePath = resourceDir() + filePath;
+						std::filesystem::exists(resourceDirFilePath))
+					{
+						cursors.emplace(name, loadCursorFromCur(resourceDirFilePath));
+					}
+				}
+			}
+
+			String standardCursorsDir = standardCursorSetDirs.find(standardCursorSet) != standardCursorSetDirs.end() ?
+				standardCursorSetDirs.at(standardCursorSet) : standardCursorSetDirs.at(defaultStandardCursorSet);
+
+			for (auto& standardCursor : allStandardCursors)
+			{
+				if (cursors.find(standardCursor) == cursors.end())
+				{
+					String filePath = standardCursorsDir + standardCursor + ".cur";
+					cursors.emplace(standardCursor, loadCursorFromCur(filePath));
+				}
+			}
+
+			return cursors;
+		}
+
+		std::vector<IconInfo> Util::loadIcons(BinaryInputFileStream& file)
+		{
+			std::vector<IconInfo> icons;
+
+			for (int i = 0, iconAmount = file.read<uint16_t>(); i < iconAmount; i++)
+			{
+				IconInfo icon;
+
+				icon.width = file.read<uint16_t>();
+				icon.height = file.read<uint16_t>();
+				icon.bitmap = file.readCompressed<uint8_t>(uint64(4) * uint64(icon.width) * uint64(icon.height));
+
+				icons.push_back(icon);
+			}
+
+			return icons;
+		}
+
+		std::vector<IconInfo> Util::loadIcons(std::vector<String>& filePaths)
+		{
+			std::vector<IconInfo> icons;
+
+			if (filePaths.size() == 0)
+				filePaths = defaultIconFilePaths;
+
+			for (auto& filePath : filePaths)
+			{
+				if (Util::endsWith(filePath, ".ico"))
+				{
+					if (std::filesystem::exists(filePath))
+					{
+						icons.push_back(loadIconFromIco(filePath));
+					}
+					else if (String resourceDirFilePath = resourceDir() + filePath;
+						std::filesystem::exists(resourceDirFilePath))
+					{
+						icons.push_back(loadIconFromIco(resourceDirFilePath));
+					}
+				}
+				else if (Util::endsWith(filePath, ".png"))
+				{
+					if (std::filesystem::exists(filePath))
+					{
+						icons.push_back(loadIconFromPng(filePath));
+					}
+					else if (String resourceDirFilePath = resourceDir() + filePath;
+						std::filesystem::exists(resourceDirFilePath))
+					{
+						icons.push_back(loadIconFromPng(resourceDirFilePath));
+					}
+				}
+			}
+
+			return icons;
+		}
+
+		void Util::saveCursors(std::unordered_map<String, CursorInfo>& cursors, BinaryOutputFileStream& file)
+		{
+			file.write<uint16_t>((uint16_t)cursors.size());
+
+			for (auto& [cursorName, cursor] : cursors)
+			{
+				file.write<uint16_t>((uint16_t)cursorName.size());
+				file.write(cursorName.c_str(), cursorName.size());
+
+				file.write<uint16_t>(cursor.width);
+				file.write<uint16_t>(cursor.height);
+				file.write<uint16_t>(cursor.hotspotX);
+				file.write<uint16_t>(cursor.hotspotY);
+
+				file.writeCompressed(cursor.bitmap, uint64(4) * uint64(cursor.width) * uint64(cursor.height));
+
+				delete[] cursor.bitmap;
+			}
+
+			cursors.clear();
+		}
+
+		void Util::saveIcons(std::vector<IconInfo>& icons, BinaryOutputFileStream& file)
+		{
+			file.write<uint16_t>((uint16_t)icons.size());
+
+			for (auto& icon : icons)
+			{
+				file.write<uint16_t>(icon.width);
+				file.write<uint16_t>(icon.height);
+				file.writeCompressed(icon.bitmap, uint64(4) * uint64(icon.width) * uint64(icon.height));
+
+				delete[] icon.bitmap;
+			}
+
+			icons.clear();
+		}
+
+		static CursorInfo loadCursorFromCur(Util::BinaryInputFileStream&& file)
 		{
 			CursorInfo cursor;
 
-			uint16_t nameSize = file.read<uint16_t>();
-			const char* name = file.read<char>(nameSize);
+			file.moveCursor(4);
 
-			cursor.width = file.read<uint16_t>();
-			cursor.height = file.read<uint16_t>();
+			uint16_t cursorAmount = file.read<uint16_t>();
+			if (cursorAmount != 1)
+				SONIC_LOG_WARN("Cursor file contains multiple images. Loading only the first one");
+
+			cursor.width = file.read<uint8_t>();
+			cursor.height = file.read<uint8_t>();
+
+			if (cursor.width == 0)
+				cursor.width = 256;
+			if (cursor.height == 0)
+				cursor.height = 256;
+
+			file.moveCursor(2);
+
 			cursor.hotspotX = file.read<uint16_t>();
 			cursor.hotspotY = file.read<uint16_t>();
 
-			cursor.bitmap = file.readCompressed<uint8_t>(4 * cursor.width * cursor.height);
+			file.moveCursor(4);
 
-			cursors.emplace(String(name, nameSize), cursor);
-			delete[] name;
+			size_t bitmapOffset = (size_t)file.read<uint32_t>();
+			file.moveCursor(bitmapOffset - ICO_CUR_HEADER_SIZE + (size_t)14);
+
+			uint16_t bitsPerPixel = file.read<uint16_t>();
+			SONIC_LOG_DEBUG_ASSERT(bitsPerPixel == 32, "Error loading cursor bitmap: Bitmap does not use 32 bits per pixel");
+
+			file.moveCursor(4);
+
+			uint32_t bitmapSize = file.read<uint32_t>();
+
+			file.moveCursor(16);
+
+			cursor.bitmap = file.read<uint8_t>(bitmapSize);
+
+			return cursor;
 		}
 
-		return cursors;
-	}
-
-	std::unordered_map<String, CursorInfo> Util::loadCursors(const String& standardCursorSet, const std::unordered_map<String, String> filePaths)
-	{
-		std::unordered_map<String, CursorInfo> cursors;
-
-		for (auto& [name, filePath] : filePaths)
-		{
-			if (Util::endsWith(filePath, ".cur"))
-			{
-				if (std::filesystem::exists(filePath))
-				{
-					cursors.emplace(name, loadCursorFromCur(filePath));
-				}
-				else if (String resourceDirFilePath = resourceDir() + filePath;
-					std::filesystem::exists(resourceDirFilePath))
-				{
-					cursors.emplace(name, loadCursorFromCur(resourceDirFilePath));
-				}
-			}
-		}
-
-		String standardCursorsDir = standardCursorSetDirs.find(standardCursorSet) != standardCursorSetDirs.end() ?
-			standardCursorSetDirs.at(standardCursorSet) : standardCursorSetDirs.at(defaultStandardCursorSet);
-
-		for (auto& standardCursor : allStandardCursors)
-		{
-			if (cursors.find(standardCursor) == cursors.end())
-			{
-				String filePath = standardCursorsDir + standardCursor + ".cur";
-				cursors.emplace(standardCursor, loadCursorFromCur(filePath));
-			}
-		}
-
-		return cursors;
-	}
-
-	std::vector<IconInfo> Util::loadIcons(BinaryInputFileStream& file)
-	{
-		std::vector<IconInfo> icons;
-
-		for (int i = 0, iconAmount = file.read<uint16_t>(); i < iconAmount; i++)
+		static IconInfo loadIconFromIco(Util::BinaryInputFileStream&& file)
 		{
 			IconInfo icon;
 
-			icon.width = file.read<uint16_t>();
-			icon.height = file.read<uint16_t>();
-			icon.bitmap = file.readCompressed<uint8_t>(4 * icon.width * icon.height);
+			file.moveCursor(4);
 
-			icons.push_back(icon);
+			uint16_t iconAmount = file.read<uint16_t>();
+			if (iconAmount != 1)
+				SONIC_LOG_WARN("Icon file contains multiple images. Loading only the first one");
+
+			icon.width = file.read<uint8_t>();
+			icon.height = file.read<uint8_t>();
+
+			if (icon.width == 0)
+				icon.width = 256;
+			if (icon.height == 0)
+				icon.height = 256;
+
+			file.moveCursor(10);
+
+			size_t bitmapOffset = (size_t)file.read<uint32_t>();
+			file.moveCursor(bitmapOffset - ICO_CUR_HEADER_SIZE + (size_t)14);
+
+			uint16_t bitsPerPixel = file.read<uint16_t>();
+			SONIC_LOG_DEBUG_ASSERT(bitsPerPixel == 32, "Error loading cursor bitmap: Bitmap does not use 32 bits per pixel");
+
+			file.moveCursor(4);
+
+			uint32_t bitmapSize = file.read<uint32_t>();
+
+			file.moveCursor(16);
+
+			icon.bitmap = file.read<uint8_t>(bitmapSize);
+
+			return icon;
 		}
 
-		return icons;
-	}
-
-	std::vector<IconInfo> Util::loadIcons(std::vector<String>& filePaths)
-	{
-		std::vector<IconInfo> icons;
-
-		if (filePaths.size() == 0)
-			filePaths = defaultIconFilePaths;
-
-		for (auto& filePath : filePaths)
+		static IconInfo loadIconFromPng(const String& file)
 		{
-			if (Util::endsWith(filePath, ".ico"))
-			{
-				if (std::filesystem::exists(filePath))
-				{
-					icons.push_back(loadIconFromIco(filePath));
-				}
-				else if (String resourceDirFilePath = resourceDir() + filePath;
-					std::filesystem::exists(resourceDirFilePath))
-				{
-					icons.push_back(loadIconFromIco(resourceDirFilePath));
-				}
-			}
-			else if (Util::endsWith(filePath, ".png"))
-			{
-				if (std::filesystem::exists(filePath))
-				{
-					icons.push_back(loadIconFromPng(filePath));
-				}
-				else if (String resourceDirFilePath = resourceDir() + filePath;
-					std::filesystem::exists(resourceDirFilePath))
-				{
-					icons.push_back(loadIconFromPng(resourceDirFilePath));
-				}
-			}
-		}
+			stbi_set_flip_vertically_on_load(1);
 
-		return icons;
-	}
+			IconInfo icon;
 
-	void Util::saveCursors(std::unordered_map<String, CursorInfo>& cursors, BinaryOutputFileStream& file)
-	{
-		file.write<uint16_t>((uint16_t)cursors.size());
+			uint8_t* tmpBitmap = stbi_load(file.c_str(), &icon.width, &icon.height, NULL, 4);
 
-		for (auto& [cursorName, cursor] : cursors)
-		{
-			file.write<uint16_t>((uint16_t)cursorName.size());
-			file.write(cursorName.c_str(), cursorName.size());
-
-			file.write<uint16_t>(cursor.width);
-			file.write<uint16_t>(cursor.height);
-			file.write<uint16_t>(cursor.hotspotX);
-			file.write<uint16_t>(cursor.hotspotY);
-
-			file.writeCompressed(cursor.bitmap, 4 * cursor.width * cursor.height);
-
-			delete[] cursor.bitmap;
-		}
-
-		cursors.clear();
-	}
-
-	void Util::saveIcons(std::vector<IconInfo>& icons, BinaryOutputFileStream& file)
-	{
-		file.write<uint16_t>((uint16_t)icons.size());
-
-		for (auto& icon : icons)
-		{
-			file.write<uint16_t>(icon.width);
-			file.write<uint16_t>(icon.height);
-			file.writeCompressed(icon.bitmap, 4 * icon.width * icon.height);
-
-			delete[] icon.bitmap;
-		}
-
-		icons.clear();
-	}
-
-	static CursorInfo loadCursorFromCur(Util::BinaryInputFileStream&& file)
-	{
-		CursorInfo cursor;
-
-		file.moveCursor(4);
-
-		uint16_t cursorAmount = file.read<uint16_t>();
-		if (cursorAmount != 1)
-			SONIC_LOG_WARN("Cursor file contains multiple images. Loading only the first one");
-
-		cursor.width = file.read<uint8_t>();
-		cursor.height = file.read<uint8_t>();
-
-		if (cursor.width == 0)
-			cursor.width = 256;
-		if (cursor.height == 0)
-			cursor.height = 256;
-
-		file.moveCursor(2);
-
-		cursor.hotspotX = file.read<uint16_t>();
-		cursor.hotspotY = file.read<uint16_t>();
-
-		file.moveCursor(4);
-
-		size_t bitmapOffset = (size_t)file.read<uint32_t>();
-		file.moveCursor(bitmapOffset - ICO_CUR_HEADER_SIZE + (size_t)14);
-
-		uint16_t bitsPerPixel = file.read<uint16_t>();
-		SONIC_LOG_DEBUG_ASSERT(bitsPerPixel == 32, "Error loading cursor bitmap: Bitmap does not use 32 bits per pixel");
-
-		file.moveCursor(4);
-
-		uint32_t bitmapSize = file.read<uint32_t>();
-
-		file.moveCursor(16);
-
-		cursor.bitmap = file.read<uint8_t>(bitmapSize);
-
-		return cursor;
-	}
-
-	static IconInfo loadIconFromIco(Util::BinaryInputFileStream&& file)
-	{
-		IconInfo icon;
-
-		file.moveCursor(4);
-
-		uint16_t iconAmount = file.read<uint16_t>();
-		if (iconAmount != 1)
-			SONIC_LOG_WARN("Icon file contains multiple images. Loading only the first one");
-
-		icon.width = file.read<uint8_t>();
-		icon.height = file.read<uint8_t>();
-
-		if (icon.width == 0)
-			icon.width = 256;
-		if (icon.height == 0)
-			icon.height = 256;
-
-		file.moveCursor(10);
-
-		size_t bitmapOffset = (size_t)file.read<uint32_t>();
-		file.moveCursor(bitmapOffset - ICO_CUR_HEADER_SIZE + (size_t)14);
-
-		uint16_t bitsPerPixel = file.read<uint16_t>();
-		SONIC_LOG_DEBUG_ASSERT(bitsPerPixel == 32, "Error loading cursor bitmap: Bitmap does not use 32 bits per pixel");
-
-		file.moveCursor(4);
-
-		uint32_t bitmapSize = file.read<uint32_t>();
-
-		file.moveCursor(16);
-
-		icon.bitmap = file.read<uint8_t>(bitmapSize);
-
-		return icon;
-	}
-
-	static IconInfo loadIconFromPng(const String& file)
-	{
-		stbi_set_flip_vertically_on_load(1);
-
-		IconInfo icon;
-
-		uint8_t* tmpBitmap = stbi_load(file.c_str(), &icon.width, &icon.height, NULL, 4);
-
-		icon.bitmap = new uint8_t[4 * icon.width * icon.height];
+			icon.bitmap = new uint8_t[uint64(4) * uint64(icon.width) * uint64(icon.height)];
 		for (int i = 0; i < icon.width * icon.height; i++)
 		{
 			icon.bitmap[4 * i + 0] = tmpBitmap[4 * i + 2];

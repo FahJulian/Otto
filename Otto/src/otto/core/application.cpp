@@ -7,10 +7,11 @@
 #include "otto/serialization/serializer.h"
 #include "otto/core/platform/time.h"
 #include "otto/scene/scene_loader.h"
+#include "otto/core/scene_manager.h"
+#include "otto/window/window.h"
 #include "otto/debug/log/log.h"
 #include "otto/scene/scene.h"
 #include "otto/util/file.h"
-#include "scene_manager.h"
 
 namespace otto
 {
@@ -113,6 +114,8 @@ namespace otto
         dllSettings.configuration = DllReloader::Configuration::DEBUG;
         dllSettings.libs = { "otto.lib" };
 
+        Window::init(settings.rootDirectory + settings.windowSettingsPath);
+
         DllReloader::init(dllSettings);
 
         if (!SceneLoader::reloadDll())
@@ -211,6 +214,11 @@ namespace otto
             return SettingsError::MSVC_VERSION_NOT_FOUND;
         else
             settings.msvcVersion = file.get<String>("MSVC_Version");
+
+        if (!file.contains("windowSettingsPath"))
+            return SettingsError::WINDOW_SETTINGS_PATH_NOT_FOUND;
+        else
+            settings.windowSettingsPath = file.get<String>("windowSettingsPath");
 
         if (file.contains("LogConsoleLevel"))
         {

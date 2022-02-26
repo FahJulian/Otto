@@ -90,12 +90,24 @@ namespace otto
 
         bool contains(const String& entryName) const
         {
-            return mDictionary.containsKey(entryName);
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(entryName))
+                    return true;
+            }
+
+            return false;
         }
 
         const Serialized& get(const String& entryName) const
         {
-            return mDictionary.get(entryName);
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(entryName))
+                    return mDictionary.get(key);
+            }
+
+            return mDictionary.get(entryName); // Will cause error
         }
 
         template<typename T> requires std::is_integral<T>::value
@@ -119,13 +131,25 @@ namespace otto
         template<typename T> requires std::is_integral<T>::value
             T get(const String& entryName) const
         {
-            return mDictionary.get(entryName).get<T>();
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(entryName))
+                    return mDictionary.get(key).get<T>();
+            }
+
+            return mDictionary.get(entryName).get<T>(); // Will cause error
         }
 
         template<typename T>
         T get(const String& entryName) const
         {
-            return mDictionary.get(entryName).get<T>();
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(entryName))
+                    return mDictionary.get(key).get<T>();
+            }
+
+            return mDictionary.get(entryName).get<T>(); // Will cause error
         }
 
         const Serialized& get(uint64 index)
@@ -134,21 +158,39 @@ namespace otto
         }
 
         template<typename T> requires std::is_integral<T>::value
-            void insert(const String& key, T value)
+            void insert(const String& name, T value)
         {
             if (mType == Type::VOID)
                 mType = Type::DICTIONARY;
 
-            mDictionary.insert(key, String::valueOf(value));
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(name))
+                {
+                    mDictionary[key] = String::valueOf(value);
+                    return;
+                }
+            }
+
+            mDictionary.insert(name, String::valueOf(value));
         }
 
         template<typename T>
-        void insert(const String& key, const T& value)
+        void insert(const String& name, const T& value)
         {
             if (mType == Type::VOID)
                 mType = Type::DICTIONARY;
 
-            mDictionary.insert(key, serialize<T>(value));
+            for (auto& [key, _] : mDictionary)
+            {
+                if (key.equalsIgnoreCase(name))
+                {
+                    mDictionary[key] = serialize<T>(value);
+                    return;
+                }
+            }
+
+            mDictionary.insert(name, serialize<T>(value));
         }
 
         String toString() const

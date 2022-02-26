@@ -6,6 +6,7 @@
 #include "otto/core/application.h"
 #include "otto/window/icon/icon.h"
 #include "otto/window/icon/cursor.h"
+#include "otto/serialization/serialization.h"
 
 namespace otto {
 
@@ -16,7 +17,7 @@ namespace otto {
 		IconLoader(const IconLoader& other) = delete;
 
 	public:
-		enum IconLoadingError
+		enum class IconLoadingError
 		{
 			UNKNOWN_FILETYPE,
 			OTTO_FILE_PARSING_ERROR,
@@ -37,6 +38,17 @@ namespace otto {
 		static void saveCursorSet(const Map<String, Cursor>& cursors, const FilePath& filePath);
 
 		static void destroy();
+
+	private:
+		static Result<Map<String, Icon>, IconLoadingError> _loadIconSetFromSerialized(const Serialized& serialized);
+		static Result<Map<String, Cursor>, IconLoadingError> _loadCursorSetFromSerialized(const Serialized& serialized);
+		static Map<String, Icon> _loadIconSetFromBinotto(const BinaryFile& file);
+		static Map<String, Cursor> _loadCursorSetFromBinotto(const BinaryFile& file);
+
+		static void _saveIconSetToBinotto(const Map<String, Icon>& icons, BinaryFile& file);
+		static void _saveCursorSetToBinotto(const Map<String, Cursor>& cursors, BinaryFile& file);
+
+		friend class WindowSettingsLoader;
 	};
 
 } // namespace otto

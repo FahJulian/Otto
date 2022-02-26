@@ -51,7 +51,7 @@ namespace otto
         close();
     }
 
-    void BinaryFile::moveCursor(uint64 offset)
+    void BinaryFile::moveCursor(uint64 offset) const
     {
         if (mMode == Mode::READ)
             mInputStream.seekg(offset, std::ios::cur);
@@ -77,7 +77,7 @@ namespace otto
             return true;
     }
 
-    void BinaryFile::read(uint8* dst, uint64 size)
+    void BinaryFile::read(uint8* dst, uint64 size) const
     {
         if (mMode != Mode::READ)
         {
@@ -93,7 +93,7 @@ namespace otto
         mInputStream.read(reinterpret_cast<char*>(dst), size);
     }
 
-    void BinaryFile::readCompressed(uint8* dst, uint64 originalSize)
+    void BinaryFile::readCompressed(uint8* dst, uint64 originalSize) const
     {
         if (mMode != Mode::READ)
         {
@@ -115,7 +115,7 @@ namespace otto
         delete[] compressedData;
     }
 
-    void BinaryFile::write(uint8* data, uint64 size)
+    void BinaryFile::write(const uint8* data, uint64 size)
     {
         if (mMode != Mode::WRITE)
         {
@@ -128,10 +128,10 @@ namespace otto
                 return;
         }
 
-        mOutputStream.write(reinterpret_cast<char*>(data), size);
+        mOutputStream.write(reinterpret_cast<const char*>(data), size);
     }
 
-    void BinaryFile::writeCompressed(uint8* data, uint64 size)
+    void BinaryFile::writeCompressed(const uint8* data, uint64 size)
     {
         uint64 maxCompressedSize = ZSTD_compressBound(size);
         uint8* compressedData = new uint8[maxCompressedSize];

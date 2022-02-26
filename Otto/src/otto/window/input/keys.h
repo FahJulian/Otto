@@ -4,11 +4,11 @@
 
 namespace otto 
 {
-    using Key = uint8;
-
-    enum class Keys : Key
+    enum class Key : uint8
     {
         // Windows
+
+        UNKNOWN = 0x00,
 
         BACKSPACE = 0x08,
         TAB = 0x09,
@@ -235,6 +235,5 @@ namespace otto
 
         _HIGHEST_KEY = 0xfe
     };
-
 
 } // namespace otto

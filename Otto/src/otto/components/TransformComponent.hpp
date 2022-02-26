@@ -1,8 +1,6 @@
 #pragma once
 
-#include "otto/base.h"
-#include "otto/math/vec3.h"
-#include "otto/scene/serialization.h"
+#include <otto.h>
 
 namespace otto
 {

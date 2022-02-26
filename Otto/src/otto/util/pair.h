@@ -73,7 +73,7 @@ namespace otto
             return *this;
         }
 
-        Pair& operator=(Pair&& other)
+        Pair& operator=(Pair&& other) noexcept
         {
             first = std::move(other.first);
             second = std::move(other.second);

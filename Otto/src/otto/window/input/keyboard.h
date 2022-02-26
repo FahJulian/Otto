@@ -14,13 +14,10 @@ namespace otto
 		Keyboard(const Keyboard& other) = delete;
 
 	public:
-		static bool isKeyPressed(Key key) 
-		{ 
-			return sKeys[key]; 
-		}
+		static bool isKeyPressed(Key key) { return sKeys[static_cast<uint64>(key)]; }
 
 	private:
-		static StaticArray<bool, static_cast<uint8>(Keys::_HIGHEST_KEY) + 1> sKeys;
+		static StaticArray<bool, static_cast<uint8>(Key::_HIGHEST_KEY) + 1> sKeys;
 
 		friend class Window;
 	};

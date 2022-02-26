@@ -2270,7 +2270,7 @@ namespace otto
     template<>
     bool String::stringTo<bool>(const String& string)
     {
-        return string == "true" || string == 1;
+        return string == "true" || string == '1';
     }
 
     template<>

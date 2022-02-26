@@ -6,9 +6,9 @@ namespace otto {
 
 	struct Icon
 	{
-		uint8 width;
-		uint8 height;
-		uint8* bitmap;
+		uint16 width = 0;
+		uint16 height = 0;
+		uint8* bitmap = nullptr;
 	};
 
 } // namespace otto

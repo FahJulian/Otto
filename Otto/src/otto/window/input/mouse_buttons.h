@@ -4,10 +4,7 @@
 
 namespace otto 
 {
-
-    using MouseButton = uint8;
-
-    enum class MouseButtons : MouseButton
+    enum class MouseButton : uint8
     {
         LEFT = 0x00,
         RIGHT = 0x01,

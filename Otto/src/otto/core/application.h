@@ -20,6 +20,7 @@ namespace otto
             uint8 logFileLevel = Log::ALL;
             String msvcVersion;
             String startScene;
+            FilePath windowSettingsPath;
             DynamicArray<String> components;
             DynamicArray<String> behaviours;
             DynamicArray<String> systems;
@@ -29,6 +30,7 @@ namespace otto
         enum class SettingsError : uint8
         {
             SYNTAX_ERROR,
+            WINDOW_SETTINGS_PATH_NOT_FOUND,
             ROOT_DIRECTORY_NOT_FOUND,
             LOG_FILE_PATH_NOT_FOUND,
             MSVC_VERSION_NOT_FOUND,
