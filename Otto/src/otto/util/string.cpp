@@ -2206,6 +2206,16 @@ namespace otto
         return i < mSize ? i : mSize;
     }
 
+    String String::repeat(const String& string, uint64 amount)
+    {
+        String result = String(string.getSize() * amount);
+
+        for (uint64 i = 0; i < amount; i++)
+            std::memcpy(result.getData() + i * string.getSize(), string.getData(), string.getSize());
+
+        return result;
+    }
+
     String String::valueOf(bool value)
     {
         return value ? String("true", 4) : String("false", 5);

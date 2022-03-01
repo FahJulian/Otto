@@ -24,8 +24,8 @@ namespace otto
         {
         }
 
-        explicit Serialized(Type type, bool hasBrackets = false)
-            : mType(type), mHasBrackets(hasBrackets)
+        explicit Serialized(Type type, bool hasBrackets = false, bool isTopLevel = false)
+            : mType(type), mHasBrackets(hasBrackets), mIsTopLevel(isTopLevel)
         {
         }
 
@@ -193,42 +193,52 @@ namespace otto
             mDictionary.insert(name, serialize<T>(value));
         }
 
-        String toString() const
+        String toString(uint64 indentation = 0) const
         {
             String s;
 
             switch (mType)
             {
             case Type::VALUE:
-                return mValue;
+                s = mValue;
+                break;
 
             case Type::DICTIONARY:
                 if (mHasBrackets)
-                    s = "{\n";
+                    s = String::repeat(" ", indentation) + "{\n";
+                else
+                    s = '\n';
 
                 for (auto& [key, value] : mDictionary)
-                    s.append(key).append(": ").append(value.toString()).append('\n');
+                    s.append(String::repeat(" ", indentation) + key+ ": " + value.toString(indentation + 4) + '\n');
 
                 if (mHasBrackets)
-                    s.append('}');
+                    s.append(String::repeat(" ", indentation) + '}');
 
-                return s;
+                break;
 
             case Type::LIST:
                 if (mHasBrackets)
-                    s = "[\n";
+                    s = String::repeat(" ", indentation) + "[\n";
+                else
+                    s = '\n';
 
                 for (auto& value : mList)
-                    s.append(value.toString()).append('\n');
+                    s.append(String::repeat(" ", indentation) + value.toString(indentation + 4) + '\n');
 
                 if (mHasBrackets)
-                    s.append(']');
+                   s.append(String::repeat(" ", indentation) + ']');
 
-                return s;
+                break;
 
             default:
-                return s;
+                break;
             }
+
+            if (mIsTopLevel)
+                s = String::subString(s, s.findFirstNotOfWhiteSpace(), s.findLastNotOfWhiteSpace() + 1) + '\n';
+
+            return s;
         }
 
         bool isValue() const { return mType == Type::VALUE; }
@@ -238,6 +248,7 @@ namespace otto
     private:
         Type mType;
         bool mHasBrackets = false;
+        bool mIsTopLevel = false;
 
         String mValue;
         DynamicArray<Serialized> mList;

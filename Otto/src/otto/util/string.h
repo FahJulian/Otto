@@ -277,6 +277,8 @@ namespace otto
         static String removeLastIgnoreCase(const String& string, const char8* removeString, uint64 endIndex = std::numeric_limits<uint64>::max());
         static String removeLastIgnoreCase(const String& string, const String& removeString, uint64 endIndex = std::numeric_limits<uint64>::max());
 
+        static String repeat(const String& string, uint64 amount);
+
         static String title(const String& string);
         static String untitle(const String& string);
 

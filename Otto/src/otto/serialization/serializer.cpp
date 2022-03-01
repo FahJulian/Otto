@@ -6,7 +6,7 @@ namespace otto
 {
     Result<Serialized, Serializer::ParsingError> Serializer::deserialize(const FilePath& filePath)
     {
-        Serialized serialized = Serialized(Serialized::Type::DICTIONARY, false);
+        Serialized serialized = Serialized(Serialized::Type::DICTIONARY, false, true);
         DynamicArray<String> lines = File(filePath).readLines();
 
         _filterEmtpyLines(lines);

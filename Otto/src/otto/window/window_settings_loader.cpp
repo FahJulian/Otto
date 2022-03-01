@@ -194,7 +194,7 @@ namespace otto
 			else
 			{
 				serialized.insert("width", settings.unmaximizedWidth);
-				serialized.insert("beight", settings.unmaximizedHeight);
+				serialized.insert("height", settings.unmaximizedHeight);
 			}
 		}
 

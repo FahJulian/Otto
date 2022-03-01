@@ -119,11 +119,12 @@ namespace otto
 
         if (!SceneLoader::reloadDll())
             return false;
+#endif
 
         if (!SceneManager::setScene(sApplication->mRootDirectory + settings.startScene + ".otto"))
             return false;
 
-        Window::init(settings.rootDirectory + settings.windowSettingsPath, {
+        bool windowInitialized = Window::init(settings.rootDirectory + settings.windowSettingsPath, {
             Application::_onKeyPressed,
             Application::_onKeyReleased,
             Application::_onMouseButtonPressed,
@@ -136,13 +137,13 @@ namespace otto
             Application::_onWindowGainedFocus,
             Application::_onWindowLostFocus,
         });
-#endif
+
+        if (!windowInitialized)
+            return false;
 
         SceneManager::sCurrentScene->init();
 
         sInitialized = true;
-
-        Window::setTitle("Test");
 
         return true;
     }
