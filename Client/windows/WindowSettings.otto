@@ -1,4 +1,3 @@
-{
 Title: Test
 ClearColor: ff0000ff
 Width: 500
@@ -8,4 +7,9 @@ windowMode: 0
 maximized: false
 cursorSet: otto/cursors/dark_cursors.otto
 defaultCursor: arrow
-}
+iconSet: 16: otto/icons/logo_16x16.png
+32: otto/icons/logo_32x32.png
+64: otto/icons/logo_64x64.png
+128: otto/icons/logo_128x128.png
+logo: otto/icons/logo.png
+

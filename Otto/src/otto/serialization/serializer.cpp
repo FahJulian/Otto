@@ -66,7 +66,7 @@ namespace otto
     Result<Serializer::SerializableParsingResult, Serializer::ParsingError> Serializer::_parseSerializable(
         DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation)
     {
-        Serialized serialized = Serialized(Serialized::Type::VOID);
+        Serialized serialized = Serialized(Serialized::Type::VOID, false);
 
         if (String::trim(lines[lineIndex]).endsWith('{'))
             serialized = Serialized(Serialized::Type::DICTIONARY, true);

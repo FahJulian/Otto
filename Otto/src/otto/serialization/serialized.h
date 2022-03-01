@@ -203,25 +203,25 @@ namespace otto
                 return mValue;
 
             case Type::DICTIONARY:
-                if (!mHasBrackets)
+                if (mHasBrackets)
                     s = "{\n";
 
                 for (auto& [key, value] : mDictionary)
                     s.append(key).append(": ").append(value.toString()).append('\n');
 
-                if (!mHasBrackets)
+                if (mHasBrackets)
                     s.append('}');
 
                 return s;
 
             case Type::LIST:
-                if (!mHasBrackets)
+                if (mHasBrackets)
                     s = "[\n";
 
                 for (auto& value : mList)
                     s.append(value.toString()).append('\n');
 
-                if (!mHasBrackets)
+                if (mHasBrackets)
                     s.append(']');
 
                 return s;
