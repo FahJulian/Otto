@@ -6,7 +6,7 @@ namespace otto
 {
     Result<Serialized, Serializer::ParsingError> Serializer::deserialize(const FilePath& filePath)
     {
-        Serialized serialized = Serialized(Serialized::Type::DICTIONARY, true);
+        Serialized serialized = Serialized(Serialized::Type::DICTIONARY, false);
         DynamicArray<String> lines = File(filePath).readLines();
 
         _filterEmtpyLines(lines);
@@ -69,9 +69,9 @@ namespace otto
         Serialized serialized = Serialized(Serialized::Type::VOID);
 
         if (String::trim(lines[lineIndex]).endsWith('{'))
-            serialized.mType = Serialized::Type::DICTIONARY;
+            serialized = Serialized(Serialized::Type::DICTIONARY, true);
         else if (String::trim(lines[lineIndex]).endsWith('['))
-            serialized.mType = Serialized::Type::LIST;
+            serialized = Serialized(Serialized::Type::LIST, true);
         else if (String::trim(lines[lineIndex]).endsWith(':') && lines.getSize() >= (lineIndex + 1) + 1)
             serialized.mType = lines[lineIndex + 1].contains(':') ? Serialized::Type::DICTIONARY : Serialized::Type::LIST;
 

@@ -24,8 +24,8 @@ namespace otto
         {
         }
 
-        explicit Serialized(Type type, bool isTopLevel = false)
-            : mType(type), mIsTopLevel(isTopLevel)
+        explicit Serialized(Type type, bool hasBrackets = false)
+            : mType(type), mHasBrackets(hasBrackets)
         {
         }
 
@@ -203,24 +203,26 @@ namespace otto
                 return mValue;
 
             case Type::DICTIONARY:
-                if (!mIsTopLevel)
+                if (!mHasBrackets)
                     s = "{\n";
 
                 for (auto& [key, value] : mDictionary)
                     s.append(key).append(": ").append(value.toString()).append('\n');
 
-                if (!mIsTopLevel)
+                if (!mHasBrackets)
                     s.append('}');
 
                 return s;
 
             case Type::LIST:
-                s = "[\n";
+                if (!mHasBrackets)
+                    s = "[\n";
 
                 for (auto& value : mList)
                     s.append(value.toString()).append('\n');
 
-                s.append(']');
+                if (!mHasBrackets)
+                    s.append(']');
 
                 return s;
 
@@ -235,7 +237,7 @@ namespace otto
 
     private:
         Type mType;
-        bool mIsTopLevel = false;
+        bool mHasBrackets = false;
 
         String mValue;
         DynamicArray<Serialized> mList;

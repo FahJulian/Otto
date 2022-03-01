@@ -40,30 +40,6 @@ namespace otto
 		{
 			return WindowSettingsLoadingError::UNKNOWN_FILETYPE;
 		}
-	}
-
-	bool WindowSettingsLoader::saveWindowSettings(const WindowSettings& windowSettings, const FilePath& filePath)
-	{
-		if (filePath.toString().endsWith(".otto"))
-		{
-			Serialized serialized;
-			_saveWindowSettingsToSerialized(windowSettings, serialized);
-			File(filePath).write(serialized.toString());
-
-			return true;
-		}
-		else if (filePath.toString().endsWith(".binotto"))
-		{
-			BinaryFile file = BinaryFile(filePath);
-			_saveWindowSettingsToBinotto(windowSettings, file);
-			file.close();
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}		
 	
 	Result<WindowSettings, WindowSettingsLoader::WindowSettingsLoadingError>
@@ -121,24 +97,27 @@ namespace otto
 		if (serialized.contains("saveMaximized"))
 			settings.saveMaximized = serialized.get<bool>("saveMaximized");
 
-		if (serialized.contains("icons"))
+		if (serialized.contains("iconSet"))
 		{
-			auto result = IconLoader::_loadIconSetFromSerialized(serialized.get("icons"));
+			auto result = IconLoader::_loadIconSetFromSerialized(serialized.get("iconSet"));
 			if (!result.hasError())
-				settings.icons = result.getResult();
+				settings.iconSet = result.getResult();
 		}
 
-		if (serialized.contains("cursors"))
+		if (serialized.contains("cursorSet"))
 		{
-			auto result = IconLoader::_loadCursorSetFromSerialized(serialized.get("cursors"));
+			auto result = IconLoader::_loadCursorSetFromSerialized(serialized.get("cursorSet"));
 			if (!result.hasError())
-				settings.cursors = result.getResult();
+				settings.cursorSet = result.getResult();
 		}
+
+		if (serialized.contains("defaultCursor"))
+			settings.defaultCursor = serialized.get<String>("defaultCursor");
 
 		return settings;
 	}
 
-	WindowSettings WindowSettingsLoader::_loadWindowSettingsFromBinotto(const BinaryFile& file)
+	WindowSettings WindowSettingsLoader::_loadWindowSettingsFromBinotto(BinaryFile& file)
 	{
 		WindowSettings settings;
 
@@ -167,33 +146,19 @@ namespace otto
 		settings.saveMinimized = file.read<bool>();
 		settings.saveMaximized = file.read<bool>();
 
-		settings.icons = IconLoader::_loadIconSetFromBinotto(file);
-		settings.cursors = IconLoader::_loadCursorSetFromBinotto(file);
+		settings.iconSet = IconLoader::_loadIconSetFromBinotto(file);
+		settings.cursorSet = IconLoader::_loadCursorSetFromBinotto(file);
+
+		uint64 defaultCursorSize = static_cast<uint64>(file.read<uint16>());
+		char8* defaultCursorData = new char8[defaultCursorSize];
+		file.read(reinterpret_cast<uint8*>(defaultCursorData), defaultCursorSize);
+		settings.defaultCursor = String(defaultCursorData, defaultCursorSize);
+		delete[] defaultCursorData;
 
 		return settings;
 	}
 
-	void WindowSettingsLoader::_saveWindowSettingsToSerialized(const WindowSettings& settings, Serialized& serialized)
-	{
-		serialized.insert("title", settings.title);
-		serialized.insert("saveTitle", settings.saveTitle);
-		serialized.insert("clearColor", settings.clearColor);
-		serialized.insert("saveClearColor", settings.saveClearColor);
-		serialized.insert("width", settings.width);
-		serialized.insert("height", settings.height);
-		serialized.insert("saveSize", settings.saveSize);
-		serialized.insert("windowMode", settings.windowMode);
-		serialized.insert("saveWindowMode", settings.saveWindowMode);
-		serialized.insert("resizable", settings.resizable);
-		serialized.insert("closeButton", settings.closeButton);
-		serialized.insert("closeOnAltF4", settings.closeOnAltF4);
-		serialized.insert("minimized", settings.minimized);
-		serialized.insert("maximized", settings.saveWindowMode);
-		serialized.insert("saveMinimized", settings.saveMinimized);
-		serialized.insert("saveMaximized", settings.saveMaximized);
-	}
-
-	void WindowSettingsLoader::_saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file)
+	void WindowSettingsLoader::saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file)
 	{
 		file.write(static_cast<uint16>(settings.title.getSize()));
 		file.write(reinterpret_cast<const uint8*>(settings.title.getData()), settings.title.getSize());
@@ -213,11 +178,14 @@ namespace otto
 		file.write(settings.saveMinimized);
 		file.write(settings.saveMaximized);
 
-		IconLoader::_saveIconSetToBinotto(settings.icons, file);
-		IconLoader::_saveCursorSetToBinotto(settings.cursors, file);
+		IconLoader::_saveIconSetToBinotto(settings.iconSet, file);
+		IconLoader::_saveCursorSetToBinotto(settings.cursorSet, file);
+
+		file.write(static_cast<uint16>(settings.defaultCursor.getSize()));
+		file.write(reinterpret_cast<const uint8*>(settings.defaultCursor.getData()), settings.defaultCursor.getSize());
 	}
 
-	void WindowSettingsLoader::_saveWindowSettingsToOtto(const WindowSettings& settings, Serialized serialized, const FilePath& filePath)
+	void WindowSettingsLoader::saveWindowSettingsToOtto(const WindowSettings& settings, Serialized serialized, const FilePath& filePath)
 	{
 		if (settings.saveSize)
 		{
@@ -341,8 +309,8 @@ namespace otto
 			info->saveMaximized = json["saveMaximized"].get<bool>();
 
 		std::vector<String> iconFilePaths;
-		if (json.contains("icons") && json["icons"].is_array())
-			for (JSON& iconFilePath : json["icons"])
+		if (json.contains("iconSet") && json["iconSet"].is_array())
+			for (JSON& iconFilePath : json["iconSet"])
 				if (iconFilePath.is_string())
 					iconFilePaths.push_back(iconFilePath.get<String>());
 
@@ -351,13 +319,13 @@ namespace otto
 			String standardCursorSet = json["standardCursorSet"];
 
 		std::unordered_map<String, String> cursorFilePaths;
-		if (json.contains("cursors") && json["cursors"].is_object())
-			for (auto& [cursorName, cursorFilePath] : json["cursors"].items())
+		if (json.contains("cursorSet") && json["cursorSet"].is_object())
+			for (auto& [cursorName, cursorFilePath] : json["cursorSet"].items())
 				if (cursorFilePath.is_string())
 					cursorFilePaths.emplace(cursorName, cursorFilePath.get<String>());
 
-		info->cursors = Util::loadCursors(standardCursorSet, cursorFilePaths);
-		info->icons = Util::loadIcons(iconFilePaths);
+		info->cursorSet = Util::loadCursors(standardCursorSet, cursorFilePaths);
+		info->iconSet = Util::loadIcons(iconFilePaths);
 	}
 
 	static void loadBinary(WindowInfo* info, Util::BinaryInputFileStream&& file)
@@ -386,8 +354,8 @@ namespace otto
 		info->saveMinimized = file.read<bool>();
 		info->saveMaximized = file.read<bool>();
 
-		info->cursors = Util::loadCursors(file);
-		info->icons = Util::loadIcons(file);
+		info->cursorSet = Util::loadCursors(file);
+		info->iconSet = Util::loadIcons(file);
 	}
 
 
@@ -463,8 +431,8 @@ namespace otto
 		file.write((const char*)&info.saveMinimized, sizeof(info.saveMinimized));
 		file.write((const char*)&info.saveMaximized, sizeof(info.saveMaximized));
 
-		saveCursors(info.cursors, file);
-		saveIcons(info.icons, file);
+		saveCursors(info.cursorSet, file);
+		saveIcons(info.iconSet, file);
 
 		return file.save();
 	} */

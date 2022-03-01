@@ -27,7 +27,7 @@ namespace otto
 
     class BinaryFile
     {
-    private:
+    public:
         enum class Mode
         {
             CLOSED,
@@ -35,7 +35,6 @@ namespace otto
             WRITE,
         };
 
-    public:
         BinaryFile(const FilePath& filePath)
             : mFilePath(filePath)
         {
@@ -43,18 +42,21 @@ namespace otto
 
         ~BinaryFile();
 
-        void moveCursor(uint64 offset) const;
+        void setMode(Mode mode);
+        Mode getMode() const { return mMode; }
+
+        void moveCursor(uint64 offset);
 
         bool close();
 
-        void read(uint8* dst, uint64 size) const;
-        void readCompressed(uint8* dst, uint64 size) const;
+        void read(uint8* dst, uint64 size);
+        void readCompressed(uint8* dst, uint64 size);
 
         void write(const uint8* data, uint64 size);
         void writeCompressed(const uint8* data, uint64 originalSize);
 
         template<typename T>
-        T read() const
+        T read()
         {
             T t;
             read(reinterpret_cast<uint8*>(&t), sizeof(T));
@@ -63,7 +65,7 @@ namespace otto
         }
             
         template<typename T>
-        T readCompressed() const
+        T readCompressed()
         {
             T t;
             readCompressed(reinterpret_cast<uint8*>(&t), sizeof(T));
@@ -96,11 +98,11 @@ namespace otto
         }
 
     private:
-        mutable Mode mMode = Mode::CLOSED;
+        Mode mMode = Mode::CLOSED;
         FilePath mFilePath;
 
-        mutable std::ifstream mInputStream;
-        mutable std::ofstream mOutputStream;
+        std::ifstream mInputStream;
+        std::ofstream mOutputStream;
     };
 
 } // namespace otto

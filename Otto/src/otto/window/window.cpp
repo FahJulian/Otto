@@ -99,16 +99,16 @@ namespace otto
             return handle;
         }
 
-        static void _initCursors()
+        static void _initCursors(const String& defaultCursor)
         {
-            for (auto& [name, cursor] : sSettings.cursors)
+            for (auto& [name, cursor] : sSettings.cursorSet)
             {
                 HCURSOR handle = HCURSOR(_createNativeIcon(cursor.width, cursor.height, cursor.bitmap, true, cursor.hotspotX, cursor.hotspotY));
                 if (handle)
                     sCursors.insert(name, handle);
             }
 
-            //sCurrentCursor = sCursors[Cursors::Arrow];
+            sCurrentCursor = sCursors.get(defaultCursor);
         }
 
         static void _initIcons()
@@ -120,7 +120,7 @@ namespace otto
 
             Icon smallIcon;
             float64 smallestSizeDifference = 1.0e35;
-            for (auto& [name, icon] : sSettings.icons)
+            for (auto& [name, icon] : sSettings.iconSet)
             {
                 int32 xoff = smallIconWidth - icon.width;
                 int32 yoff = smallIconHeight - icon.height;
@@ -135,7 +135,7 @@ namespace otto
 
             Icon largeIcon;
             smallestSizeDifference = 1.0e35;
-            for (auto& [name, icon] : sSettings.icons)
+            for (auto& [name, icon] : sSettings.iconSet)
             {
                 int32 xoff = largeIconWidth - icon.width;
                 int32 yoff = largeIconHeight - icon.height;
@@ -311,7 +311,7 @@ namespace otto
 
         _updateWindowSize();
 
-        _initCursors();
+        _initCursors(sSettings.defaultCursor);
         _initIcons();
 
         if (!_createContext())
@@ -550,7 +550,7 @@ namespace otto
         //if (sSettings.saveMinimized)
         //    sSettings.minimized = sSettings.minimized;
 
-        WindowSettingsLoader::_saveWindowSettingsToOtto(sSettings, sInitialSettings, sSettingsFilePath);
+        WindowSettingsLoader::saveWindowSettingsToOtto(sSettings, sInitialSettings, sSettingsFilePath);
     }
 
     void Window::destroy()

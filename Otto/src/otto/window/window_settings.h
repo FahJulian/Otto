@@ -38,8 +38,10 @@ namespace otto
 		bool saveMinimized = false;
 		bool saveMaximized = true;
 
-		Map<String, Icon> icons;
-		Map<String, Cursor> cursors;
+		Map<String, Icon> iconSet;
+		Map<String, Cursor> cursorSet;
+
+		String defaultCursor;
 
 		uint16 unmaximizedWidth = 0;
 		uint16 unmaximizedHeight = 0;

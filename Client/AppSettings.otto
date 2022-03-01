@@ -4,7 +4,6 @@ LogConsoleLevel: ALL
 LogFileLevel: ALL
 MSVC_Version: 14.29.30133
 StartScene: scenes/TestScene
-CursorSet: otto/cursors/dark_cursors
 WindowSettingsPath: windows/WindowSettings.otto
 
 Components: [

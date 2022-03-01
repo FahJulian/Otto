@@ -51,10 +51,24 @@ namespace otto
         close();
     }
 
-    void BinaryFile::moveCursor(uint64 offset) const
+    void BinaryFile::setMode(BinaryFile::Mode mode)
     {
-        if (mMode == Mode::READ)
-            mInputStream.seekg(offset, std::ios::cur);
+        if (mMode == mode)
+            return;
+
+        close();
+        mMode = mode;
+
+        if (mode == Mode::READ)
+            mInputStream = std::ifstream(mFilePath.toString().getData(), std::ios::binary | std::ios::in);
+        else if (mode == Mode::WRITE)
+            mOutputStream = std::ofstream(mFilePath.toString().getData(), std::ios::binary | std::ios::out);
+    }
+
+    void BinaryFile::moveCursor(uint64 offset)
+    {
+        setMode(Mode::READ);
+        mInputStream.seekg(offset, std::ios::cur);
     }
 
     bool BinaryFile::close()
@@ -77,34 +91,15 @@ namespace otto
             return true;
     }
 
-    void BinaryFile::read(uint8* dst, uint64 size) const
+    void BinaryFile::read(uint8* dst, uint64 size)
     {
-        if (mMode != Mode::READ)
-        {
-            if (mMode == Mode::CLOSED)
-            {
-                mInputStream = std::ifstream(mFilePath.toString().getData(), std::ios::binary | std::ios::in);
-                mMode = Mode::READ;
-            }
-            else
-                return;
-        }
-
+        setMode(Mode::READ);
         mInputStream.read(reinterpret_cast<char*>(dst), size);
     }
 
-    void BinaryFile::readCompressed(uint8* dst, uint64 originalSize) const
+    void BinaryFile::readCompressed(uint8* dst, uint64 originalSize)
     {
-        if (mMode != Mode::READ)
-        {
-            if (mMode == Mode::CLOSED)
-            {
-                mInputStream = std::ifstream(mFilePath.toString().getData(), std::ios::binary | std::ios::in);
-                mMode = Mode::READ;
-            }
-            else
-                return;
-        }
+        setMode(Mode::READ);
 
         uint64 compressedSize = static_cast<uint64>(read<uint32>());
         uint8* compressedData = new uint8[compressedSize];
@@ -117,22 +112,14 @@ namespace otto
 
     void BinaryFile::write(const uint8* data, uint64 size)
     {
-        if (mMode != Mode::WRITE)
-        {
-            if (mMode == Mode::CLOSED)
-            {
-                mOutputStream = std::ofstream(mFilePath.toString().getData(), std::ios::binary | std::ios::out);
-                mMode = Mode::WRITE;
-            }
-            else
-                return;
-        }
-
+        setMode(Mode::WRITE);
         mOutputStream.write(reinterpret_cast<const char*>(data), size);
     }
 
     void BinaryFile::writeCompressed(const uint8* data, uint64 size)
     {
+        setMode(Mode::WRITE);
+
         uint64 maxCompressedSize = ZSTD_compressBound(size);
         uint8* compressedData = new uint8[maxCompressedSize];
 

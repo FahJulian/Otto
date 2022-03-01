@@ -25,19 +25,14 @@ namespace otto
 		};
 
 		static Result<WindowSettings, WindowSettingsLoadingError> loadWindowSettings(const FilePath& filePath);
-		static bool saveWindowSettings(const WindowSettings& info, const FilePath& filePath);
+		static void saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file);
+		static void saveWindowSettingsToOtto(const WindowSettings& settings, Serialized initialSettings, const FilePath& filePath);
 
 	private:
 		static Result<WindowSettings, WindowSettingsLoader::WindowSettingsLoadingError>
 			_loadWindowSettingsFromSerialized(const Serialized& serialized);
 
-		static WindowSettings _loadWindowSettingsFromBinotto(const BinaryFile& file);
-
-		static void _saveWindowSettingsToSerialized(const WindowSettings& settings, Serialized& serialized);
-
-		static void _saveWindowSettingsToBinotto(const WindowSettings& settings, BinaryFile& file);
-
-		static void _saveWindowSettingsToOtto(const WindowSettings& settings, Serialized initialSettings, const FilePath& filePath);
+		static WindowSettings _loadWindowSettingsFromBinotto(BinaryFile& file);
 
 		friend class Window;
 	};

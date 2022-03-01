@@ -5,6 +5,7 @@
 #include <stb/stb_image.h>
 
 #include "otto/debug/log/log.h"
+#include "otto/core/application.h"
 
 namespace otto
 {
@@ -193,7 +194,7 @@ namespace otto
 			auto result = Serializer::deserialize(filePath);
 			if (result.hasError())
 				return IconLoadingError::OTTO_FILE_PARSING_ERROR;
-			else if (!result.getResult().contains("FilePath"))
+			else if (!result.getResult().contains("filePath"))
 				return IconLoadingError::OTTO_FILE_FILEPATH_MISSING;
 			else
 				return loadIcon(result.getResult().get<String>("filePath"));
@@ -325,6 +326,13 @@ namespace otto
 	Result<Map<String, Icon>, IconLoader::IconLoadingError>
 		IconLoader::_loadIconSetFromSerialized(const Serialized& serialized)
 	{
+		if (serialized.isValue())
+		{
+			String filePath = serialized.get<String>();
+			return loadIconSet(filePath.startsWith("otto/") ? Application::getCoreRootDirectory() + "res/" + filePath
+				: Application::getRootDirectory() + filePath);
+		}
+
 		Map<String, Icon> icons;
 		for (auto& [name, filePath] : serialized.getDictionary())
 		{
@@ -343,6 +351,13 @@ namespace otto
 	Result<Map<String, Cursor>, IconLoader::IconLoadingError>
 		IconLoader::_loadCursorSetFromSerialized(const Serialized& serialized)
 	{
+		if (serialized.isValue())
+		{
+			String filePath = serialized.get<String>();
+			return loadCursorSet(filePath.startsWith("otto/") ? Application::getCoreRootDirectory() + "res/" + filePath
+				: Application::getRootDirectory() + filePath);
+		}
+
 		Map<String, Cursor> cursors;
 		for (auto& [name, value] : serialized.getDictionary())
 		{
@@ -369,7 +384,7 @@ namespace otto
 		return cursors;
 	}
 
-	Map<String, Icon> IconLoader::_loadIconSetFromBinotto(const BinaryFile& file)
+	Map<String, Icon> IconLoader::_loadIconSetFromBinotto(BinaryFile& file)
 	{
 		Map<String, Icon> icons;
 		uint16 iconAmount = file.read<uint16>();
@@ -397,7 +412,7 @@ namespace otto
 		return icons;
 	}
 
-	Map<String, Cursor> IconLoader::_loadCursorSetFromBinotto(const BinaryFile& file)
+	Map<String, Cursor> IconLoader::_loadCursorSetFromBinotto(BinaryFile& file)
 	{
 		Map<String, Cursor> cursors;
 		uint16 cursorAmount = file.read<uint16>();
