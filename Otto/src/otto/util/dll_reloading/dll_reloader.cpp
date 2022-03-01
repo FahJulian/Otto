@@ -188,7 +188,7 @@ namespace otto
         {
             String compilerCommand = _generateCompilerCommand(dllName, cppFiles, preprocessorDefinitions);
 
-            Log::info("Recompiling dll ", dllName, "...");
+            Log::trace("Recompiling dll ", dllName, "...");
 
             std::system(compilerCommand.getData());
         }
@@ -197,7 +197,7 @@ namespace otto
         {
             String linkerCommand = _generateLinkerCommand(dllName, objFiles);
 
-            Log::info("Linking dll ", dllName, "...");
+            Log::trace("Linking dll ", dllName, "...");
 
             std::system(linkerCommand.getData());
         }
@@ -249,7 +249,7 @@ namespace otto
                 return false;
             }
 
-            Log::info("Done. Extracting symbols from dll ", dll.name, "...");
+            Log::trace("Done. Extracting symbols from dll ", dll.name, "...");
 
             if (!_swapFiles(dll, path) || !_reloadDll(dll, path))
             {
@@ -258,16 +258,16 @@ namespace otto
 
                 if (!_reloadOldDll(dll, path))
                 {
-                    Log::error("Failed.");
+                    Log::error("Failed to extract symbols.");
 
                     _deleteTemporaryFiles(dll, path, files);
                     return false;
                 }
 
-                Log::info("Done.");
+                Log::trace("Done extracting symbols.");
             }
 
-            Log::info("Done.");
+            Log::info("Done reloading Dll.");
 
             _deleteTemporaryFiles(dll, path, files);
             return true;
@@ -277,6 +277,8 @@ namespace otto
 
     bool DllReloader::init(const Settings& settings)
     {
+        Log::trace("Initializing DllReloader...");
+
         sSettings = settings;
 
         if (!sSettings.compilerExePath.toString().endsWithIgnoreCase("\\cl.exe"))
@@ -295,12 +297,16 @@ namespace otto
             FileUtils::createDirectoryRecursively(sSettings.tmpDir);
 
         sInitialized = true;
+
+        Log::trace("Done initializing DllReloader");
         return true;
     }
 
     bool DllReloader::reloadDll(const FilePath& dllPath, bool forceRecompile, std::initializer_list<FilePath> sourceFiles,
         std::initializer_list<String> additionalPreprocessorDefinitions)
     {
+        Log::info("Reloading Dll ", dllPath, "...");
+
         if (!sInitialized)
         {
             Log::warn("Can't recompile dll ", dllPath, ": DllReloader has not been initialized");
@@ -335,6 +341,8 @@ namespace otto
 
     void DllReloader::destroy()
     {
+        Log::trace("Destroying Dll Reloader...");
+
         for (auto& [name, dll] : sDlls)
         {
             Log::info("Freeing dll ", name, ".dll");

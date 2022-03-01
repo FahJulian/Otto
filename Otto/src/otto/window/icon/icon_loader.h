@@ -23,6 +23,7 @@ namespace otto {
 			OTTO_FILE_PARSING_ERROR,
 			OTTO_FILE_FILEPATH_MISSING,
 			OTTO_FILE_HOTSPOT_MISSING,
+			INVALID_BITMAP,
 		};
 
 		static Result<Icon, IconLoadingError> loadIcon(const FilePath& filePath);

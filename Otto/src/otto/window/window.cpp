@@ -276,13 +276,21 @@ namespace otto
 
     bool Window::init(const FilePath& filePath, const Listeners& listeners)
     {
-        auto serialized = Serializer::deserialize(filePath);
+        Log::trace("Initializing Window...");
+
+        auto serialized = Serializer::load(filePath);
         if (serialized.hasError())
+        {
+            Log::error("Failed to initialize Window: Syntax error");
             return false;
+        }
 
         auto settings = WindowSettingsLoader::_loadWindowSettingsFromSerialized(serialized.getResult());
         if (settings.hasError())
+        {
+            Log::error("Failed to initialize Window: Could not load Window Settings");
             return false;
+        }
 
         sSettingsFilePath = filePath;
         sInitialSettings = serialized.getResult();
@@ -296,7 +304,10 @@ namespace otto
         sSettings.title = sSettings.title;
 
         if (!_createWin32Window())
+        {
+            Log::error("Failed to initialize Window: Could not create win32 window.");
             return false;
+        }
 
         _initStyle();
 
@@ -315,7 +326,10 @@ namespace otto
         _initIcons();
 
         if (!_createContext())
+        {
+            Log::error("Failed to initialize Window: Could not create context.");
             return false;
+        }
 
         setClearColor(sSettings.clearColor = sSettings.clearColor);
 
@@ -533,28 +547,13 @@ namespace otto
 
     void Window::saveSettings()
     {
-        //if (sSettings.saveSize)
-        //{
-        //    sSettings.width = sSettings.unmaximizedWidth ;
-        //    sSettings.height = sSettings.unmaximizedHeight;
-        //}
-
-        //if (sSettings.saveTitle)
-        //    sSettings.title = sSettings.title;
-        //if (sSettings.saveWindowMode)
-        //    sSettings.windowMode = sSettings.windowMode;
-        //if (sSettings.saveClearColor)
-        //    sSettings.clearColor = sSettings.clearColor;
-        //if (sSettings.saveMaximized)
-        //    sSettings.maximized = sSettings.maximized;
-        //if (sSettings.saveMinimized)
-        //    sSettings.minimized = sSettings.minimized;
-
         WindowSettingsLoader::saveWindowSettingsToOtto(sSettings, sInitialSettings, sSettingsFilePath);
     }
 
     void Window::destroy()
     {
+        Log::trace("Destroying Window...");
+
         if (sSettings.windowMode == WindowMode::FULLSCREEN )
             _setFullscreen(false);
 

@@ -53,7 +53,7 @@ namespace otto
 
     std::ostream& operator<<(std::ostream& stream, const FilePath& filePath)
     {
-        return stream << filePath.toString() << std::endl;
+        return stream << filePath.toString();
     }
 
 } // namespace otto

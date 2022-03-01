@@ -42,7 +42,10 @@ namespace otto
 
         template<typename Arg, typename... Args>
         static void log(const Level& level, const Arg& arg, const Args&... args)
-        {
+        {   
+            if (sInstance == nullptr)
+                return;
+
             if (level.severity >= sInstance->mConsoleLevel)
             {
                 *sInstance->mConsoleStream << level.color;

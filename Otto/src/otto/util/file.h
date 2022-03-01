@@ -45,6 +45,8 @@ namespace otto
         void setMode(Mode mode);
         Mode getMode() const { return mMode; }
 
+        const FilePath& getFilePath() const { return mFilePath; }
+
         void moveCursor(uint64 offset);
 
         bool close();

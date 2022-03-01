@@ -10,6 +10,7 @@ namespace otto
 {
     class Serialized
     {
+    public:
         enum class Type : uint8
         {
             VOID,
@@ -18,7 +19,6 @@ namespace otto
             DICTIONARY,
         };
 
-    public:
         Serialized()
             : mType(Type::VOID)
         {
@@ -55,6 +55,8 @@ namespace otto
             : mType(Type::DICTIONARY), mDictionary(dictionary)
         {
         }
+
+        Type getType() const { return mType; }
 
         const DynamicArray<Serialized>& getList() const
         {

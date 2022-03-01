@@ -2,9 +2,10 @@
 
 #include "otto/base.h"
 #include "otto/util/result.h"
+#include "otto/core/package.h"
 #include "otto/debug/log/log.h"
-#include "otto/util/platform/file_path.h"
 #include "otto/window/events.h"
+#include "otto/util/platform/file_path.h"
 
 extern int main();
 
@@ -13,6 +14,9 @@ namespace otto
     class Application
     {
     private:
+        Application() = delete;
+        Application(const Application& other) = delete;
+
         struct Settings
         {
             FilePath rootDirectory;
@@ -22,10 +26,7 @@ namespace otto
             String msvcVersion;
             String startScene;
             FilePath windowSettingsPath;
-            DynamicArray<String> components;
-            DynamicArray<String> behaviours;
-            DynamicArray<String> systems;
-            DynamicArray<String> events;
+            Package applicationPackage;
         };
 
         enum class SettingsError : uint8
@@ -36,11 +37,8 @@ namespace otto
             LOG_FILE_PATH_NOT_FOUND,
             MSVC_VERSION_NOT_FOUND,
             START_SCENE_NOT_FOUND,
+            PACKAGE_ERROR,
         };
-
-        Application()
-        {
-        }
 
     public:
         static const FilePath& getRootDirectory();
@@ -72,8 +70,6 @@ namespace otto
         static void _onWindowResized(const _WindowResizedEvent& e);
         static void _onWindowGainedFocus(const _WindowGainedFocusEvent& e);
         static void _onWindowLostFocus(const _WindowLostFocusEvent& e);
-
-        FilePath mRootDirectory;
 
         friend int ::main();
         friend class Scene;

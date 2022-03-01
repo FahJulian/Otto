@@ -6,6 +6,10 @@ MSVC_Version: 14.29.30133
 StartScene: scenes/TestScene
 WindowSettingsPath: windows/WindowSettings.otto
 
+Dependencies: [
+    otto/core
+]
+
 Components: [
     otto/components/TransformComponent
 
@@ -24,18 +28,6 @@ Systems: [
 ]
 
 Events: [
-    otto/events/key/KeyPressedEvent
-    otto/events/key/KeyReleasedEvent
-    otto/events/mouse/MouseButtonPressedEvent
-    otto/events/mouse/MouseButtonReleasedEvent
-    otto/events/mouse/MouseMovedEvent
-    otto/events/mouse/MouseDraggedEvent
-    otto/events/mouse/MouseScrolledEvent
-    otto/events/window/WindowClosedEvent
-    otto/events/window/WindowResizedEvent
-    otto/events/window/WindowGainedFocusEvent
-    otto/events/window/WindowLostFocusEvent
-
     events/TestEvent
     events/TestEvent2
 ]

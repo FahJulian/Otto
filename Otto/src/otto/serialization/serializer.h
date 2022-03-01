@@ -21,7 +21,7 @@ namespace otto
             SYNTAX_ERROR,
         };
 
-        static Result<Serialized, ParsingError> deserialize(const FilePath& filePath);
+        static Result<Serialized, ParsingError> load(const FilePath& filePath);
 
     private:
         struct SerializableParsingResult
@@ -30,9 +30,13 @@ namespace otto
             Serialized serialized;
         };
 
-        static void _filterEmtpyLines(DynamicArray<String>& lines);
+        static Result<SerializableParsingResult, ParsingError> _parseSerializable(
+            DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation);
 
-        static Result<SerializableParsingResult, ParsingError> _parseSerializable(DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation);
+        static Result<SerializableParsingResult, Serializer::ParsingError> _parseList(
+            Serialized& serialized, DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation);
+        static Result<SerializableParsingResult, Serializer::ParsingError> _parseDictionary(
+            Serialized& serialized, DynamicArray<String>& lines, uint64 lineIndex, uint64 outerIndentation);
     };
 
 } // namespace otto

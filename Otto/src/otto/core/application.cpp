@@ -6,6 +6,7 @@
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
 #include "otto/window/icon/icon_loader.h"
+#include "otto/core/package_loader.h"
 #include "otto/core/platform/time.h"
 #include "otto/scene/scene_loader.h"
 #include "otto/core/scene_manager.h"
@@ -26,13 +27,14 @@ namespace otto
     static bool sInitialized = false;
     static bool sRunning = false;
 
+    static FilePath sRootDirectory;
+    static const FilePath CORE_ROOT_DIRECTORY = "C:/ProgramData/Otto/";
+
 #ifdef OTTO_COUNT_FPS
     static const float64 FPS_UPDATES_PER_SECOND = 1.0;
     static const float64 SECONDS_PER_FPS_UPDATE = 1.0 / FPS_UPDATES_PER_SECOND;
 #endif
         
-    static Application* sApplication;
-    static const FilePath CORE_ROOT_DIRECTORY = "C:/ProgramData/Otto/";
 
     namespace
     {
@@ -65,23 +67,25 @@ namespace otto
         if (sInitialized)
             return false;
 
-        sApplication = new Application();
+        Log::_pushMessage(std::cout, Log::INFO, "Initializing Application...");
 
         Time::init();
 
         auto result = _loadSettings(settingsFilePath);
         if (result.hasError())
+        {
+            Log::_pushMessage(std::cout, Log::ERROR, "Failed to initialize Application: Could not load Settings from ", settingsFilePath, '.');
             return false;
+        }
 
         auto settings = result.getResult();
 
-        sApplication->mRootDirectory = settings.rootDirectory;
+        sRootDirectory = settings.rootDirectory;
 
         Log::init(getRootDirectory() + settings.logFilePath, std::cout, settings.logConsoleLevel, settings.logFileLevel);
 
-        SceneLoader::init(settings.components, settings.behaviours, settings.systems, settings.events);
-
 #ifdef OTTO_DYNAMIC
+        SceneLoader::init(settings.applicationPackage);
 
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // Had to copy everything from C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64 to 
@@ -92,10 +96,10 @@ namespace otto
         DllReloader::Settings dllSettings;
         dllSettings.compilerExePath = CORE_ROOT_DIRECTORY + "MSVC/" + settings.msvcVersion + "/bin/Hostx86/x64/cl.exe";
         dllSettings.linkerExePath = CORE_ROOT_DIRECTORY + "MSVC/" + settings.msvcVersion + "/bin/Hostx86/x64/link.exe";
-        dllSettings.tmpDir = sApplication->mRootDirectory + ".tmp/";
+        dllSettings.tmpDir = sRootDirectory + ".tmp/";
         dllSettings.includeDirs = { 
             "C:/dev/Otto/Otto/src",
-            sApplication->mRootDirectory,
+            sRootDirectory,
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/shared",
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/ucrt",
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/um",
@@ -115,15 +119,22 @@ namespace otto
         dllSettings.configuration = DllReloader::Configuration::DEBUG;
         dllSettings.libs = { "otto.lib" };
 
-        DllReloader::init(dllSettings);
+        if (!DllReloader::init(dllSettings))
+        {
+            Log::error("Failed to initialize DllReloader.");
+            return false;
+        }
 
         if (!SceneLoader::reloadDll())
+        {
+            Log::error("Failed to reload Client Dll.");
             return false;
+        }
+
+        if (!SceneManager::setScene(sRootDirectory + settings.startScene + ".otto"))
+            return false;
+
 #endif
-
-        if (!SceneManager::setScene(sApplication->mRootDirectory + settings.startScene + ".otto"))
-            return false;
-
         bool windowInitialized = Window::init(settings.rootDirectory + settings.windowSettingsPath, {
             Application::_onKeyPressed,
             Application::_onKeyReleased,
@@ -139,11 +150,20 @@ namespace otto
         });
 
         if (!windowInitialized)
+        {
+            Log::error("Failed to initialize Window.");
             return false;
+        }
+
+        Log::trace("Initializing scene...");
 
         SceneManager::sCurrentScene->init();
 
+        Log::trace("Done initializing scene.");
+
         sInitialized = true;
+
+        Log::info("Initialization complete.");
 
         return true;
     }
@@ -158,7 +178,6 @@ namespace otto
 #ifdef OTTO_COUNT_FPS
         float64 fpsTimer = 0.0;
         uint32 frames = 0;
-        //uint32 lastFpsLength = 0;   
 #endif
 
         while (sRunning)
@@ -193,7 +212,7 @@ namespace otto
 
     const FilePath& Application::getRootDirectory()
     {
-        return sApplication->mRootDirectory;
+        return sRootDirectory;
     }
 
     const FilePath& Application::getCoreRootDirectory()
@@ -208,6 +227,8 @@ namespace otto
 
     void Application::destroy()
     {
+        Log::info("Destroying Application...");
+
         IconLoader::destroy();
 
         Window::saveSettings();
@@ -216,13 +237,15 @@ namespace otto
 #ifdef OTTO_DYNAMIC
         DllReloader::destroy();
 #endif
+
+        Log::info("Destruction complete.");
     }
 
     Result<Application::Settings, Application::SettingsError> Application::_loadSettings(const FilePath& filePath)
     {
         Application::Settings settings;
 
-        auto result = Serializer::deserialize(filePath);
+        auto result = Serializer::load(filePath);
         if (result.hasError())
             return SettingsError::SYNTAX_ERROR;
 
@@ -267,33 +290,11 @@ namespace otto
         else
             settings.startScene = file.get<String>("StartScene");
 
-        if (file.contains("Components"))
-        {
-            auto components = file.get("Components");
-            if (components.isList())
-                settings.components = components.getList<String>();
-        }
-
-        if (file.contains("Behaviours"))
-        {
-            auto behaviours = file.get("Behaviours");
-            if (behaviours.isList())
-                settings.behaviours = behaviours.getList<String>();
-        }
-
-        if (file.contains("Systems"))
-        {
-            auto systems = file.get("Systems");
-            if (systems.isList())
-                settings.systems = systems.getList<String>();
-        }
-
-        if (file.contains("Events"))
-        {
-            auto events = file.get("Events");
-            if (events.isList())
-                settings.events = events.getList<String>();
-        }
+        auto package = PackageLoader::loadPackage(file, CORE_ROOT_DIRECTORY);
+        if (package.hasError())
+            return SettingsError::PACKAGE_ERROR;
+        else
+            settings.applicationPackage = package.getResult();
 
         return settings;
     }
@@ -360,7 +361,7 @@ namespace otto
 #ifdef OTTO_DYNAMIC
     FilePath Application::_getClientDllPath()
     {
-        return sApplication->mRootDirectory + ".tmp/client.dll";
+        return sRootDirectory + ".tmp/client.dll";
     }
 #endif
 
