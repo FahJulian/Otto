@@ -1,16 +1,17 @@
 #pragma once
 
 #include "otto/base.h"
-#include "otto/scene/scene.h"
 #include "otto/util/result.h"
 #include "otto/util/shared.h"
-#include "otto/util/dynamic_array.h"
+#include "otto/scene/scene.h"
+#include "otto/core/package.h"
 #include "otto/util/platform/file_path.h"
 
 namespace otto
 {
     class SceneLoader
     {
+    private:
         enum SceneLoadingError
         {
             SYNTAX_ERROR,
@@ -20,18 +21,13 @@ namespace otto
         SceneLoader() = delete;
         SceneLoader(const SceneLoader& other) = delete;
 
-    public:
-    //private:
-        static void init(const DynamicArray<String>& components, const DynamicArray<String>& behaviours,
-            const DynamicArray<String>& systems, const DynamicArray<String>& events);
-
-        static bool reloadDll();
+#ifdef OTTO_DYNAMIC
+        static bool reloadDll(const Package& package);
+#endif
 
         static Result<Shared<Scene>, SceneLoadingError> loadScene(const FilePath& filePath);
 
-        static void _createSceneFile(const FilePath& filePath);
-
         friend class Application;
+        friend class SceneManager;
     };
-
-} // namespace otto
+}

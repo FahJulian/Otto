@@ -27,7 +27,7 @@ namespace otto
     }
 
     template<>
-    Serialized serialize<TransformComponent>(const TransformComponent& c)
+    Serialized serializeComponent<TransformComponent>(const TransformComponent& c, const Map<String, Entity>& entities)
     {
         Serialized s;
 

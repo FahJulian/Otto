@@ -2,7 +2,7 @@
 
 using namespace otto;
 
-class TestSystem2
+class TestSystem2 : public System
 {
 public:
     void onInit()

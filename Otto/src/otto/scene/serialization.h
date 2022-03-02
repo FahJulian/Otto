@@ -11,5 +11,11 @@ namespace otto
     {
         OTTO_ASSERT(false, "Component can't be deserialized.");
     }
+    
+    template<typename C>
+    Serialized serializeComponent(const C& c, const Map<String, Entity>& entities)
+    {
+        OTTO_ASSERT(false, "Component can't be deserialized.");
+    }
 
 } // namespace otto

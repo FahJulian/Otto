@@ -1,16 +1,13 @@
 #pragma once
 
 #include "otto/base.h"
-#include "otto/scene/entity.h"
+#include "otto/scene/scene.h"
 
 namespace otto
 {
-    class Scene;
-
-    class Behaviour
+    class System
     {
     protected:
-        Entity mEntity;
         Scene* mScene;
 
         friend class Scene;

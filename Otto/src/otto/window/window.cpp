@@ -2,11 +2,12 @@
 
 #include "_win32_include.h"
 
+#include "otto/window/events.h"
 #include "otto/debug/log/log.h"
 #include "otto/core/application.h"
-#include "otto/window/events.h"
-#include "otto/window/window_settings_loader.h"
+#include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
+#include "otto/window/window_settings_loader.h"
 
 namespace otto
 {
@@ -547,6 +548,7 @@ namespace otto
 
     void Window::saveSettings()
     {
+        FileUtils::createDirectoryRecursively(sSettingsFilePath);
         WindowSettingsLoader::saveWindowSettingsToOtto(sSettings, sInitialSettings, sSettingsFilePath);
     }
 

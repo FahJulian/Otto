@@ -1,11 +1,15 @@
 #define OTTO_GENERATED_CODE
-#include "C:/dev/otto/otto/src/otto/base.h"
+#include "otto/base.h"
 #include "otto/scene/scene.h"
 #include "otto/event/event_dispatcher.h"
+
+using namespace otto;
 
 #include "otto\components\TransformComponent.hpp"
 #include "components\TestComponent.hpp"
 #include "components\TestComponent2.hpp"
+#include "events\TestEvent.hpp"
+#include "events\TestEvent2.hpp"
 #include "otto\events\key\KeyPressedEvent.hpp"
 #include "otto\events\key\KeyReleasedEvent.hpp"
 #include "otto\events\mouse\MouseButtonPressedEvent.hpp"
@@ -17,10 +21,6 @@
 #include "otto\events\window\WindowResizedEvent.hpp"
 #include "otto\events\window\WindowGainedFocusEvent.hpp"
 #include "otto\events\window\WindowLostFocusEvent.hpp"
-#include "events\TestEvent.hpp"
-#include "events\TestEvent2.hpp"
-using namespace otto;
-
 
 template<>
 OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
@@ -47,6 +47,18 @@ OTTO_RCR_API TestComponent2& Scene::getComponent<TestComponent2>(Entity entity);
 template<>
 OTTO_RCR_API bool Scene::hasComponent<TestComponent2>(Entity entity);
 
+template<>
+OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e);
+template<>
+OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
 template<>
 OTTO_RCR_API void Scene::addEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener);
 template<>
@@ -113,18 +125,6 @@ template<>
 OTTO_RCR_API void Scene::removeEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener);
 template<>
 OTTO_RCR_API void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e);
-template<>
-OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
-template<>
-OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
-template<>
-OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e);
-template<>
-OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
-template<>
-OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
-template<>
-OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
 
 #include "behaviours\TestBehaviour.hpp"
 #include "behaviours\TestBehaviour2.hpp"
@@ -144,6 +144,8 @@ namespace otto
         ComponentPool<TestBehaviour> testBehaviourPool;
         ComponentPool<TestBehaviour2> testBehaviour2Pool;
 
+        EventDispatcher<TestEvent> testEventDispatcher;
+        EventDispatcher<TestEvent2> testEvent2Dispatcher;
         EventDispatcher<KeyPressedEvent> keyPressedEventDispatcher;
         EventDispatcher<KeyReleasedEvent> keyReleasedEventDispatcher;
         EventDispatcher<MouseButtonPressedEvent> mouseButtonPressedEventDispatcher;
@@ -155,8 +157,6 @@ namespace otto
         EventDispatcher<WindowResizedEvent> windowResizedEventDispatcher;
         EventDispatcher<WindowGainedFocusEvent> windowGainedFocusEventDispatcher;
         EventDispatcher<WindowLostFocusEvent> windowLostFocusEventDispatcher;
-        EventDispatcher<TestEvent> testEventDispatcher;
-        EventDispatcher<TestEvent2> testEvent2Dispatcher;
 
         TestSystem testSystem;
         TestSystem2 testSystem2;
@@ -168,6 +168,12 @@ namespace otto
 
         MultiView<TestComponent, TransformComponent> testComponent_transformComponentView = MultiView<TestComponent, TransformComponent>(&testComponentPool, &transformComponentPool);
     };
+
+    template<typename C>
+    Serialized serializeComponentOrBehaviour(const C& component, const Map<String, Entity>& entities)
+    {
+        return C();
+    }
 
     template<typename C>
     C deserializeComponentOrBehaviour(const Serialized& args, const Map<String, Entity>& entities)
@@ -197,49 +203,57 @@ namespace otto
         Log::init(mainLog);
     }
 
-    OTTO_RCR_API void Scene::init()
-    {
-        mData->testSystem.onInit(this, &mData->testComponent_transformComponentView, &mData->testComponentView, &mData->transformComponentView);
-        mData->testSystem2.onInit();
-        for (auto [entity, behaviour] : mData->testBehaviourView)
-            behaviour.onInit();
-        for (auto [entity, behaviour] : mData->testBehaviour2View)
-            behaviour.onInit();
-    }
-
-    OTTO_RCR_API void Scene::update(float32 delta)
-    {
-        mData->testSystem.onUpdate(delta);
-        mData->testSystem2.onUpdate(delta);
-        for (auto [entity, behaviour] : mData->testBehaviourView)
-            behaviour.onUpdate(delta);
-        for (auto [entity, behaviour] : mData->testBehaviour2View)
-            behaviour.onUpdate(delta);
-    }
-
     OTTO_RCR_API Entity Scene::addEntity()
     {
         return mData->nextEntity++;
     }
 
-    OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)
+    OTTO_RCR_API void Scene::init()
     {
-        if (componentName == "TransformComponent")
-            addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
-        if (componentName == "TestComponent")
-            addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
-        if (componentName == "TestComponent2")
-            addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
-        if (componentName == "TestBehaviour")
-            mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
-        if (componentName == "TestBehaviour2")
-            mData->testBehaviour2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour2>(args, entities));
+        mData->testSystem.mScene = this;
+        mData->testSystem.onInit(&mData->testComponent_transformComponentView, &mData->testComponentView, &mData->transformComponentView);
+        mData->testSystem2.mScene = this;
+        mData->testSystem2.onInit();
+        for (auto [entity, behaviour] : mData->testBehaviourView)
+        {
+            behaviour.mScene = this;
+            behaviour.mEntity = entity;
+            behaviour.onInit();
+        }
+        for (auto [entity, behaviour] : mData->testBehaviour2View)
+        {
+            behaviour.mScene = this;
+            behaviour.mEntity = entity;
+            behaviour.onInit();
+        }
+    }
+
+    OTTO_RCR_API void Scene::update(float32 delta32, float64 delta64)
+    {
+        mData->testSystem.onUpdate(delta32);
+        mData->testSystem2.onUpdate(delta32);
+        for (auto [entity, behaviour] : mData->testBehaviourView)
+            behaviour.onUpdate(delta32);
+        for (auto [entity, behaviour] : mData->testBehaviour2View)
+            behaviour.onUpdate(delta32);
     }
 
     template<typename E>
     OTTO_RCR_API void Scene::addEventListener(const EventListener<E>& eventListener)
     {
         OTTO_ASSERT(false, "Event is not added.")
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
+    {
+        mData->testEventDispatcher.addListener(eventListener);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
+    {
+        mData->testEvent2Dispatcher.addListener(eventListener);
     }
 
     template<>
@@ -308,22 +322,22 @@ namespace otto
         mData->windowLostFocusEventDispatcher.addListener(eventListener);
     }
 
-    template<>
-    OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
-    {
-        mData->testEventDispatcher.addListener(eventListener);
-    }
-
-    template<>
-    OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
-    {
-        mData->testEvent2Dispatcher.addListener(eventListener);
-    }
-
     template<typename E>
     OTTO_RCR_API void Scene::removeEventListener(const EventListener<E>& eventListener)
     {
         OTTO_ASSERT(false, "Event is not added.")
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
+    {
+        mData->testEventDispatcher.removeListener(eventListener);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
+    {
+        mData->testEvent2Dispatcher.removeListener(eventListener);
     }
 
     template<>
@@ -392,22 +406,25 @@ namespace otto
         mData->windowLostFocusEventDispatcher.removeListener(eventListener);
     }
 
-    template<>
-    OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
-    {
-        mData->testEventDispatcher.removeListener(eventListener);
-    }
-
-    template<>
-    OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
-    {
-        mData->testEvent2Dispatcher.removeListener(eventListener);
-    }
-
     template<typename E>
     OTTO_RCR_API void Scene::dispatchEvent(const E& e)
     {
         OTTO_ASSERT(false, "Event is not added.")
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e)
+    {
+        mData->testSystem.onEvent(e);
+        for (auto [entity, behaviour] : mData->testBehaviourView)
+            behaviour.onEvent(e);
+        mData->testEventDispatcher.dispatchEvent(e);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e)
+    {
+        mData->testEvent2Dispatcher.dispatchEvent(e);
     }
 
     template<>
@@ -477,19 +494,18 @@ namespace otto
         mData->windowLostFocusEventDispatcher.dispatchEvent(e);
     }
 
-    template<>
-    OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e)
+    OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)
     {
-        mData->testSystem.onEvent(e);
-        for (auto [entity, behaviour] : mData->testBehaviourView)
-            behaviour.onEvent(e);
-        mData->testEventDispatcher.dispatchEvent(e);
-    }
-
-    template<>
-    OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e)
-    {
-        mData->testEvent2Dispatcher.dispatchEvent(e);
+        if (componentName == "TransformComponent")
+            addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
+        if (componentName == "TestComponent")
+            addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
+        if (componentName == "TestComponent2")
+            addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+        if (componentName == "TestBehaviour")
+            mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
+        if (componentName == "TestBehaviour2")
+            mData->testBehaviour2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour2>(args, entities));
     }
 
     template<typename C>

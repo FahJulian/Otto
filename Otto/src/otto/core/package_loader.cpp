@@ -1,5 +1,6 @@
 #include "package_loader.h"
 
+#include "otto/debug/log/log.h"
 #include "otto/serialization/serializer.h"
 
 namespace otto
@@ -7,6 +8,8 @@ namespace otto
     Result<Package, PackageLoader::PackageLoadingError> 
         PackageLoader::loadPackage(const Serialized& serialized, const FilePath& coreRootDirectory)
     {
+        Log::trace("Loading package...");
+
         Package package;
         FilePath rootDirectory = serialized.contains("rootDirectory") ? serialized.get<String>("rootDirectory") : "";
 
@@ -51,14 +54,20 @@ namespace otto
                     else
                     {
                         if (!serialized.contains("rootDirectory"))
+                        {
+                            Log::error("Failed to load Package: Root Directory not found");
                             return PackageLoadingError::ROOT_DIRECTORY_NOT_FOUND;
+                        }
 
                         dependencyPath = rootDirectory + dependencyName;
                     }
 
                     auto dependencySerialized = Serializer::load(dependencyPath.toString().endsWith(".otto") ? dependencyPath : dependencyPath + ".otto");
                     if (dependencySerialized.hasError())
+                    {
+                        Log::error("Failed to load package: Syntax error");
                         return PackageLoadingError::SYNTAX_ERROR;
+                    }
 
                     auto dependency = loadPackage(dependencySerialized.getResult(), coreRootDirectory);
 

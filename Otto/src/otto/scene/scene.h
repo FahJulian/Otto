@@ -35,7 +35,7 @@ namespace otto
 	public:
         //OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, load, SceneLoadData& sceneLoadData);
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(void, init);
-		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, update, float32, delta);
+		OTTO_RCR_MEMBER_FUNCTION_2_ARGS(void, update, float32, delta32, float64, delta64);
 
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Entity, addEntity);
 
@@ -61,9 +61,6 @@ namespace otto
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(bool, hasComponent, Entity, entity, C);
 
 	private:
-		template<typename C>
-		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(View<C>&, view);
-
 		OTTO_RCR_MEMBER_FUNCTION_4_ARGS(void, addComponent, Entity, entity, const String&, componentName, const Serialized&, args, const EntityMap&, entities);
 
 		Scene(SceneData* data)

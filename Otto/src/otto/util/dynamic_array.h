@@ -6,8 +6,8 @@
 
 #include "otto/base.h"
 
-namespace otto {
-
+namespace otto 
+{
     template<typename T>
     class DynamicArray
     {
@@ -152,13 +152,13 @@ namespace otto {
             return true;
         }
 
-        template<typename... Args>
-        void add(Args&&... args)
+        template<typename Arg, typename... Args>
+        void add(const Arg& arg, Args&&... args)
         {
             if (mSize == mCapacity)
                 setCapacity(_calculateNewCapacity());
 
-            new(mData + mSize) T(std::forward<Args>(args)...);
+            new(mData + mSize) T(arg, std::forward<Args>(args)...);
 
             mSize++;
         }
@@ -171,6 +171,35 @@ namespace otto {
             new(mData + mSize) T(value);
 
             mSize++;
+        }
+
+        template<typename F>
+        void add(const F& value)
+        {
+            if (mSize == mCapacity)
+                setCapacity(_calculateNewCapacity());
+
+            new(mData + mSize) T(value);
+
+            mSize++;
+        }
+
+        template<typename F>
+        void add(const DynamicArray<F>& values)
+        {
+            if (mCapacity < mSize + values.mSize)
+            {
+                mCapacity = _calculateNewCapacity();
+                while (mCapacity < mSize + values.mSize)
+                    mCapacity = _calculateNewCapacity();
+
+                setCapacity(mCapacity);
+            }
+
+            for (uint64 i = 0; i < values.mSize; i++)
+                new(mData + mSize + i) T(values[i]);
+
+            mSize += values.mSize;
         }
 
         template<typename... Args>
@@ -231,8 +260,29 @@ namespace otto {
             return mSize;
         }
 
+        uint64 indexOf(const T& value) const
+        {
+            for (uint64 i = 0; i < mSize; i++)
+            {
+                if (mCursor == mSize)
+                    mCursor = 0;
+
+                if (mData[mCursor] == value)
+                    return mCursor;
+
+                mCursor++;
+            }
+
+            return mSize;
+        }
+
         template<typename F>
         bool contains(const F& value) const
+        {
+            return indexOf(value) != mSize;
+        }
+
+        bool contains(const T& value) const
         {
             return indexOf(value) != mSize;
         }

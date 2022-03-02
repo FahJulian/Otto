@@ -6,13 +6,13 @@
 
 using namespace otto;
 
-class TestSystem
+class TestSystem : public System
 {
 public:
-    void onInit(Shared<Scene> scene, MultiView<TestComponent, TransformComponent>* view1, View<TestComponent>* view2, View<TransformComponent>* view3)
+    void onInit(MultiView<TestComponent, TransformComponent>* view1, View<TestComponent>* view2, View<TransformComponent>* view3)
     {
         Log::info("Initializing TestSystem");
-        mScene = scene;
+        
         mView1 = view1;
         mView2 = view2;
         mView3 = view3;
@@ -33,7 +33,6 @@ public:
     }
 
 private:
-    Shared<Scene> mScene;
     MultiView<TestComponent, TransformComponent>* mView1;
     View<TestComponent>* mView2;
     View<TransformComponent>* mView3;

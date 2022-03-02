@@ -85,8 +85,6 @@ namespace otto
         Log::init(getRootDirectory() + settings.logFilePath, std::cout, settings.logConsoleLevel, settings.logFileLevel);
 
 #ifdef OTTO_DYNAMIC
-        SceneLoader::init(settings.applicationPackage);
-
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // Had to copy everything from C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64 to 
         // CORE_ROOT_DIRECTORY + "MSVC/" + settings.msvcVersion + "/bin/Hostx86/x64/cl.exe"
@@ -125,7 +123,7 @@ namespace otto
             return false;
         }
 
-        if (!SceneLoader::reloadDll())
+        if (!SceneLoader::reloadDll(settings.applicationPackage))
         {
             Log::error("Failed to reload Client Dll.");
             return false;
@@ -184,8 +182,8 @@ namespace otto
         {
             if (totalDelta >= sSecondsPerUpdate)
             {
-                SceneManager::sCurrentScene->update(static_cast<float32>(totalDelta));
-                totalDelta -= sSecondsPerUpdate;
+                SceneManager::sCurrentScene->update(static_cast<float32>(totalDelta), totalDelta);
+                totalDelta = 0.0;
 
                 Window::pollEvents();
             }
