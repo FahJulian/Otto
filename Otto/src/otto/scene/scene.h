@@ -35,7 +35,6 @@ namespace otto
 	public:
         //OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, load, SceneLoadData& sceneLoadData);
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(void, init);
-		OTTO_RCR_MEMBER_FUNCTION_2_ARGS(void, update, float32, delta32, float64, delta64);
 
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Entity, addEntity);
 

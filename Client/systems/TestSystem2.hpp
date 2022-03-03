@@ -5,12 +5,12 @@ using namespace otto;
 class TestSystem2 : public System
 {
 public:
-    void onInit()
+    void onEvent(const InitEvent& e)
     {
         Log::info("Initializing TestSystem2");
     }
 
-    void onUpdate(float32 delta)      
+    void onEvent(const UpdateEvent& e)      
     {
     }
 };

@@ -13,6 +13,7 @@
 #include "otto/window/window.h"
 #include "otto/debug/log/log.h"
 #include "otto/scene/scene.h"
+#include "otto/core/events.h"
 #include "otto/util/file.h"
 
 namespace otto
@@ -156,6 +157,7 @@ namespace otto
         Log::trace("Initializing scene...");
 
         SceneManager::sCurrentScene->init();
+        SceneManager::sCurrentScene->dispatchEvent(_InitEvent());
 
         Log::trace("Done initializing scene.");
 
@@ -182,7 +184,7 @@ namespace otto
         {
             if (totalDelta >= sSecondsPerUpdate)
             {
-                SceneManager::sCurrentScene->update(static_cast<float32>(totalDelta), totalDelta);
+                SceneManager::sCurrentScene->dispatchEvent(_UpdateEvent{ static_cast<float32>(totalDelta) });
                 totalDelta = 0.0;
 
                 Window::pollEvents();
@@ -293,6 +295,11 @@ namespace otto
             return SettingsError::PACKAGE_ERROR;
         else
             settings.applicationPackage = package.getResult();
+
+        if (!settings.applicationPackage.events.contains("otto/events/InitEvent"))
+            settings.applicationPackage.events.add("otto/events/InitEvent");
+        if (!settings.applicationPackage.events.contains("otto/events/UpdateEvent"))
+            settings.applicationPackage.events.add("otto/events/UpdateEvent");
 
         return settings;
     }

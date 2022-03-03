@@ -9,16 +9,18 @@ using namespace otto;
 class TestSystem : public System
 {
 public:
-    void onInit(MultiView<TestComponent, TransformComponent>* view1, View<TestComponent>* view2, View<TransformComponent>* view3)
+    TestSystem(MultiView<TestComponent, TransformComponent>* view1, View<TestComponent>* view2, View<TransformComponent>* view3)
     {
-        Log::info("Initializing TestSystem");
-        
         mView1 = view1;
         mView2 = view2;
         mView3 = view3;
     }
 
-    void onUpdate(float32 delta)       
+    void onEvent(const InitEvent& e)
+    {
+    }
+
+    void onEvent(const UpdateEvent& e)       
     {
     }
 

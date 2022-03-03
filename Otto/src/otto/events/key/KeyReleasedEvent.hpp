@@ -1,6 +1,6 @@
 #pragma once
 
-#include <otto.h>
+#include "otto/window/events.h"
 
 namespace otto
 {

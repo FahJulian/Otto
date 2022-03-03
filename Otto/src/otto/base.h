@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "otto/core/platform_detection.h"
+#include "otto/platform_detection.h"
 
 #define NONE {}
 

@@ -1,5 +1,7 @@
 #include "scene_loader.h"
 
+#include <iostream>
+
 #include "otto/util/file.h"
 #include "otto/math/math.h"
 #include "otto/util/optional.h"
@@ -43,11 +45,6 @@ namespace otto
             bool hasSerializationFunction;
             bool hasDeserializationFunction;
 
-            bool hasInitFunction;
-
-            bool hasUpdateFunction32;
-            bool hasUpdateFunction64;
-
             DynamicArray<_Event> eventFunctions;
         };
 
@@ -55,13 +52,7 @@ namespace otto
         {
             String name;
             FilePath relativeFilePath;
-
-            bool hasInitFunction;
-            DynamicArray<_SystemInitArg> initArgs;
-
-            bool hasUpdateFunction32;
-            bool hasUpdateFunction64;
-
+            DynamicArray<_SystemInitArg> constructorArgs;
             DynamicArray<_Event> eventFunctions;
         };
 
@@ -243,6 +234,10 @@ namespace otto
                 {
                     auto function = _extractFunction(code, i);
 
+
+                    if (function.hasValue() && function.getValue().name == className)
+                        function.getValue().returnType = "";
+
                     if (function.hasValue() && !function.getValue().returnType.startsWith("static "))
                         functions.add(function.getValue());
                 }
@@ -270,19 +265,14 @@ namespace otto
             return eventFunctions;
         }
 
-        bool _findInitFunctionArguments(const DynamicArray<_Function> functions, DynamicArray<_SystemInitArg>& initArgs)
+        DynamicArray<_SystemInitArg> _findConstructorArguments(const String& className, const DynamicArray<_Function> functions)
         {
-            bool hasInitFunction = false;
+            DynamicArray<_SystemInitArg> constructorArgs;
 
             for (auto function : functions)
             {
-                if (function.returnType == "void" && function.name == "onInit")
+                if (function.returnType == "" && function.name == className)
                 {
-                    if (hasInitFunction == true)
-                        continue;
-
-                    hasInitFunction = true;
-
                     for (auto& argumentType : function.argumentTypes)
                     {
                         if (argumentType.startsWith("MultiView"))
@@ -301,15 +291,14 @@ namespace otto
                                 argumentType.findFirstOf(',', commaIndex + 1) != argumentType.getSize()||
                                 argumentType.findFirstOf('<', templateStart + 1) != argumentType.getSize())
                             {
-                                hasInitFunction = false;
-                                initArgs.clear();
+                                constructorArgs.clear();
                                 break;
                             }
 
                             arg.view1Type = String::subString(argumentType, templateStart + 1, commaIndex).trim();
                             arg.view2Type = String::subString(argumentType, commaIndex + 1, templateEnd).trim();
 
-                            initArgs.add(arg);
+                            constructorArgs.add(arg);
                         }
                         else if (argumentType.startsWith("View"))
                         {
@@ -324,26 +313,24 @@ namespace otto
                                 argumentType.findLastOf('>', templateEnd) != argumentType.getSize() ||
                                 argumentType.findFirstOf(',') != argumentType.getSize())
                             {
-                                hasInitFunction = false;
-                                initArgs.clear();
+                                constructorArgs.clear();
                                 break;
                             }
 
                             arg.view1Type = String::subString(argumentType, templateStart + 1, templateEnd).trim();
 
-                            initArgs.add(arg);
+                            constructorArgs.add(arg);
                         }
                         else
                         {
-                            hasInitFunction = false;
-                            initArgs.clear();
+                            constructorArgs.clear();
                             break;
                         }
                     }
                 }
             }
 
-            return hasInitFunction;
+            return constructorArgs;
         }
 
         DynamicArray<_Component> _loadComponents(const DynamicArray<String> components)
@@ -407,9 +394,6 @@ namespace otto
                 }
 
                 _hasSerializationFunctions(filePath, loadedBehaviour.name, &loadedBehaviour.hasSerializationFunction, &loadedBehaviour.hasDeserializationFunction);
-                loadedBehaviour.hasInitFunction = functions.getValue().contains(_Function("onInit", "void", {}));
-                loadedBehaviour.hasUpdateFunction32 = functions.getValue().contains(_Function("onUpdate", "void", { "float32" }));
-                loadedBehaviour.hasUpdateFunction64 = functions.getValue().contains(_Function("onUpdate", "void", { "float64" }));
                 loadedBehaviour.eventFunctions = _findEventFunctions(functions.getValue(), loadedEvents);
 
                 loadedBehaviours.add(loadedBehaviour);
@@ -434,9 +418,7 @@ namespace otto
 
                 auto functions = _findMemberFunctions(filePath, loadedSystem.name);
 
-                loadedSystem.hasInitFunction = _findInitFunctionArguments(functions.getValue(), loadedSystem.initArgs);
-                loadedSystem.hasUpdateFunction32 = functions.getValue().contains(_Function("onUpdate", "void", { "float32" }));
-                loadedSystem.hasUpdateFunction64 = functions.getValue().contains(_Function("onUpdate", "void", { "float64" }));
+                loadedSystem.constructorArgs = _findConstructorArguments(loadedSystem.name, functions.getValue());
                 loadedSystem.eventFunctions = _findEventFunctions(functions.getValue(), loadedEvents);
 
                 loadedSystems.add(loadedSystem);
@@ -456,17 +438,13 @@ namespace otto
 
             for (auto& behaviour : loadedPackage.behaviours)
             {
-                if (behaviour.hasInitFunction || behaviour.hasUpdateFunction32 || 
-                    behaviour.hasUpdateFunction64 || behaviour.eventFunctions.getSize() != 0)
-                {
-                    if (!loadedPackage.views.contains(behaviour.name))
-                        loadedPackage.views.add(behaviour.name);
-                }
+                if (!loadedPackage.views.contains(behaviour.name))
+                    loadedPackage.views.add(behaviour.name);
             }
 
             for (auto& system : loadedPackage.systems)
             {
-                for (auto& arg : system.initArgs)
+                for (auto& arg : system.constructorArgs)
                 {
                     if (arg.isMultiView)
                     {
@@ -536,7 +514,7 @@ namespace otto
             code.append("    struct SceneData\n");
             code.append("    {\n");
 
-            code.append("        Entity nextEntity = 0;\n");
+            code.append("        Entity nextEntity = 1;\n");
             code.append('\n');
 
             for (auto& component : package.components)
@@ -554,21 +532,36 @@ namespace otto
 
             code.append('\n');
 
-            for (auto& system : package.systems)
-                code.append("        " + system.name + ' ' + String::untitle(system.name) + ";\n");
-
-            code.append('\n');
-
             for (auto& viewType : package.views)
-            {
-                code.append("        View<" + viewType + "> " + String::untitle(viewType) + "View = View<" + viewType + ">(&" + String::untitle(viewType) + "Pool);\n");
-            }
+                code.append("        View<" + viewType + "> " + String::untitle(viewType) + "View = " 
+                    "View<" + viewType + ">(&" + String::untitle(viewType) + "Pool); \n");
 
             code.append('\n');
 
             for (auto& [type1, type2] : package.multiViews)
                 code.append("        MultiView<" + type1 + ", " + type2 + "> " + String::untitle(type1) + "_" + String::untitle(type2) + "View = "
                     "MultiView<" + type1 + ", " + type2 + ">(&" + String::untitle(type1) + "Pool, &" + String::untitle(type2) + "Pool);\n");
+
+            for (auto& system : package.systems)
+            {
+                code.append("        " + system.name + ' ' + String::untitle(system.name) + " = " + system.name + "(");
+
+                bool first = true;
+                for (auto& argument : system.constructorArgs)
+                {
+                    if (!first)
+                        code.append(", ");
+
+                    if (argument.isMultiView)
+                        code.append("&" + String::untitle(argument.view1Type) + "_" + String::untitle(argument.view2Type) + "View");
+                    else
+                        code.append("&" + String::untitle(argument.view1Type) + "View");
+
+                    first = false;
+                }
+
+                code.append(");\n");
+            }
 
             code.append("    };\n");
 
@@ -688,30 +681,7 @@ namespace otto
             code.append("    {\n");
 
             for (auto& system : package.systems)
-            {
                 code.append("        mData->" + String::untitle(system.name) + ".mScene = this;\n");
-
-                if (system.hasInitFunction)
-                {
-                    code.append("        mData->" + String::untitle(system.name) + ".onInit(");
-
-                    bool first = true;
-                    for (auto& argument : system.initArgs)
-                    {
-                        if (!first)
-                            code.append(", ");
-
-                        if (argument.isMultiView)
-                            code.append("&mData->" + String::untitle(argument.view1Type) + "_" + String::untitle(argument.view2Type) + "View");
-                        else
-                            code.append("&mData->" + String::untitle(argument.view1Type) + "View");
-
-                        first = false;
-                    }
-
-                    code.append(");\n");
-                }
-            }
 
             for (auto& behaviour : package.behaviours)
             {
@@ -719,42 +689,7 @@ namespace otto
                 code.append("        {\n");
                 code.append("            behaviour.mScene = this;\n");
                 code.append("            behaviour.mEntity = entity;\n");
-
-                if (behaviour.hasInitFunction)
-                    code.append("            behaviour.onInit();\n");
-
                 code.append("        }\n");
-            }
-
-            code.append("    }\n");
-
-            code.append('\n');
-        }
-
-        void _addSceneUpdateFunction(String& code, const _Package& package)
-        {
-            code.append("    OTTO_RCR_API void Scene::update(float32 delta32, float64 delta64)\n");
-            code.append("    {\n");
-
-            for (auto& system : package.systems)
-            {
-                if (system.hasUpdateFunction32)
-                    code.append("        mData->" + String::untitle(system.name) + ".onUpdate(delta32);\n");
-                if (system.hasUpdateFunction64)
-                    code.append("        mData->" + String::untitle(system.name) + ".onUpdate(delta64);\n");
-            }
-
-            for (auto& behaviour : package.behaviours)
-            {
-                if (behaviour.hasUpdateFunction32 || behaviour.hasUpdateFunction64)
-                {
-                    code.append("        for (auto [entity, behaviour] : mData->" + String::untitle(behaviour.name) + "View)\n");
-
-                    if (behaviour.hasUpdateFunction32)
-                        code.append("            behaviour.onUpdate(delta32);\n");
-                    if (behaviour.hasUpdateFunction64)
-                        code.append("            behaviour.onUpdate(delta64);\n");
-                }
             }
 
             code.append("    }\n");
@@ -990,7 +925,6 @@ namespace otto
             _addDeserializationFunctions(code, package);
             _addInitializerAndAddEntityFunctions(code);
             _addSceneInitFunction(code, package);
-            _addSceneUpdateFunction(code, package);
             _addAddEventListenerFunctions(code, package);
             _addRemoveEventListenerFunctions(code, package);
             _addDispatchEventFunctions(code, package);

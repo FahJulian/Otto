@@ -5,18 +5,13 @@ using namespace otto;
 class TestBehaviour2 : public Behaviour
 {
 public:
-    void onInit()
+    void onEvent(const InitEvent& e)
     {
         Log::info("Initializing TestBehaviour2");
     }
 
-    void onUpdate(float32 delta)        
+    void onUpdate(const UpdateEvent& e)        
     {
-    }
-
-    void onDestroy()
-    {
-
     }
     
 private:

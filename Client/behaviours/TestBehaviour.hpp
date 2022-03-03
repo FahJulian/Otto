@@ -6,18 +6,13 @@ using namespace otto;
 class TestBehaviour : public Behaviour
 {
 public:
-    void onInit()
+    void onEvent(const InitEvent& e)
     {
         Log::info("Initializing TestBehaviour");
     }
 
-    void onUpdate(float32 delta)   
+    void onEvent(const UpdateEvent& e)   
     {
-    }
-
-    void onDestroy()
-    {
-
     }
 
     void onEvent(const TestEvent & e)

@@ -7,7 +7,7 @@ StartScene: scenes/TestScene
 WindowSettingsPath: windows/WindowSettings.otto
 
 Dependencies: [
-    otto/core
+    otto/core   
 ]
 
 Components: [
