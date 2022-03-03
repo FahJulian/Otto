@@ -5,6 +5,8 @@
 #include "otto/window/events.h"
 #include "otto/debug/log/log.h"
 #include "otto/core/application.h"
+#include "otto/graphics/context.h"
+#include "otto/graphics/graphics_api.h"
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
 #include "otto/window/window_settings_loader.h"
@@ -22,7 +24,6 @@ namespace otto
         static bool sIgnoreSizeMessage = false;
 
         static HWND sWin32Handle;
-        static HDC sDeviceContext;
 
         static HICON sSmallIconHandle;
         static HICON sLargeIconHandle;
@@ -306,7 +307,7 @@ namespace otto
 
         if (!_createWin32Window())
         {
-            Log::error("Failed to initialize Window: Could not create win32 window.");
+            Log::error("Failed to initialize Window: Could not create win32 window");
             return false;
         }
 
@@ -326,9 +327,15 @@ namespace otto
         _initCursors(sSettings.defaultCursor);
         _initIcons();
 
-        if (!_createContext())
+        if (!Context::init(reinterpret_cast<ptr64>(sWin32Handle)))
         {
-            Log::error("Failed to initialize Window: Could not create context.");
+            Log::error("Error initializing Context");
+            return false;
+        }
+
+        if (!GraphicsAPI::init())
+        {
+            Log::error("Error initializing Graphics API");
             return false;
         }
 
@@ -365,11 +372,6 @@ namespace otto
         return true;
     }
 
-    bool Window::_createContext()
-    {
-        return true;
-    }
-
     void Window::pollEvents()
     {
         MSG msg;
@@ -393,6 +395,7 @@ namespace otto
             sSettings.width = width;
             sSettings.height = height;
 
+            GraphicsAPI::setViewport(0, 0, uint32(width), uint32(height));
             sListeners.onWindowResized(_WindowResizedEvent(float32(width), float32(height)));
         }
     }
@@ -513,6 +516,8 @@ namespace otto
     void Window::setClearColor(const Color& color)
     {
         sSettings.clearColor = color;
+
+        GraphicsAPI::setClearColor(color);
     }
 
     void Window::setCursor(const String& name)
@@ -539,11 +544,12 @@ namespace otto
 
     void Window::clear()
     {
+        GraphicsAPI::clear();
     }
 
     void Window::swapBuffers()
     {
-        SwapBuffers(sDeviceContext);
+        Context::swapBuffers();
     }
 
     void Window::saveSettings()
@@ -570,7 +576,7 @@ namespace otto
         DestroyWindow(sWin32Handle);
     }
 
-    LRESULT CALLBACK Window::WindowProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
+    __int64 __stdcall Window::WindowProc(HWND__* handle, unsigned int msg, unsigned __int64 wParam, __int64 lParam)
     {
         switch (msg)
         {

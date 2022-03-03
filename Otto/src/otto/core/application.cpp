@@ -185,10 +185,16 @@ namespace otto
             if (totalDelta >= sSecondsPerUpdate)
             {
                 SceneManager::sCurrentScene->dispatchEvent(_UpdateEvent{ static_cast<float32>(totalDelta) });
-                totalDelta = 0.0;
+                SceneManager::sCurrentScene->dispatchEvent(_RebufferEvent());
 
                 Window::pollEvents();
+
+                totalDelta = 0.0;
             }
+
+            Window::clear();
+            SceneManager::sCurrentScene->dispatchEvent(_RenderEvent());
+            Window::swapBuffers();
 
             float64 endTime = Time::getTime64();
             float64 delta = endTime - startTime;
@@ -300,12 +306,17 @@ namespace otto
             settings.applicationPackage.events.add("otto/events/InitEvent");
         if (!settings.applicationPackage.events.contains("otto/events/UpdateEvent"))
             settings.applicationPackage.events.add("otto/events/UpdateEvent");
+        if (!settings.applicationPackage.events.contains("otto/events/RebufferEvent"))
+            settings.applicationPackage.events.add("otto/events/RebufferEvent");
+        if (!settings.applicationPackage.events.contains("otto/events/RenderEvent"))
+            settings.applicationPackage.events.add("otto/events/RenderEvent");
 
         return settings;
     }
 
     void Application::_onKeyPressed(const _KeyPressedEvent& e)
     {
+        SceneManager::sCurrentScene->dispatchEvent(e);
     }
 
     void Application::_onKeyReleased(const _KeyReleasedEvent& e)
@@ -349,7 +360,11 @@ namespace otto
     {
         SceneManager::sCurrentScene->dispatchEvent(e);
 
-        // Render
+        SceneManager::sCurrentScene->dispatchEvent(_RebufferEvent());
+
+        Window::clear();
+        SceneManager::sCurrentScene->dispatchEvent(_RenderEvent());
+        Window::swapBuffers();
     }
 
     void Application::_onWindowGainedFocus(const _WindowGainedFocusEvent & e)
@@ -361,7 +376,6 @@ namespace otto
     {
         SceneManager::sCurrentScene->dispatchEvent(e);
     }
-
 
 #ifdef OTTO_DYNAMIC
     FilePath Application::_getClientDllPath()

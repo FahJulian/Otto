@@ -13,4 +13,12 @@ namespace otto
         float32 delta;
     };
 
+    struct _RebufferEvent
+    {
+    };
+
+    struct _RenderEvent
+    {
+    };
+
 } // namespace otto

@@ -63,4 +63,15 @@ namespace otto
         T m41 = T(), m42 = T(), m43 = T(), m44 = T();
     };
 
+    using Mat4x4f32 = Mat4x4<float32>;
+    using Mat4x4f64 = Mat4x4<float64>;
+    using Mat4x4i8 = Mat4x4<uint8>;
+    using Mat4x4i16 = Mat4x4<uint16>;
+    using Mat4x4i32 = Mat4x4<uint32>;
+    using Mat4x4i64 = Mat4x4<uint64>;
+    using Mat4x4ui8 = Mat4x4<int8>;
+    using Mat4x4ui16 = Mat4x4<int16>;
+    using Mat4x4ui32 = Mat4x4<int32>;
+    using Mat4x4ui64 = Mat4x4<int64>;
+
 } // namespace otto

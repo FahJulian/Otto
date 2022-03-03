@@ -23,6 +23,8 @@ using namespace otto;
 #include "otto\events\window\WindowLostFocusEvent.hpp"
 #include "otto\events\InitEvent.hpp"
 #include "otto\events\UpdateEvent.hpp"
+#include "otto\events\RebufferEvent.hpp"
+#include "otto\events\RenderEvent.hpp"
 
 template<>
 OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
@@ -139,6 +141,18 @@ template<>
 OTTO_RCR_API void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener);
 template<>
 OTTO_RCR_API void Scene::dispatchEvent<UpdateEvent>(const UpdateEvent& e);
+template<>
+OTTO_RCR_API void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e);
+template<>
+OTTO_RCR_API void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
+template<>
+OTTO_RCR_API void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e);
 
 #include "behaviours\TestBehaviour.hpp"
 #include "behaviours\TestBehaviour2.hpp"
@@ -173,6 +187,8 @@ namespace otto
         EventDispatcher<WindowLostFocusEvent> windowLostFocusEventDispatcher;
         EventDispatcher<InitEvent> initEventDispatcher;
         EventDispatcher<UpdateEvent> updateEventDispatcher;
+        EventDispatcher<RebufferEvent> rebufferEventDispatcher;
+        EventDispatcher<RenderEvent> renderEventDispatcher;
 
         View<TestBehaviour> testBehaviourView = View<TestBehaviour>(&testBehaviourPool); 
         View<TestBehaviour2> testBehaviour2View = View<TestBehaviour2>(&testBehaviour2Pool); 
@@ -335,6 +351,18 @@ namespace otto
         mData->updateEventDispatcher.addListener(eventListener);
     }
 
+    template<>
+    OTTO_RCR_API void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
+    {
+        mData->rebufferEventDispatcher.addListener(eventListener);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
+    {
+        mData->renderEventDispatcher.addListener(eventListener);
+    }
+
     template<typename E>
     OTTO_RCR_API void Scene::removeEventListener(const EventListener<E>& eventListener)
     {
@@ -429,6 +457,18 @@ namespace otto
     OTTO_RCR_API void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener)
     {
         mData->updateEventDispatcher.removeListener(eventListener);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
+    {
+        mData->rebufferEventDispatcher.removeListener(eventListener);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
+    {
+        mData->renderEventDispatcher.removeListener(eventListener);
     }
 
     template<typename E>
@@ -539,6 +579,18 @@ namespace otto
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onEvent(e);
         mData->updateEventDispatcher.dispatchEvent(e);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e)
+    {
+        mData->rebufferEventDispatcher.dispatchEvent(e);
+    }
+
+    template<>
+    OTTO_RCR_API void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e)
+    {
+        mData->renderEventDispatcher.dispatchEvent(e);
     }
 
     OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)

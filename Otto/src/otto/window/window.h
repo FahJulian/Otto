@@ -79,8 +79,6 @@ namespace otto
 		static void _onMouseButtonReleased(MouseButton button);
 
 		static __int64 __stdcall WindowProc(HWND__* handle, unsigned int msg, unsigned __int64 wParam, __int64 lParam);
-
-		static bool _createContext();
 	};
 
 }

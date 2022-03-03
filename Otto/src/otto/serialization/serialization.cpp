@@ -24,7 +24,7 @@ namespace otto
 	Serialized serialize(const Color& color)
 	{
 		ColorCode colorCode = color.toColorCode();
-		return String::valueOf(colorCode, 16);
+		return "#" + String::valueOf(colorCode, 16);
 	}
 
 	template<>
@@ -55,10 +55,10 @@ namespace otto
 		if (serialized.isValue())
 		{
 			String string = serialized.get<String>();
-			if (string.getSize() == 10)
-				color = std::stoul(string.getData(), nullptr, 16);
-			else if (string.getSize() == 8)
-				color = std::stoul(string.getData(), nullptr, 16) | 0x000000ff;
+			if (string.getSize() == 9)
+				color = std::stoul(String::subString(string, 1, string.getSize()).getData(), nullptr, 16);
+			else if (string.getSize() == 7)
+				color = std::stoul(String::subString(string, 1, string.getSize()).getData(), nullptr, 16) | 0x000000ff;
 		}
 		else if (serialized.isDictionary())
 		{

@@ -54,4 +54,15 @@ namespace otto
         T m31 = T(), m32 = T(), m33 = T();
     };
 
+    using Mat3x3f32 = Mat3x3<float32>;
+    using Mat3x3f64 = Mat3x3<float64>;
+    using Mat3x3i8 = Mat3x3<uint8>;
+    using Mat3x3i16 = Mat3x3<uint16>;
+    using Mat3x3i32 = Mat3x3<uint32>;
+    using Mat3x3i64 = Mat3x3<uint64>;
+    using Mat3x3ui8 = Mat3x3<int8>;
+    using Mat3x3ui16 = Mat3x3<int16>;
+    using Mat3x3ui32 = Mat3x3<int32>;
+    using Mat3x3ui64 = Mat3x3<int64>;
+
 } // namespace otto
