@@ -34,6 +34,16 @@ public:
         Log::info("Mouse moved to (", e.x, ", ", e.y, ")");
     }
 
+    void onEvent(const ComponentAddedEvent<TestComponent>& e)
+    {
+        Log::info("TestComponent added to ", e.entity);
+    }
+
+        void onEvent(const ComponentRemovedEvent<TestComponent2>& e)
+    {
+        Log::info("TestComponent added to ", e.entity);
+    }
+
 private:
     MultiView<TestComponent, TransformComponent>* mView1;
     View<TestComponent>* mView2;

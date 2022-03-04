@@ -67,6 +67,10 @@
 
 #include "otto/events/InitEvent.hpp"
 #include "otto/events/UpdateEvent.hpp"
+#include "otto/events/RenderEvent.hpp"
+#include "otto/events/RebufferEvent.hpp"
+#include "otto/events/ComponentAddedEvent.hpp"
+#include "otto/events/ComponentRemovedEvent.hpp"
 
 #include "otto/events/key/KeyPressedEvent.hpp"
 #include "otto/events/key/KeyReleasedEvent.hpp"

@@ -104,6 +104,18 @@ namespace otto
                 mEntities.add(entity);
         }
 
+        void onComponent1Removed(Entity entity)
+        {
+            if (mEntities.contains(entity))
+                mEntities.remove(mEntities.indexOf(entity));
+        }
+
+        void onComponent2Removed(Entity entity)
+        {
+            if (mEntities.contains(entity))
+                mEntities.remove(mEntities.indexOf(entity));
+        }
+
         void onComponentRemoved(Entity entity)
         {
             uint64 index = mEntities.indexOf(entity);

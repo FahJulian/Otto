@@ -2,6 +2,8 @@
 #include "otto/base.h"
 #include "otto/scene/scene.h"
 #include "otto/event/event_dispatcher.h"
+#include "otto/events/ComponentAddedEvent.hpp"
+#include "otto/events/ComponentRemovedEvent.hpp"
 
 using namespace otto;
 
@@ -198,7 +200,30 @@ namespace otto
         MultiView<TestComponent, TransformComponent> testComponent_transformComponentView = MultiView<TestComponent, TransformComponent>(&testComponentPool, &transformComponentPool);
         TestSystem testSystem = TestSystem(&testComponent_transformComponentView, &testComponentView, &transformComponentView);
         TestSystem2 testSystem2 = TestSystem2();
-    };
+        Map<Entity, DynamicArray<uint16>> entityComponentMap;    };
+
+    template<typename C>
+    static uint16 getID()
+    {
+        static_assert(false);
+    }
+    template<>
+    static uint16 getID<TransformComponent>()
+    {
+        return 0;
+    }
+
+    template<>
+    static uint16 getID<TestComponent>()
+    {
+        return 1;
+    }
+
+    template<>
+    static uint16 getID<TestComponent2>()
+    {
+        return 2;
+    }
 
     template<typename C>
     Serialized serializeComponentOrBehaviour(const C& component, const Map<String, Entity>& entities)
@@ -236,7 +261,24 @@ namespace otto
 
     OTTO_RCR_API Entity Scene::addEntity()
     {
-        return mData->nextEntity++;
+        Entity entity = mData->nextEntity++;
+        mData->entityComponentMap.insert(entity, DynamicArray<uint16>());
+        return entity;
+    }
+
+    OTTO_RCR_API void Scene::removeEntity(Entity entity)
+    {
+        for (uint16 componentID : mData->entityComponentMap[entity])
+        {
+            switch(componentID)
+            {
+            case 0: removeComponent<TransformComponent>(entity); break;
+            case 1: removeComponent<TestComponent>(entity); break;
+            case 2: removeComponent<TestComponent2>(entity); break;
+            }
+        }
+
+        mData->entityComponentMap.remove(entity);
     }
 
     OTTO_RCR_API void Scene::init()
@@ -618,6 +660,7 @@ namespace otto
     {
         mData->transformComponentPool.addComponent(entity, component);
         mData->testComponent_transformComponentView.onComponent2Added(entity);
+        mData->entityComponentMap[entity].add(getID<TransformComponent>());
     }
 
     template<>
@@ -625,12 +668,15 @@ namespace otto
     {
         mData->testComponentPool.addComponent(entity, component);
         mData->testComponent_transformComponentView.onComponent1Added(entity);
+        mData->testSystem.onEvent(ComponentAddedEvent<TestComponent>(entity));
+        mData->entityComponentMap[entity].add(getID<TestComponent>());
     }
 
     template<>
     OTTO_RCR_API void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component)
     {
         mData->testComponent2Pool.addComponent(entity, component);
+        mData->entityComponentMap[entity].add(getID<TestComponent2>());
     }
 
     template<typename C>
@@ -643,18 +689,24 @@ namespace otto
     OTTO_RCR_API void Scene::removeComponent<TransformComponent>(Entity entity)
     {
         mData->transformComponentPool.removeComponent(entity);
+        mData->testComponent_transformComponentView.onComponent2Removed(entity);
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TransformComponent>()));
     }
 
     template<>
     OTTO_RCR_API void Scene::removeComponent<TestComponent>(Entity entity)
     {
         mData->testComponentPool.removeComponent(entity);
+        mData->testComponent_transformComponentView.onComponent1Removed(entity);
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TestComponent>()));
     }
 
     template<>
     OTTO_RCR_API void Scene::removeComponent<TestComponent2>(Entity entity)
     {
         mData->testComponent2Pool.removeComponent(entity);
+        mData->testSystem.onEvent(ComponentRemovedEvent<TestComponent2>(entity));
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TestComponent2>()));
     }
 
     template<typename C>
@@ -690,19 +742,19 @@ namespace otto
     template<>
     OTTO_RCR_API bool Scene::hasComponent<TransformComponent>(Entity entity)
     {
-        return mData->transformComponentPool.hasComponent(entity);
+        return mData->entityComponentMap[entity].contains(getID<TransformComponent>());
     }
 
     template<>
     OTTO_RCR_API bool Scene::hasComponent<TestComponent>(Entity entity)
     {
-        return mData->testComponentPool.hasComponent(entity);
+        return mData->entityComponentMap[entity].contains(getID<TestComponent>());
     }
 
     template<>
     OTTO_RCR_API bool Scene::hasComponent<TestComponent2>(Entity entity)
     {
-        return mData->testComponent2Pool.hasComponent(entity);
+        return mData->entityComponentMap[entity].contains(getID<TestComponent2>());
     }
 
 } // namespace otto

@@ -38,6 +38,8 @@ namespace otto
 
 		OTTO_RCR_MEMBER_FUNCTION_0_ARGS(Entity, addEntity);
 
+		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, removeEntity, Entity, entity);
+
 		template<typename E>
 		OTTO_RCR_MEMBER_FUNCTION_1_ARGS(void, addEventListener, const EventListener<E>&, eventListener);
 

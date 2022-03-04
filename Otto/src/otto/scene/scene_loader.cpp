@@ -27,6 +27,8 @@ namespace otto
 
             bool hasSerializationFunction;
             bool hasDeserializationFunction;
+
+            bool operator==(const _Component& other) { return relativeFilePath == other.relativeFilePath; }
         };
 
         struct _Event
@@ -54,6 +56,8 @@ namespace otto
             FilePath relativeFilePath;
             DynamicArray<_SystemInitArg> constructorArgs;
             DynamicArray<_Event> eventFunctions;
+            DynamicArray<_Component> componentAddedListeners;
+            DynamicArray<_Component> componentRemovedListeners;
         };
 
         struct _Package
@@ -333,6 +337,56 @@ namespace otto
             return constructorArgs;
         }
 
+        DynamicArray<_Component> _findComponentAddedListeners(const DynamicArray<_Function> functions, 
+            const DynamicArray<_Component> loadedComponents)
+        {
+            DynamicArray<_Component> componentAddedListeners;
+
+            for (auto& function : functions)
+            {
+                if (function.returnType == "void" && function.name == "onEvent" && 
+                    function.argumentTypes.getSize() == 1 && function.argumentTypes[0].contains("ComponentAddedEvent"))
+                {
+                    for (auto& component : loadedComponents)
+                    {
+                        if (function.argumentTypes[0].contains(" ComponentAddedEvent<" + component.name + "> ") ||
+                            function.argumentTypes[0].contains(" ComponentAddedEvent<" + component.name + ">& "))
+                        {
+                            componentAddedListeners.add(component);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return componentAddedListeners;
+        }
+
+        DynamicArray<_Component> _findComponentRemovedListeners(const DynamicArray<_Function> functions,
+            const DynamicArray<_Component> loadedComponents)
+        {
+            DynamicArray<_Component> componentRemovedListeners;
+
+            for (auto& function : functions)
+            {
+                if (function.returnType == "void" && function.name == "onEvent" &&
+                    function.argumentTypes.getSize() == 1 && function.argumentTypes[0].contains("ComponentRemovedEvent"))
+                {
+                    for (auto& component : loadedComponents)
+                    {
+                        if (function.argumentTypes[0].contains(" ComponentRemovedEvent<" + component.name + "> ") ||
+                            function.argumentTypes[0].contains(" ComponentRemovedEvent<" + component.name + ">& "))
+                        {
+                            componentRemovedListeners.add(component);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return componentRemovedListeners;
+        }
+
         DynamicArray<_Component> _loadComponents(const DynamicArray<String> components)
         {
             DynamicArray<_Component> loadedComponents;
@@ -372,7 +426,7 @@ namespace otto
             return loadedEvents;
         }
 
-        DynamicArray<_Behaviour> _loadBehaviours(const DynamicArray<String> behaviours, DynamicArray<_Event> loadedEvents)
+        DynamicArray<_Behaviour> _loadBehaviours(const DynamicArray<String> behaviours, const DynamicArray<_Event>& loadedEvents)
         {
             DynamicArray<_Behaviour> loadedBehaviours;
 
@@ -402,7 +456,8 @@ namespace otto
             return loadedBehaviours;
         }
 
-        DynamicArray<_System> _loadSystems(const DynamicArray<String> systems, DynamicArray<_Event> loadedEvents)
+        DynamicArray<_System> _loadSystems(const DynamicArray<String>& systems, 
+            const DynamicArray<_Component>& loadedComponents, const DynamicArray<_Event>& loadedEvents)
         {
             DynamicArray<_System> loadedSystems;
 
@@ -420,6 +475,8 @@ namespace otto
 
                 loadedSystem.constructorArgs = _findConstructorArguments(loadedSystem.name, functions.getValue());
                 loadedSystem.eventFunctions = _findEventFunctions(functions.getValue(), loadedEvents);
+                loadedSystem.componentAddedListeners = _findComponentAddedListeners(functions.getValue(), loadedComponents);
+                loadedSystem.componentRemovedListeners = _findComponentRemovedListeners(functions.getValue(), loadedComponents);
 
                 loadedSystems.add(loadedSystem);
             }
@@ -434,7 +491,7 @@ namespace otto
             loadedPackage.components = _loadComponents(package.components);
             loadedPackage.events = _loadEvents(package.events);
             loadedPackage.behaviours = _loadBehaviours(package.behaviours, loadedPackage.events);
-            loadedPackage.systems = _loadSystems(package.systems, loadedPackage.events);
+            loadedPackage.systems = _loadSystems(package.systems, loadedPackage.components, loadedPackage.events);
 
             for (auto& behaviour : loadedPackage.behaviours)
             {
@@ -461,7 +518,6 @@ namespace otto
 
         void _addComponentAndEventIncludes(String& code, const _Package& package)
         {
-
             for (auto& component : package.components)
                 code.append("#include \"" + component.relativeFilePath.toString() + ".hpp\"\n");
             for (auto& e : package.events)
@@ -563,9 +619,32 @@ namespace otto
                 code.append(");\n");
             }
 
+            code.append("        Map<Entity, DynamicArray<uint16>> entityComponentMap;");
+
             code.append("    };\n");
 
             code.append('\n');
+        }
+
+        void _addComponentIDFunctions(String& code, const _Package& package)
+        {
+            code.append("    template<typename C>\n"
+                "    static uint16 getID()\n"
+                "    {\n"
+                "        static_assert(false);\n"
+                "    }\n"
+            );
+
+            for (uint64 i = 0; i < package.components.getSize(); i++)
+            {
+                code.append("    template<>\n");
+                code.append("    static uint16 getID<" + package.components[i].name + ">()\n");
+                code.append("    {\n");
+                code.append("        return " + String::valueOf(i) + ";\n");
+                code.append("    }\n");
+
+                code.append('\n');
+            }
         }
 
         void _addSerializationFunctions(String& code, const _Package& package)
@@ -668,9 +747,31 @@ namespace otto
 
             code.append("    OTTO_RCR_API Entity Scene::addEntity()\n"
                 "    {\n"
-                "        return mData->nextEntity++;\n"
+                "        Entity entity = mData->nextEntity++;\n"
+                "        mData->entityComponentMap.insert(entity, DynamicArray<uint16>());\n"
+                "        return entity;\n"
                 "    }\n"
             );
+
+            code.append('\n');
+        }
+
+        void _addRemoveEntityFunction(String& code, const _Package& package)
+        {
+            code.append("    OTTO_RCR_API void Scene::removeEntity(Entity entity)\n");
+            code.append("    {\n");
+            code.append("        for (uint16 componentID : mData->entityComponentMap[entity])\n");
+            code.append("        {\n");
+            code.append("            switch(componentID)\n");
+            code.append("            {\n");
+
+            for (uint64 i = 0; i < package.components.getSize(); i++)
+                code.append("            case " + String::valueOf(i) + ": removeComponent<" + package.components[i].name + ">(entity); break;\n");
+
+            code.append("            }\n");
+            code.append("        }\n\n");
+            code.append("        mData->entityComponentMap.remove(entity);\n");
+            code.append("    }\n");
 
             code.append('\n');
         }
@@ -827,6 +928,15 @@ namespace otto
                     else if (type2 == component.name)
                         code.append("        mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent2Added(entity);\n");
                 }
+
+                for (auto& system : package.systems)
+                {
+                    if (system.componentAddedListeners.contains(component))
+                        code.append("        mData->" + String::untitle(system.name) + ".onEvent(ComponentAddedEvent<" + component.name + ">(entity));\n");
+                }
+
+                code.append("        mData->entityComponentMap[entity].add(getID<" + component.name + ">());\n");
+
                 code.append("    }\n");
 
                 code.append('\n');
@@ -850,6 +960,23 @@ namespace otto
                 code.append("    OTTO_RCR_API void Scene::removeComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(component.name) + "Pool.removeComponent(entity);\n");
+
+                for (auto& [type1, type2] : package.multiViews)
+                {
+                    if (type1 == component.name)
+                        code.append("        mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent1Removed(entity);\n");
+                    else if (type2 == component.name)
+                        code.append("        mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent2Removed(entity);\n");
+                }
+
+                for (auto& system : package.systems)
+                {
+                    if (system.componentRemovedListeners.contains(component))
+                        code.append("        mData->" + String::untitle(system.name) + ".onEvent(ComponentRemovedEvent<" + component.name + ">(entity));\n");
+                }
+
+                code.append("        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<" + component.name + ">()));\n");
+
                 code.append("    }\n");
 
                 code.append('\n');
@@ -895,7 +1022,7 @@ namespace otto
                 code.append("    template<>\n");
                 code.append("    OTTO_RCR_API bool Scene::hasComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
-                code.append("        return mData->" + String::untitle(component.name) + "Pool.hasComponent(entity);\n");
+                code.append("        return mData->entityComponentMap[entity].contains(getID<" + component.name + ">());\n");
                 code.append("    }\n");
 
                 code.append('\n');
@@ -910,6 +1037,8 @@ namespace otto
             code.append("#include \"otto/base.h\"\n");
             code.append("#include \"otto/scene/scene.h\"\n");
             code.append("#include \"otto/event/event_dispatcher.h\"\n");
+            code.append("#include \"otto/events/ComponentAddedEvent.hpp\"\n");
+            code.append("#include \"otto/events/ComponentRemovedEvent.hpp\"\n");
             code.append('\n');
 
             code.append("using namespace otto;\n\n");
@@ -921,9 +1050,11 @@ namespace otto
             code.append("namespace otto\n{\n");
 
             _addSceneDataStruct(code, package);
+            _addComponentIDFunctions(code, package);
             _addSerializationFunctions(code, package);
             _addDeserializationFunctions(code, package);
             _addInitializerAndAddEntityFunctions(code);
+            _addRemoveEntityFunction(code, package);
             _addSceneInitFunction(code, package);
             _addAddEventListenerFunctions(code, package);
             _addRemoveEventListenerFunctions(code, package);
