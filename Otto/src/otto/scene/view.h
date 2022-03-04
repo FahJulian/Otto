@@ -73,6 +73,19 @@ namespace otto
         View(const View& other) = delete;
         View& operator=(const View& other) = delete;
 
+        Pair<Entity, C&> operator[](uint64 index)
+        {
+            return get(index);
+        }
+
+        Pair<Entity, C&> get(uint64 index) 
+        {
+            return {
+                mPool->mComponents.getData()[index].first,
+                mPool->mComponents.getData()[index].second,
+            };
+        }
+
         Iterator begin()
         {
             return Iterator(this, 0);

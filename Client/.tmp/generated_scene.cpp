@@ -29,132 +29,132 @@ using namespace otto;
 #include "otto\events\RenderEvent.hpp"
 
 template<>
-OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
+OTTO_DLL_FUNC void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
 template<>
-OTTO_RCR_API void Scene::removeComponent<TransformComponent>(Entity entity);
+OTTO_DLL_FUNC void Scene::removeComponent<TransformComponent>(Entity entity);
 template<>
-OTTO_RCR_API TransformComponent& Scene::getComponent<TransformComponent>(Entity entity);
+OTTO_DLL_FUNC TransformComponent& Scene::getComponent<TransformComponent>(Entity entity);
 template<>
-OTTO_RCR_API bool Scene::hasComponent<TransformComponent>(Entity entity);
+OTTO_DLL_FUNC bool Scene::hasComponent<TransformComponent>(Entity entity);
 template<>
-OTTO_RCR_API void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component);
+OTTO_DLL_FUNC void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component);
 template<>
-OTTO_RCR_API void Scene::removeComponent<TestComponent>(Entity entity);
+OTTO_DLL_FUNC void Scene::removeComponent<TestComponent>(Entity entity);
 template<>
-OTTO_RCR_API TestComponent& Scene::getComponent<TestComponent>(Entity entity);
+OTTO_DLL_FUNC TestComponent& Scene::getComponent<TestComponent>(Entity entity);
 template<>
-OTTO_RCR_API bool Scene::hasComponent<TestComponent>(Entity entity);
+OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent>(Entity entity);
 template<>
-OTTO_RCR_API void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component);
+OTTO_DLL_FUNC void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component);
 template<>
-OTTO_RCR_API void Scene::removeComponent<TestComponent2>(Entity entity);
+OTTO_DLL_FUNC void Scene::removeComponent<TestComponent2>(Entity entity);
 template<>
-OTTO_RCR_API TestComponent2& Scene::getComponent<TestComponent2>(Entity entity);
+OTTO_DLL_FUNC TestComponent2& Scene::getComponent<TestComponent2>(Entity entity);
 template<>
-OTTO_RCR_API bool Scene::hasComponent<TestComponent2>(Entity entity);
+OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent2>(Entity entity);
 
 template<>
-OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<TestEvent>(const TestEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<KeyPressedEvent>(const KeyPressedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<KeyPressedEvent>(const KeyPressedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<KeyReleasedEvent>(const KeyReleasedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<KeyReleasedEvent>(const KeyReleasedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<MouseButtonPressedEvent>(const MouseButtonPressedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<MouseButtonPressedEvent>(const MouseButtonPressedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<MouseButtonReleasedEvent>(const MouseButtonReleasedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<MouseButtonReleasedEvent>(const MouseButtonReleasedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<MouseMovedEvent>(const MouseMovedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<MouseMovedEvent>(const MouseMovedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<MouseDraggedEvent>(const MouseDraggedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<MouseDraggedEvent>(const MouseDraggedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<MouseScrolledEvent>(const MouseScrolledEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<MouseScrolledEvent>(const MouseScrolledEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<WindowClosedEvent>(const WindowClosedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<WindowClosedEvent>(const WindowClosedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<WindowGainedFocusEvent>(const WindowGainedFocusEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<WindowGainedFocusEvent>(const WindowGainedFocusEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<InitEvent>(const InitEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<InitEvent>(const InitEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<UpdateEvent>(const UpdateEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<UpdateEvent>(const UpdateEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e);
 template<>
-OTTO_RCR_API void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
+OTTO_DLL_FUNC void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener);
 template<>
-OTTO_RCR_API void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e);
+OTTO_DLL_FUNC void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e);
 
 #include "behaviours\TestBehaviour.hpp"
 #include "behaviours\TestBehaviour2.hpp"
@@ -249,24 +249,24 @@ namespace otto
         return deserializeComponent<TestComponent>(args, entities);
     }
 
-    OTTO_RCR_API Shared<Scene> _SceneInitializer::createScene()
+    OTTO_DLL_FUNC Shared<Scene> Scene::_createScene()
     {
         return new Scene(new SceneData());
     }
 
-    OTTO_RCR_API void _SceneInitializer::initClientLog(Log* mainLog)
+    OTTO_DLL_FUNC void Scene::_initClientLog(Log* mainLog)
     {
         Log::init(mainLog);
     }
 
-    OTTO_RCR_API Entity Scene::addEntity()
+    OTTO_DLL_FUNC Entity Scene::addEntity()
     {
         Entity entity = mData->nextEntity++;
         mData->entityComponentMap.insert(entity, DynamicArray<uint16>());
         return entity;
     }
 
-    OTTO_RCR_API void Scene::removeEntity(Entity entity)
+    OTTO_DLL_FUNC void Scene::removeEntity(Entity entity)
     {
         for (uint16 componentID : mData->entityComponentMap[entity])
         {
@@ -281,7 +281,7 @@ namespace otto
         mData->entityComponentMap.remove(entity);
     }
 
-    OTTO_RCR_API void Scene::init()
+    OTTO_DLL_FUNC void Scene::init()
     {
         mData->testSystem.mScene = this;
         mData->testSystem2.mScene = this;
@@ -298,229 +298,229 @@ namespace otto
     }
 
     template<typename E>
-    OTTO_RCR_API void Scene::addEventListener(const EventListener<E>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener(const EventListener<E>& eventListener)
     {
         OTTO_ASSERT(false, "Event is not added.")
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
     {
         mData->testEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
     {
         mData->testEvent2Dispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener)
     {
         mData->keyPressedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener)
     {
         mData->keyReleasedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener)
     {
         mData->mouseButtonPressedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener)
     {
         mData->mouseButtonReleasedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener)
     {
         mData->mouseMovedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener)
     {
         mData->mouseDraggedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener)
     {
         mData->mouseScrolledEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener)
     {
         mData->windowClosedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener)
     {
         mData->windowResizedEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener)
     {
         mData->windowGainedFocusEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener)
     {
         mData->windowLostFocusEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<InitEvent>(const EventListener<InitEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<InitEvent>(const EventListener<InitEvent>& eventListener)
     {
         mData->initEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener)
     {
         mData->updateEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
     {
         mData->rebufferEventDispatcher.addListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::addEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
     {
         mData->renderEventDispatcher.addListener(eventListener);
     }
 
     template<typename E>
-    OTTO_RCR_API void Scene::removeEventListener(const EventListener<E>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener(const EventListener<E>& eventListener)
     {
         OTTO_ASSERT(false, "Event is not added.")
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<TestEvent>(const EventListener<TestEvent>& eventListener)
     {
         mData->testEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<TestEvent2>(const EventListener<TestEvent2>& eventListener)
     {
         mData->testEvent2Dispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<KeyPressedEvent>(const EventListener<KeyPressedEvent>& eventListener)
     {
         mData->keyPressedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<KeyReleasedEvent>(const EventListener<KeyReleasedEvent>& eventListener)
     {
         mData->keyReleasedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<MouseButtonPressedEvent>(const EventListener<MouseButtonPressedEvent>& eventListener)
     {
         mData->mouseButtonPressedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<MouseButtonReleasedEvent>(const EventListener<MouseButtonReleasedEvent>& eventListener)
     {
         mData->mouseButtonReleasedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<MouseMovedEvent>(const EventListener<MouseMovedEvent>& eventListener)
     {
         mData->mouseMovedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<MouseDraggedEvent>(const EventListener<MouseDraggedEvent>& eventListener)
     {
         mData->mouseDraggedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<MouseScrolledEvent>(const EventListener<MouseScrolledEvent>& eventListener)
     {
         mData->mouseScrolledEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<WindowClosedEvent>(const EventListener<WindowClosedEvent>& eventListener)
     {
         mData->windowClosedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<WindowResizedEvent>(const EventListener<WindowResizedEvent>& eventListener)
     {
         mData->windowResizedEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<WindowGainedFocusEvent>(const EventListener<WindowGainedFocusEvent>& eventListener)
     {
         mData->windowGainedFocusEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener)
     {
         mData->windowLostFocusEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener)
     {
         mData->initEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<UpdateEvent>(const EventListener<UpdateEvent>& eventListener)
     {
         mData->updateEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<RebufferEvent>(const EventListener<RebufferEvent>& eventListener)
     {
         mData->rebufferEventDispatcher.removeListener(eventListener);
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
+    OTTO_DLL_FUNC void Scene::removeEventListener<RenderEvent>(const EventListener<RenderEvent>& eventListener)
     {
         mData->renderEventDispatcher.removeListener(eventListener);
     }
 
     template<typename E>
-    OTTO_RCR_API void Scene::dispatchEvent(const E& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent(const E& e)
     {
         OTTO_ASSERT(false, "Event is not added.")
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<TestEvent>(const TestEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<TestEvent>(const TestEvent& e)
     {
         mData->testSystem.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviourView)
@@ -529,80 +529,80 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<TestEvent2>(const TestEvent2& e)
     {
         mData->testEvent2Dispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<KeyPressedEvent>(const KeyPressedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<KeyPressedEvent>(const KeyPressedEvent& e)
     {
         mData->keyPressedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<KeyReleasedEvent>(const KeyReleasedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<KeyReleasedEvent>(const KeyReleasedEvent& e)
     {
         mData->keyReleasedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<MouseButtonPressedEvent>(const MouseButtonPressedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<MouseButtonPressedEvent>(const MouseButtonPressedEvent& e)
     {
         mData->mouseButtonPressedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<MouseButtonReleasedEvent>(const MouseButtonReleasedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<MouseButtonReleasedEvent>(const MouseButtonReleasedEvent& e)
     {
         mData->mouseButtonReleasedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<MouseMovedEvent>(const MouseMovedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<MouseMovedEvent>(const MouseMovedEvent& e)
     {
         mData->testSystem.onEvent(e);
         mData->mouseMovedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<MouseDraggedEvent>(const MouseDraggedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<MouseDraggedEvent>(const MouseDraggedEvent& e)
     {
         mData->mouseDraggedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<MouseScrolledEvent>(const MouseScrolledEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<MouseScrolledEvent>(const MouseScrolledEvent& e)
     {
         mData->mouseScrolledEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<WindowClosedEvent>(const WindowClosedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<WindowClosedEvent>(const WindowClosedEvent& e)
     {
         mData->windowClosedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e)
     {
         mData->windowResizedEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<WindowGainedFocusEvent>(const WindowGainedFocusEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<WindowGainedFocusEvent>(const WindowGainedFocusEvent& e)
     {
         mData->windowGainedFocusEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e)
     {
         mData->windowLostFocusEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<InitEvent>(const InitEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<InitEvent>(const InitEvent& e)
     {
         mData->testSystem.onEvent(e);
         mData->testSystem2.onEvent(e);
@@ -614,7 +614,7 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<UpdateEvent>(const UpdateEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<UpdateEvent>(const UpdateEvent& e)
     {
         mData->testSystem.onEvent(e);
         mData->testSystem2.onEvent(e);
@@ -624,18 +624,18 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e)
     {
         mData->rebufferEventDispatcher.dispatchEvent(e);
     }
 
     template<>
-    OTTO_RCR_API void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e)
+    OTTO_DLL_FUNC void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e)
     {
         mData->renderEventDispatcher.dispatchEvent(e);
     }
 
-    OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)
+    OTTO_DLL_FUNC void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const Map<String, Entity>& entities)
     {
         if (componentName == "TransformComponent")
             addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
@@ -650,13 +650,13 @@ namespace otto
     }
 
     template<typename C>
-    OTTO_RCR_API void Scene::addComponent(Entity entity, const C& component)
+    OTTO_DLL_FUNC void Scene::addComponent(Entity entity, const C& component)
     {
         OTTO_ASSERT(false, "Component is not added.")
     }
 
     template<>
-    OTTO_RCR_API void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component)
+    OTTO_DLL_FUNC void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component)
     {
         mData->transformComponentPool.addComponent(entity, component);
         mData->testComponent_transformComponentView.onComponent2Added(entity);
@@ -664,7 +664,7 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component)
+    OTTO_DLL_FUNC void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component)
     {
         mData->testComponentPool.addComponent(entity, component);
         mData->testComponent_transformComponentView.onComponent1Added(entity);
@@ -673,20 +673,20 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component)
+    OTTO_DLL_FUNC void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component)
     {
         mData->testComponent2Pool.addComponent(entity, component);
         mData->entityComponentMap[entity].add(getID<TestComponent2>());
     }
 
     template<typename C>
-    OTTO_RCR_API void Scene::removeComponent(Entity entity)
+    OTTO_DLL_FUNC void Scene::removeComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeComponent<TransformComponent>(Entity entity)
+    OTTO_DLL_FUNC void Scene::removeComponent<TransformComponent>(Entity entity)
     {
         mData->transformComponentPool.removeComponent(entity);
         mData->testComponent_transformComponentView.onComponent2Removed(entity);
@@ -694,7 +694,7 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeComponent<TestComponent>(Entity entity)
+    OTTO_DLL_FUNC void Scene::removeComponent<TestComponent>(Entity entity)
     {
         mData->testComponentPool.removeComponent(entity);
         mData->testComponent_transformComponentView.onComponent1Removed(entity);
@@ -702,7 +702,7 @@ namespace otto
     }
 
     template<>
-    OTTO_RCR_API void Scene::removeComponent<TestComponent2>(Entity entity)
+    OTTO_DLL_FUNC void Scene::removeComponent<TestComponent2>(Entity entity)
     {
         mData->testComponent2Pool.removeComponent(entity);
         mData->testSystem.onEvent(ComponentRemovedEvent<TestComponent2>(entity));
@@ -710,51 +710,126 @@ namespace otto
     }
 
     template<typename C>
-    OTTO_RCR_API C& Scene::getComponent(Entity entity)
+    OTTO_DLL_FUNC C& Scene::getComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
     }
 
     template<>
-    OTTO_RCR_API TransformComponent& Scene::getComponent<TransformComponent>(Entity entity)
+    OTTO_DLL_FUNC TransformComponent& Scene::getComponent<TransformComponent>(Entity entity)
     {
         return mData->transformComponentPool.getComponent(entity);
     }
 
     template<>
-    OTTO_RCR_API TestComponent& Scene::getComponent<TestComponent>(Entity entity)
+    OTTO_DLL_FUNC TestComponent& Scene::getComponent<TestComponent>(Entity entity)
     {
         return mData->testComponentPool.getComponent(entity);
     }
 
     template<>
-    OTTO_RCR_API TestComponent2& Scene::getComponent<TestComponent2>(Entity entity)
+    OTTO_DLL_FUNC TestComponent2& Scene::getComponent<TestComponent2>(Entity entity)
     {
         return mData->testComponent2Pool.getComponent(entity);
     }
 
     template<typename C>
-    OTTO_RCR_API bool Scene::hasComponent(Entity entity)
+    OTTO_DLL_FUNC bool Scene::hasComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
     }
 
     template<>
-    OTTO_RCR_API bool Scene::hasComponent<TransformComponent>(Entity entity)
+    OTTO_DLL_FUNC bool Scene::hasComponent<TransformComponent>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TransformComponent>());
     }
 
     template<>
-    OTTO_RCR_API bool Scene::hasComponent<TestComponent>(Entity entity)
+    OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TestComponent>());
     }
 
     template<>
-    OTTO_RCR_API bool Scene::hasComponent<TestComponent2>(Entity entity)
+    OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent2>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TestComponent2>());
+    }
+
+    OTTO_DLL_FUNC void Scene::_onKeyPressed(const KeyPressedEvent& e)
+    {
+        dispatchEvent<KeyPressedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onKeyReleased(const KeyReleasedEvent& e)
+    {
+        dispatchEvent<KeyReleasedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onMouseButtonPressed(const MouseButtonPressedEvent& e)
+    {
+        dispatchEvent<MouseButtonPressedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onMouseButtonReleased(const MouseButtonReleasedEvent& e)
+    {
+        dispatchEvent<MouseButtonReleasedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onMouseMoved(const MouseMovedEvent& e)
+    {
+        dispatchEvent<MouseMovedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onMouseDragged(const MouseDraggedEvent& e)
+    {
+        dispatchEvent<MouseDraggedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onMouseScrolled(const MouseScrolledEvent& e)
+    {
+        dispatchEvent<MouseScrolledEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onWindowClosed(const WindowClosedEvent& e)
+    {
+        dispatchEvent<WindowClosedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onWindowResized(const WindowResizedEvent& e)
+    {
+        dispatchEvent<WindowResizedEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onWindowGainedFocus(const WindowGainedFocusEvent& e)
+    {
+        dispatchEvent<WindowGainedFocusEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onWindowLostFocus(const WindowLostFocusEvent& e)
+    {
+        dispatchEvent<WindowLostFocusEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onInit(const InitEvent& e)
+    {
+        dispatchEvent<InitEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onUpdate(const UpdateEvent& e)
+    {
+        dispatchEvent<UpdateEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onRebuffer(const RebufferEvent& e)
+    {
+        dispatchEvent<RebufferEvent>(e);
+    }
+
+    OTTO_DLL_FUNC void Scene::_onRender(const RenderEvent& e)
+    {
+        dispatchEvent<RenderEvent>(e);
     }
 
 } // namespace otto

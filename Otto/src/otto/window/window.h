@@ -56,8 +56,8 @@ namespace otto
 		static void setHeight(float32 height);
 		static void setSize(float32 width, float32 height);
 
-		static float getWidth();
-		static float getHeight();
+		static float32 getWidth();
+		static float32 getHeight();
 
 		static void setMaximized(bool b);
 		static void setMinimized(bool b);
@@ -65,8 +65,8 @@ namespace otto
 		static bool isMinimized();
 		static bool isMaximized();
 
-		static float getMonitorWidth();
-		static float getMonitorHeight();
+		static float32 getMonitorWidth();
+		static float32 getMonitorHeight();
 
 		static void setWindowMode(WindowMode mode);
 		static WindowMode getWindowMode();

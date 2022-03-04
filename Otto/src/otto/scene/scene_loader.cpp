@@ -5,6 +5,7 @@
 #include "otto/util/file.h"
 #include "otto/math/math.h"
 #include "otto/util/optional.h"
+#include "otto/core/application.h"
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
 
@@ -13,6 +14,24 @@ namespace otto
     namespace
     {
 #ifdef OTTO_DYNAMIC
+        static const DynamicArray<String> ON_EVENT_FUNCTIONS = {
+            "KeyPressed",
+            "KeyReleased",
+            "MouseButtonPressed",
+            "MouseButtonReleased",
+            "MouseMoved",
+            "MouseDragged",
+            "MouseScrolled",
+            "WindowClosed",
+            "WindowResized",
+            "WindowGainedFocus",
+            "WindowLostFocus",
+            "Init",
+            "Update",
+            "Rebuffer",
+            "Render",
+        };
+
         struct _SystemInitArg
         {
             bool isMultiView;
@@ -531,13 +550,13 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("template<>\n"
-                    "OTTO_RCR_API void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component);\n");
+                    "OTTO_DLL_FUNC void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component);\n");
                 code.append("template<>\n"
-                    "OTTO_RCR_API void Scene::removeComponent<" + component.name + ">(Entity entity);\n");
+                    "OTTO_DLL_FUNC void Scene::removeComponent<" + component.name + ">(Entity entity);\n");
                 code.append("template<>\n"
-                    "OTTO_RCR_API " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity);\n");
+                    "OTTO_DLL_FUNC " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity);\n");
                 code.append("template<>\n"
-                    "OTTO_RCR_API bool Scene::hasComponent<" + component.name + ">(Entity entity);\n");
+                    "OTTO_DLL_FUNC bool Scene::hasComponent<" + component.name + ">(Entity entity);\n");
             }
 
             code.append('\n');
@@ -545,11 +564,11 @@ namespace otto
             for (auto& e : package.events)
             {
                 code.append("template<>\n"
-                    "OTTO_RCR_API void Scene::addEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
+                    "OTTO_DLL_FUNC void Scene::addEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
                 code.append("template<>\n"
-                    "OTTO_RCR_API void Scene::removeEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
+                    "OTTO_DLL_FUNC void Scene::removeEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener);\n");
                 code.append("template<>\n"
-                    "OTTO_RCR_API void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e);\n");
+                    "OTTO_DLL_FUNC void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e);\n");
             }
 
             code.append('\n');
@@ -729,7 +748,7 @@ namespace otto
 
         void _addInitializerAndAddEntityFunctions(String& code)
         {
-            code.append("    OTTO_RCR_API Shared<Scene> _SceneInitializer::createScene()\n"
+            code.append("    OTTO_DLL_FUNC Shared<Scene> Scene::_createScene()\n"
                 "    {\n"
                 "        return new Scene(new SceneData());\n"
                 "    }\n"
@@ -737,7 +756,7 @@ namespace otto
 
             code.append('\n');
 
-            code.append("    OTTO_RCR_API void _SceneInitializer::initClientLog(Log* mainLog)\n"
+            code.append("    OTTO_DLL_FUNC void Scene::_initClientLog(Log* mainLog)\n"
                 "    {\n"
                 "        Log::init(mainLog);\n"
                 "    }\n"
@@ -745,7 +764,7 @@ namespace otto
 
             code.append('\n');
 
-            code.append("    OTTO_RCR_API Entity Scene::addEntity()\n"
+            code.append("    OTTO_DLL_FUNC Entity Scene::addEntity()\n"
                 "    {\n"
                 "        Entity entity = mData->nextEntity++;\n"
                 "        mData->entityComponentMap.insert(entity, DynamicArray<uint16>());\n"
@@ -758,7 +777,7 @@ namespace otto
 
         void _addRemoveEntityFunction(String& code, const _Package& package)
         {
-            code.append("    OTTO_RCR_API void Scene::removeEntity(Entity entity)\n");
+            code.append("    OTTO_DLL_FUNC void Scene::removeEntity(Entity entity)\n");
             code.append("    {\n");
             code.append("        for (uint16 componentID : mData->entityComponentMap[entity])\n");
             code.append("        {\n");
@@ -778,7 +797,7 @@ namespace otto
 
         void _addSceneInitFunction(String& code, const _Package& package)
         {
-            code.append("    OTTO_RCR_API void Scene::init()\n");
+            code.append("    OTTO_DLL_FUNC void Scene::init()\n");
             code.append("    {\n");
 
             for (auto& system : package.systems)
@@ -801,7 +820,7 @@ namespace otto
         void _addAddEventListenerFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename E>\n"
-                "    OTTO_RCR_API void Scene::addEventListener(const EventListener<E>& eventListener)\n"
+                "    OTTO_DLL_FUNC void Scene::addEventListener(const EventListener<E>& eventListener)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Event is not added.\")\n"
                 "    }\n"
@@ -812,7 +831,7 @@ namespace otto
             for (auto& e : package.events)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API void Scene::addEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener)\n");
+                code.append("    OTTO_DLL_FUNC void Scene::addEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(e.name) + "Dispatcher.addListener(eventListener);\n");
                 code.append("    }\n");
@@ -824,7 +843,7 @@ namespace otto
         void _addRemoveEventListenerFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename E>\n"
-                "    OTTO_RCR_API void Scene::removeEventListener(const EventListener<E>& eventListener)\n"
+                "    OTTO_DLL_FUNC void Scene::removeEventListener(const EventListener<E>& eventListener)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Event is not added.\")\n"
                 "    }\n"
@@ -835,7 +854,7 @@ namespace otto
             for (auto& e : package.events)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API void Scene::removeEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener)\n");
+                code.append("    OTTO_DLL_FUNC void Scene::removeEventListener<" + e.name + ">(const EventListener<" + e.name + ">& eventListener)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(e.name) + "Dispatcher.removeListener(eventListener);\n");
                 code.append("    }\n");
@@ -847,7 +866,7 @@ namespace otto
         void _addDispatchEventFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename E>\n"
-                "    OTTO_RCR_API void Scene::dispatchEvent(const E& e)\n"
+                "    OTTO_DLL_FUNC void Scene::dispatchEvent(const E& e)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Event is not added.\")\n"
                 "    }\n"
@@ -858,7 +877,7 @@ namespace otto
             for (auto& e : package.events)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e)\n");
+                code.append("    OTTO_DLL_FUNC void Scene::dispatchEvent<" + e.name + ">(const " + e.name + "& e)\n");
                 code.append("    {\n");
 
                 for (auto& system : package.systems)
@@ -886,7 +905,7 @@ namespace otto
 
         void _addAddComponentFunctions(String& code, const _Package& package)
         {
-            code.append("    OTTO_RCR_API void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const EntityMap& entities)\n");
+            code.append("    OTTO_DLL_FUNC void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const Map<String, Entity>& entities)\n");
             code.append("    {\n");
 
             for (auto& component : package.components)
@@ -906,7 +925,7 @@ namespace otto
             code.append('\n');
 
             code.append("    template<typename C>\n"
-                "    OTTO_RCR_API void Scene::addComponent(Entity entity, const C& component)\n"
+                "    OTTO_DLL_FUNC void Scene::addComponent(Entity entity, const C& component)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Component is not added.\")\n"
                 "    }\n"
@@ -917,7 +936,7 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component)\n");
+                code.append("    OTTO_DLL_FUNC void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(component.name) + "Pool.addComponent(entity, component);\n");
 
@@ -946,7 +965,7 @@ namespace otto
         void _addRemoveComponentFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename C>\n"
-                "    OTTO_RCR_API void Scene::removeComponent(Entity entity)\n"
+                "    OTTO_DLL_FUNC void Scene::removeComponent(Entity entity)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Component is not added.\")\n"
                 "    }\n"
@@ -957,7 +976,7 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API void Scene::removeComponent<" + component.name + ">(Entity entity)\n");
+                code.append("    OTTO_DLL_FUNC void Scene::removeComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(component.name) + "Pool.removeComponent(entity);\n");
 
@@ -986,7 +1005,7 @@ namespace otto
         void _addGetComponentFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename C>\n"
-                "    OTTO_RCR_API C& Scene::getComponent(Entity entity)\n"
+                "    OTTO_DLL_FUNC C& Scene::getComponent(Entity entity)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Component is not added.\")\n"
                 "    }\n"
@@ -997,7 +1016,7 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity)\n");
+                code.append("    OTTO_DLL_FUNC " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
                 code.append("        return mData->" + String::untitle(component.name) + "Pool.getComponent(entity);\n");
                 code.append("    }\n");
@@ -1009,7 +1028,7 @@ namespace otto
         void _addHasComponentFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename C>\n"
-                "    OTTO_RCR_API bool Scene::hasComponent(Entity entity)\n"
+                "    OTTO_DLL_FUNC bool Scene::hasComponent(Entity entity)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Component is not added.\")\n"
                 "    }\n"
@@ -1020,9 +1039,22 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_RCR_API bool Scene::hasComponent<" + component.name + ">(Entity entity)\n");
+                code.append("    OTTO_DLL_FUNC bool Scene::hasComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
                 code.append("        return mData->entityComponentMap[entity].contains(getID<" + component.name + ">());\n");
+                code.append("    }\n");
+
+                code.append('\n');
+            }
+        }
+
+        void _addOnEventFunctions(String& code)
+        {
+            for (auto& e : ON_EVENT_FUNCTIONS)
+            {
+                code.append("    OTTO_DLL_FUNC void Scene::_on" + e + "(const " + e + "Event& e)\n");
+                code.append("    {\n");
+                code.append("        dispatchEvent<" + e + "Event>(e);\n");
                 code.append("    }\n");
 
                 code.append('\n');
@@ -1063,6 +1095,7 @@ namespace otto
             _addRemoveComponentFunctions(code, package);
             _addGetComponentFunctions(code, package);
             _addHasComponentFunctions(code, package);
+            _addOnEventFunctions(code);
 
             code.append("} // namespace otto\n");
 
@@ -1075,7 +1108,12 @@ namespace otto
 
     Result<Shared<Scene>, SceneLoader::SceneLoadingError> SceneLoader::loadScene(const FilePath& filePath)
     {
-        Shared<Scene> scene = _SceneInitializer().createScene();
+        OTTO_DECLARE_DLL_FUNCTION_HANDLE(createSceneHandle, Application::_getClientDllPath(), Shared<Scene>, otto::Scene::_createScene);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneAddEntityHandle, Application::_getClientDllPath(), Scene, Entity, addEntity);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneAddComponentHandle, Application::_getClientDllPath(), Scene, void, addComponent, 
+            Entity, const String&, const Serialized&, const Map<String, Entity>&);
+
+        Shared<Scene> scene = OTTO_CALL_DLL_FUNCTION(createSceneHandle);
 
         auto file = Serializer::load(filePath);
         if (file.hasError())
@@ -1093,13 +1131,13 @@ namespace otto
                 return SceneLoadingError::DUPLICATE_ENTITY;
             }
 
-            entities.insert(entity, scene->addEntity());
+            entities.insert(entity, OTTO_CALL_DLL_MEMBER_FUNCTION(*scene.get(), sceneAddEntityHandle));
         }
 
         for (auto& [entityName, components] : file.getResult().getDictionary())
         {
             for (auto& [componentName, args] : components.getDictionary())
-                scene->addComponent(entities.get(entityName), componentName, args, entities);
+                OTTO_CALL_DLL_MEMBER_FUNCTION(*scene.get(), sceneAddComponentHandle, entities.get(entityName), componentName, args, entities);
         }
 
         return scene;
@@ -1112,12 +1150,15 @@ namespace otto
         _createSceneFile(_loadPackage(package), Application::getRootDirectory() + ".tmp/generated_scene.cpp");
 
         bool dllReloaded = DllReloader::reloadDll(Application::getRootDirectory() + ".tmp/client.dll", true, {
-            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "OTTO_DEBUG", "OTTO_DYNAMIC" });
+            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "OTTO_DEBUG", "OTTO_DYNAMIC", "OTTO_EXPORT" });
 
         if (!dllReloaded)
             return false;
 
-        _SceneInitializer().initClientLog(Log::getInstance());
+        OTTO_DECLARE_DLL_FUNCTION_HANDLE(initClientLogHandle, Application::_getClientDllPath(), void, otto::Scene::_initClientLog, Log*);
+
+        OTTO_CALL_DLL_FUNCTION(initClientLogHandle, Log::getInstance());
+
         return true;
     }
 #endif

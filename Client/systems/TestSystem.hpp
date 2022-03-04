@@ -39,7 +39,7 @@ public:
         Log::info("TestComponent added to ", e.entity);
     }
 
-        void onEvent(const ComponentRemovedEvent<TestComponent2>& e)
+    void onEvent(const ComponentRemovedEvent<TestComponent2>& e)
     {
         Log::info("TestComponent added to ", e.entity);
     }

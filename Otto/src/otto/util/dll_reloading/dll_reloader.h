@@ -1,14 +1,36 @@
 #pragma once
 
-#if defined(OTTO_DLL_EXPORT)
-#error Exporting dlls should not use RCR to load another dll
-#endif
-
 #include "otto/base.h"
 
 #include "otto/util/string.h"
 #include "otto/util/dynamic_array.h"
 #include "otto/util/platform/file_path.h"
+
+#define OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(handleName, dllPath, classType, returnType, name, ...) \
+        static returnType(classType::* handleName)(__VA_ARGS__) = \
+            otto::DllReloader::registerMemberFunctionPointer(dllPath, &handleName, otto::DllReloader::getTypeNames<returnType>(), \
+            #name, otto::DllReloader::getTypeNames<>(), otto::DllReloader::getTypeNames<__VA_ARGS__>(true)) \
+
+#define OTTO_DECLARE_DLL_FUNCTION_HANDLE(handleName, dllPath, returnType, name, ...) \
+            static returnType(*handleName)(__VA_ARGS__) = \
+                otto::DllReloader::registerFunctionPointer(dllPath, &handleName, otto::DllReloader::getTypeNames<returnType>(), \
+                #name, otto::DllReloader::getTypeNames<>(), otto::DllReloader::getTypeNames<__VA_ARGS__>(true)) \
+
+#define OTTO_CALL_DLL_MEMBER_FUNCTION(object, memberFunctionHandle, ...) \
+    ((object).*memberFunctionHandle)(__VA_ARGS__)
+
+#define OTTO_CALL_DLL_FUNCTION(functionHandle, ...) \
+    (*functionHandle)(__VA_ARGS__)
+
+#ifdef OTTO_DYNAMIC
+#ifdef OTTO_EXPORT
+#define OTTO_DLL_FUNC __declspec(dllexport)
+#else
+#define OTTO_DLL_FUNC __declspec(dllimport)
+#endif
+#else
+#define OTTO_DLL_FUNC extern
+#endif
 
 namespace otto
 {
@@ -70,12 +92,11 @@ namespace otto
         static Functionptr64<R, Args...> registerFunctionPointer(const FilePath& dllPath,
             Functionptr64<R, Args...>* functionptr64,
             const String& returnType,
-            const String& namespaceName,
             const String& functionName,
             const String& templateTypes,
             const String& argumentTypes)
         {
-            String fullFunctionName = returnType + ' ' + ((namespaceName != "::") ? namespaceName + functionName : functionName);
+            String fullFunctionName = returnType + ' ' + functionName;
 
             if (!templateTypes.isEmpty())
                 fullFunctionName += '<' + templateTypes + '>';

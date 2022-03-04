@@ -119,7 +119,7 @@ namespace otto
                         std::memset(symbolNameBuffer, 0, symbolNameBufferSize);
                         UnDecorateSymbolName(symbolAdress, symbolNameBuffer, symbolNameBufferSize, flags);
 
-                        symbols.insert(String(symbolNameBuffer).replaceAll("(void)", "()").replaceAll(" >", ">"), symbolAdress);
+                        symbols.insert(String(symbolNameBuffer).replaceAll("(void)", "()").replaceAll(" >", ">").replaceAll("static ", ""), symbolAdress);
                     }
                 }
 
