@@ -30,6 +30,11 @@ namespace otto
         {
         }
 
+        const T* getData()
+        {
+            return &m11;
+        }
+
         T det()
         {
             return m11 * Mat3x3<T>(m22, m23, m24,

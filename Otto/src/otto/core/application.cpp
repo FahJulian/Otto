@@ -31,6 +31,8 @@ namespace otto
     static FilePath sRootDirectory;
     static const FilePath CORE_ROOT_DIRECTORY = "C:/ProgramData/Otto/";
 
+    static Map<String, Serialized> sAdditionalSettings;
+
 #ifdef OTTO_COUNT_FPS
     static const float64 FPS_UPDATES_PER_SECOND = 1.0;
     static const float64 SECONDS_PER_FPS_UPDATE = 1.0 / FPS_UPDATES_PER_SECOND;
@@ -164,6 +166,8 @@ namespace otto
 
         Log::trace("Done initializing scene.");
 
+        sAdditionalSettings = settings.additionalSettings;
+
         sInitialized = true;
 
         Log::info("Initialization complete.");
@@ -233,6 +237,11 @@ namespace otto
         return CORE_ROOT_DIRECTORY;
     }
 
+    const Map<String, Serialized>& Application::getSettings()
+    {
+        return sAdditionalSettings;
+    }
+
     void Application::stop()
     {
         sRunning = false;
@@ -264,44 +273,51 @@ namespace otto
 
         auto file = result.getResult();
 
-        if (!file.contains("RootDirectory"))
+        if (!file.contains("rootDirectory"))
             return SettingsError::ROOT_DIRECTORY_NOT_FOUND;
-        else
-            settings.rootDirectory = file.get<String>("RootDirectory");
 
-        if (!file.contains("LogFilePath"))
+        if (!file.contains("logFilePath"))
             return SettingsError::LOG_FILE_PATH_NOT_FOUND;
-        else
-            settings.logFilePath = file.get<String>("LogFilePath");
 
-        if (!file.contains("MSVC_Version"))
+        if (!file.contains("msvcVersion"))
             return SettingsError::MSVC_VERSION_NOT_FOUND;
-        else
-            settings.msvcVersion = file.get<String>("MSVC_Version");
-
+        
         if (!file.contains("windowSettingsPath"))
             return SettingsError::WINDOW_SETTINGS_PATH_NOT_FOUND;
-        else
-            settings.windowSettingsPath = file.get<String>("windowSettingsPath");
 
-        if (file.contains("LogConsoleLevel"))
-        {
-            auto logConsoleLevel = _parseLogLevel(file.get<String>("LogConsoleLevel"));
-            if (!logConsoleLevel.hasError())
-                settings.logConsoleLevel = logConsoleLevel.getResult();
-        }
-
-        if (file.contains("LogFileLevel"))
-        {
-            auto logFileLevel = _parseLogLevel(file.get<String>("LogFileLevel"));
-            if (!logFileLevel.hasError())
-                settings.logFileLevel = logFileLevel.getResult();
-        }
-
-        if (!file.contains("StartScene"))
+        if (!file.contains("startScene"))
             return SettingsError::START_SCENE_NOT_FOUND;
-        else
-            settings.startScene = file.get<String>("StartScene");
+
+        for (auto& [name, serialized] : file.getDictionary())
+        {
+            if (name.equalsIgnoreCase("rootDirectory"))
+                settings.rootDirectory = file.get<String>("rootDirectory");
+            else if (name.equalsIgnoreCase("logFilePath"))
+                settings.logFilePath = file.get<String>("logFilePath");
+            else if (name.equalsIgnoreCase("msvcVersion"))
+                settings.msvcVersion = file.get<String>("msvcVersion");
+            else if (name.equalsIgnoreCase("windowSettingsPath"))
+                settings.windowSettingsPath = file.get<String>("windowSettingsPath");
+            else if (name.equalsIgnoreCase("startScene"))
+                settings.startScene = file.get<String>("startScene");
+            else if (name.equalsIgnoreCase("logConsoleLevel"))
+            {
+                auto logConsoleLevel = _parseLogLevel(file.get<String>("LogConsoleLevel"));
+                if (!logConsoleLevel.hasError())
+                    settings.logConsoleLevel = logConsoleLevel.getResult();
+            }
+            else if (name.equalsIgnoreCase("logFileLevel"))
+            {
+                auto logFileLevel = _parseLogLevel(file.get<String>("logFileLevel"));
+                if (!logFileLevel.hasError())
+                    settings.logFileLevel = logFileLevel.getResult();
+            }
+            else if (!name.equalsIgnoreCase("dependencies") && !name.equalsIgnoreCase("components") &&
+                !name.equalsIgnoreCase("events") && !name.equalsIgnoreCase("behaviours") && !name.equalsIgnoreCase("systems"))
+            {
+                settings.additionalSettings.insert(name, serialized);
+            }
+        }
 
         auto package = PackageLoader::loadPackage(file, CORE_ROOT_DIRECTORY);
         if (package.hasError())

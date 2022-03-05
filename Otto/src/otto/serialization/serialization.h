@@ -6,6 +6,7 @@
 #include "otto/util/map.h"
 #include "otto/math/math.h"
 #include "otto/graphics/color.h"
+#include "otto/graphics/sprite.h"
 #include "otto/serialization/serializer.h"
 #include "otto/serialization/serialized.h"
 
@@ -34,5 +35,8 @@ namespace otto
 	
 	template<>
     Color deserialize(const Serialized& serialized);
+
+    template<>
+    Sprite deserialize(const Serialized& serialized);
 
 } // namespace otto

@@ -16,12 +16,12 @@ namespace otto
         }
 
         constexpr Vec4(T t)
-            : mX(t), mY(t), mZ(t), mW(t)
+            : x(t), y(t), z(t), w(t)
         {
         }
         
         constexpr Vec4(T x, T y, T z, T w)
-            : mX(x), mY(y), mZ(z), mW(w)
+            : x(x), y(y), z(z), w(w)
         {
         }
 
@@ -32,110 +32,69 @@ namespace otto
         template<typename F>
         Vec4& operator+=(const Vec4<F>& v)
         {
-            mX += v.mX;
-            mY += v.mY;
-            mZ += v.mZ;
-            mW += v.mW;
+            x += v.x;
+            y += v.y;
+            z += v.z;
+            w += v.w;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec4&>::type operator+=(F f)
         {
-            mX += f;
-            mY += f;
-            mZ += f;
-            mW += f;
+            x += f;
+            y += f;
+            z += f;
+            w += f;
         }
 
         template<typename F>
         typename std::enable_if<std::is_integral<F>::value, Vec4&>::type operator*=(F f)
         {
-            mX *= f;
-            mY *= f;
-            mZ *= f;
-            mW *= f;
+            x *= f;
+            y *= f;
+            z *= f;
+            w *= f;
         }
         
         template<typename F, typename G>
         friend Vec4 operator+(const Vec4<F>& v1, const Vec4<G>& v2)
         {
-            return { v1.mX + v2.mX, v1.mY + v2.mY, v1.mZ + v2.mZ, v1.mW + v2.mW };
-        }
-
-        T getX() const requires std::is_integral_v<T>
-        {
-            return mX;
-        }
-
-        const T& getX() const
-        {
-            return mX;
-        }
-
-        T getY() const requires std::is_integral_v<T>
-        {
-            return mY;
-        }
-
-        const T& getY() const
-        {
-            return mY;
-        }
-
-        T getZ() const requires std::is_integral_v<T>
-        {
-            return mZ;
-        }
-
-        const T& getZ() const
-        {
-            return mZ;
-        }
-
-        T getW() const requires std::is_integral_v<T>
-        {
-            return mW;
-        }
-
-        const T& getW() const
-        {
-            return mW;
+            return { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral_v<F>, Vec4>::type operator+(F f, const Vec4& v)
         {
-            return { f + v.mX, f + v.mY, f + v.mZ, f + v.mW };
+            return { f + v.x, f + v.y, f + v.z, f + v.w };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral_v<F>, Vec4>::type operator+(const Vec4& v, F f)
         {
-            return { v.mX + f, v.mY + f, v.mZ + f, v.mW + f };
+            return { v.x + f, v.y + f, v.z + f, v.w + f };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral_v<F>, Vec4>::type operator*(F f, const Vec4& v)
         {
-            return { f * v.mX, f * v.mY, f * v.mZ, f * v.mW };
+            return { f * v.x, f * v.y, f * v.z, f * v.w };
         }
 
         template<typename F>
         friend typename std::enable_if<std::is_integral_v<F>, Vec4>::type operator*(const Vec4& v, F f)
         {
-            return { v.mX * f, v.mY * f, v.mZ * f, v.mW * f };
+            return { v.x * f, v.y * f, v.z * f, v.w * f };
         }
 
         friend std::ostream& operator<<(std::ostream& stream, const Vec4& v)
         {
-            return (stream << '(' << v.mX << ", " << v.mY << ", " << v.mZ << ", " << v.mW << ')');
+            return (stream << '(' << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')');
         }
     
-    private:
-        T mX = T();
-        T mY = T();
-        T mZ = T();
-        T mW = T();
+        T x = T();
+        T y = T();
+        T z = T();
+        T w = T();
     };
 
     using Vec4f32 = Vec4<float32>;

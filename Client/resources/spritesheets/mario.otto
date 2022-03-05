@@ -1,0 +1,6 @@
+texture: resources/textures/mario.png
+rows: 1
+cols: 14
+spriteWidth: 16
+spriteHeight: 16
+padding: 1

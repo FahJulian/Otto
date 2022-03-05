@@ -14,11 +14,12 @@ namespace otto
 
         static bool init();
 
-        static void setViewport(uint32 x, uint32 y, uint32 width, uint32 height);
-
         static void setClearColor(const Color& color);
 
         static void clear();
+
+    public:
+        static void setViewport(uint32 x, uint32 y, uint32 width, uint32 height);
 
         static void drawIndexed(const VertexArray& vertexArray, uint32 indexCount = 0);
 

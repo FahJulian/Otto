@@ -1,33 +1,33 @@
-RootDirectory: C:/dev/Otto/Client/
-LogFilePath: .log/client.log
-LogConsoleLevel: ALL
-LogFileLevel: ALL
-MSVC_Version: 14.29.30133
-StartScene: scenes/TestScene
-WindowSettingsPath: windows/WindowSettings.otto
+rootDirectory: C:/dev/Otto/Client/
+logFilePath: .log/client.log
+logConsoleLevel: ALL
+logFileLevel: ALL
+msvcVersion: 14.29.30133
+startScene: scenes/TestScene
+windowSettingsPath: windows/WindowSettings.otto
 
-Dependencies: [
+dependencies: [
     otto/core   
 ]
 
-Components: [
+components: [
     otto/components/TransformComponent
 
     components/TestComponent
     components/TestComponent2
 ]
 
-Behaviours: [
+events: [
+    events/TestEvent
+    events/TestEvent2
+]
+
+behaviours: [
     behaviours/TestBehaviour
     behaviours/TestBehaviour2
 ]
 
-Systems: [
+systems: [
     systems/TestSystem
     systems/TestSystem2
-]
-
-Events: [
-    events/TestEvent
-    events/TestEvent2
 ]

@@ -6,6 +6,7 @@
 #include "otto/debug/log/log.h"
 #include "otto/window/events.h"
 #include "otto/util/platform/file_path.h"
+#include "otto/serialization/serialized.h"
 
 extern int main();
 
@@ -27,6 +28,7 @@ namespace otto
             String startScene;
             FilePath windowSettingsPath;
             Package applicationPackage;
+            Map<String, Serialized> additionalSettings;
         };
 
         enum class SettingsError : uint8
@@ -43,6 +45,8 @@ namespace otto
     public:
         static const FilePath& getRootDirectory();
         static const FilePath& getCoreRootDirectory();
+
+        static const Map<String, Serialized>& getSettings();
 
 #ifdef OTTO_DYNAMIC
         static FilePath _getClientDllPath();

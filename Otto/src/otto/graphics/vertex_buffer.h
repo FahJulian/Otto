@@ -74,8 +74,8 @@ namespace otto
     {
     public:
         VertexBuffer();
-        VertexBuffer(const DynamicArray<BufferElement>& layout, uint64 size);
-        VertexBuffer(const DynamicArray<BufferElement>& layout, const void* data, uint64 size);
+        VertexBuffer(uint64 size, const DynamicArray<BufferElement>& layout);
+        VertexBuffer(const void* data, uint64 size, const DynamicArray<BufferElement>& layout);
         VertexBuffer(const VertexBuffer& other);
 
         template<typename T, uint64 N>
@@ -97,6 +97,12 @@ namespace otto
         void setData(const StaticArray<T, N>& data)
         {
             setData(reinterpret_cast<const void*>(data.getData()), N * sizeof(T));
+        }
+
+        template<typename T, uint64 N>
+        void setData(const StaticArray<T, N>& data, uint64 elements)
+        {
+            setData(reinterpret_cast<const void*>(data.getData()), elements * sizeof(T));
         }
 
     private:

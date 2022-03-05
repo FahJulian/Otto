@@ -1,5 +1,7 @@
 #include "serialization.h"
 
+#include "otto/graphics/texture_loader.h"
+
 namespace otto
 {
 	template<>
@@ -84,6 +86,12 @@ namespace otto
 		}
 
 		return color;
+	}
+
+	template<>
+	Sprite deserialize(const Serialized& serialized)
+	{
+		return TextureLoader::loadSpriteFromSerialized(serialized);
 	}
 
 } // namespace otto

@@ -9,7 +9,7 @@ namespace otto
     {
     }
 
-    VertexBuffer::VertexBuffer(const DynamicArray<BufferElement>& layout, uint64 size)
+    VertexBuffer::VertexBuffer(uint64 size, const DynamicArray<BufferElement>& layout)
         : mOpenglHandle(0), mNCopies(new uint64(1)), mLayout(layout), mStride(0)
     {
         _calculateOffsetAndStride();
@@ -19,7 +19,7 @@ namespace otto
         glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
     }
 
-    VertexBuffer::VertexBuffer(const DynamicArray<BufferElement>& layout, const void* data, uint64 size)
+    VertexBuffer::VertexBuffer(const void* data, uint64 size, const DynamicArray<BufferElement>& layout)
         : mOpenglHandle(0), mNCopies(new uint64(1)), mLayout(layout), mStride(0)
     {
         _calculateOffsetAndStride();

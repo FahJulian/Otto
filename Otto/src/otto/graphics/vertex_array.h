@@ -15,7 +15,7 @@ namespace otto
         VertexArray(const VertexArray& other);
 
         template<uint64 N>
-        VertexArray(const DynamicArray<VertexBuffer> vertexBuffers, const StaticArray<int32, N> indices)
+        VertexArray(const DynamicArray<VertexBuffer> vertexBuffers, const StaticArray<uint32, N> indices)
             : VertexArray(vertexBuffers, indices.getData(), uint32(N))
         {
         }
