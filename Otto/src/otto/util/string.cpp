@@ -16,7 +16,7 @@ namespace otto
         StaticArray<char, 8 * sizeof(long long)> STRING_CAST_BUFFER;
 
         template<typename T>
-        String _floatToString(T value, bool scientific)
+        String _floatToString(T value, bool8 scientific)
         {
             auto result = std::to_chars(STRING_CAST_BUFFER.begin(), STRING_CAST_BUFFER.end(),
                 value, scientific ? std::chars_format::scientific : std::chars_format::fixed, 2);
@@ -41,7 +41,7 @@ namespace otto
             return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
         }
 
-        bool _equalsIgnoreCase(const char8* c1, const char8* c2, uint64 len)
+        bool8 _equalsIgnoreCase(const char8* c1, const char8* c2, uint64 len)
         {
             for (uint64 i = 0; i < len; i++)
             {
@@ -52,7 +52,7 @@ namespace otto
             return true;
         }
 
-        bool _isWhitespace(char8 c)
+        bool8 _isWhitespace(char8 c)
         {
             return c <= ' ';
         }
@@ -363,27 +363,27 @@ namespace otto
         mData = newData;
     }
 
-    bool String::equals(char8 c) const
+    bool8 String::equals(char8 c) const
     {
         return mSize == 1 && *mData == c;
     }
 
-    bool String::equals(const String& other) const
+    bool8 String::equals(const String& other) const
     {
         return std::strcmp(mData, other.mData) == 0;
     }
 
-    bool String::equals(const char8* other) const
+    bool8 String::equals(const char8* other) const
     {
         return std::strcmp(mData, other) == 0;
     }
 
-    bool String::equalsIgnoreCase(char8 c) const
+    bool8 String::equalsIgnoreCase(char8 c) const
     {
         return mSize == 1 && _toLowerCase(*mData) == _toLowerCase(c);
     }
 
-    bool String::equalsIgnoreCase(const String& other) const
+    bool8 String::equalsIgnoreCase(const String& other) const
     {
         if (mSize != other.mSize)
             return false;
@@ -397,7 +397,7 @@ namespace otto
         return true;
     }
 
-    bool String::equalsIgnoreCase(const char8* other) const
+    bool8 String::equalsIgnoreCase(const char8* other) const
     {
         if (mSize != std::strlen(other))
             return false;
@@ -411,7 +411,7 @@ namespace otto
         return true;
     }
 
-    bool String::startsWith(char8 c) const
+    bool8 String::startsWith(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -419,7 +419,7 @@ namespace otto
         return mData[0] == c;
     }
 
-    bool String::startsWith(const char8* string) const
+    bool8 String::startsWith(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -429,7 +429,7 @@ namespace otto
         return std::strncmp(mData, string, len) == 0;
     }
 
-    bool String::startsWith(const String& string) const
+    bool8 String::startsWith(const String& string) const
     {
         if (string.mSize > mSize)
             return false;
@@ -437,7 +437,7 @@ namespace otto
         return std::strncmp(mData, string.mData, string.mSize) == 0;
     }
 
-    bool String::startsWithIgnoreCase(char8 c) const
+    bool8 String::startsWithIgnoreCase(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -445,7 +445,7 @@ namespace otto
         return _toLowerCase(mData[0]) == _toLowerCase(c);
     }
 
-    bool String::startsWithIgnoreCase(const char8* string) const
+    bool8 String::startsWithIgnoreCase(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -455,7 +455,7 @@ namespace otto
         return _equalsIgnoreCase(mData, string, len);
     }
 
-    bool String::startsWithIgnoreCase(const String& string) const
+    bool8 String::startsWithIgnoreCase(const String& string) const
     {
         if (string.mSize > mSize)
             return false;
@@ -463,7 +463,7 @@ namespace otto
         return _equalsIgnoreCase(mData, string.mData, string.mSize);
     }
 
-    bool String::endsWith(char8 c) const
+    bool8 String::endsWith(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -471,7 +471,7 @@ namespace otto
         return mData[mSize - 1] == c;
     }
 
-    bool String::endsWith(const char8* string) const
+    bool8 String::endsWith(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -481,7 +481,7 @@ namespace otto
         return std::strncmp(mData + mSize - len, string, len) == 0;
     }
 
-    bool String::endsWith(const String& string) const
+    bool8 String::endsWith(const String& string) const
     {
         if (string.mSize > mSize)
             return false;
@@ -489,7 +489,7 @@ namespace otto
         return std::strncmp(mData + mSize - string.mSize, string.mData, string.mSize) == 0;
     }
 
-    bool String::endsWithIgnoreCase(char8 c) const
+    bool8 String::endsWithIgnoreCase(char8 c) const
     {
         if (isEmpty())
             return false;
@@ -497,7 +497,7 @@ namespace otto
         return _toLowerCase(mData[mSize - 1]) == _toLowerCase(c);
     }
 
-    bool String::endsWithIgnoreCase(const char8* string) const
+    bool8 String::endsWithIgnoreCase(const char8* string) const
     {
         uint64 len = std::strlen(string);
 
@@ -507,7 +507,7 @@ namespace otto
         return _equalsIgnoreCase(mData + mSize - len, string, len);
     }
 
-    bool String::endsWithIgnoreCase(const String& string) const
+    bool8 String::endsWithIgnoreCase(const String& string) const
     {
         if (string.mSize > mSize)
             return false;
@@ -515,32 +515,32 @@ namespace otto
         return _equalsIgnoreCase(mData + mSize - string.mSize, string.mData, string.mSize);
     }
 
-    bool String::contains(char8 c) const
+    bool8 String::contains(char8 c) const
     {
         return findFirstOf(c) != mSize;
     }
 
-    bool String::contains(const String& string) const
+    bool8 String::contains(const String& string) const
     {
         return findFirstOf(string) != mSize;
     }
 
-    bool String::contains(const char8* string) const
+    bool8 String::contains(const char8* string) const
     {
         return findFirstOf(string) != mSize;
     }
 
-    bool String::containsIgnoreCase(char8 c) const
+    bool8 String::containsIgnoreCase(char8 c) const
     {
         return findFirstOfIgnoreCase(c) != mSize;
     }
 
-    bool String::containsIgnoreCase(const String& string) const
+    bool8 String::containsIgnoreCase(const String& string) const
     {
         return findFirstOfIgnoreCase(string) != mSize;
     }
 
-    bool String::containsIgnoreCase(const char8* string) const
+    bool8 String::containsIgnoreCase(const char8* string) const
     {
         return findFirstOfIgnoreCase(string) != mSize;
     }
@@ -2216,7 +2216,7 @@ namespace otto
         return result;
     }
 
-    String String::valueOf(bool value)
+    String String::valueOf(bool8 value)
     {
         return value ? String("true", 4) : String("false", 5);
     }
@@ -2261,12 +2261,12 @@ namespace otto
         return _integerToString<uint64>(value, base);
     }
 
-    String String::valueOf(float32 value, bool scientific)
+    String String::valueOf(float32 value, bool8 scientific)
     {
         return _floatToString<float32>(value, scientific);
     }
 
-    String String::valueOf(float64 value, bool scientific)
+    String String::valueOf(float64 value, bool8 scientific)
     {
         return _floatToString<float64>(value, scientific);
     }
@@ -2278,7 +2278,7 @@ namespace otto
     }
 
     template<>
-    bool String::stringTo<bool>(const String& string)
+    bool8 String::stringTo<bool8>(const String& string)
     {
         return string == "true" || string == '1';
     }
@@ -2349,7 +2349,7 @@ namespace otto
         return stream;
     }
 
-    bool operator<<(String& string, std::istream& file)
+    bool8 operator<<(String& string, std::istream& file)
     {
         uint64 posBefore = file.tellg();
 
@@ -2368,7 +2368,7 @@ namespace otto
         return true;
     }
 
-    bool operator<<(String& string, std::istream&& file)
+    bool8 operator<<(String& string, std::istream&& file)
     {
         uint64 posBefore = file.tellg();
 

@@ -86,13 +86,13 @@ namespace otto {
         }
 
         template<typename T>
-        bool containsKey(const T& key) const
+        bool8 containsKey(const T& key) const
         {
             return mData.contains(key);
         }
 
         template<typename T>
-        bool containsValue(const T& value) const
+        bool8 containsValue(const T& value) const
         {
             for (auto& [k, v] : *this)
             {

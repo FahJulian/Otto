@@ -62,13 +62,13 @@ namespace otto
 			settings.title = serialized.get<String>("title");
 
 		if (serialized.contains("saveTitle"))
-			settings.saveTitle = serialized.get<bool>("saveTitle");
+			settings.saveTitle = serialized.get<bool8>("saveTitle");
 
 		if (serialized.contains("clearColor"))
 			settings.clearColor = serialized.get<Color>("clearColor");
 
 		if (serialized.contains("saveClearColor"))
-			settings.saveClearColor = serialized.get<bool>("saveClearColor");
+			settings.saveClearColor = serialized.get<bool8>("saveClearColor");
 
 		if (!serialized.contains("size"))
 		{
@@ -89,25 +89,25 @@ namespace otto
 		}
 
 		if (serialized.contains("saveSize"))
-			settings.saveSize = serialized.get<bool>("saveSize");
+			settings.saveSize = serialized.get<bool8>("saveSize");
 		if (serialized.contains("windowMode"))
 			settings.windowMode = _toWindowMode(serialized.get<String>("windowMode"));
 		if (serialized.contains("saveWindowMode"))
-			settings.saveWindowMode = serialized.get<bool>("saveWindowMode");
+			settings.saveWindowMode = serialized.get<bool8>("saveWindowMode");
 		if (serialized.contains("resizable"))
-			settings.resizable = serialized.get<bool>("resizable");
+			settings.resizable = serialized.get<bool8>("resizable");
 		if (serialized.contains("closeButton"))
-			settings.closeButton = serialized.get<bool>("closeButton");
+			settings.closeButton = serialized.get<bool8>("closeButton");
 		if (serialized.contains("closeOnAltF4"))
-			settings.closeOnAltF4 = serialized.get<bool>("closeOnAltF4");
+			settings.closeOnAltF4 = serialized.get<bool8>("closeOnAltF4");
 		if (serialized.contains("minimized"))
-			settings.minimized = serialized.get<bool>("minimized");
+			settings.minimized = serialized.get<bool8>("minimized");
 		if (serialized.contains("maximized"))
-			settings.maximized = serialized.get<bool>("maximized");
+			settings.maximized = serialized.get<bool8>("maximized");
 		if (serialized.contains("saveMinimized"))
-			settings.saveMinimized = serialized.get<bool>("saveMinimized");
+			settings.saveMinimized = serialized.get<bool8>("saveMinimized");
 		if (serialized.contains("saveMaximized"))
-			settings.saveMaximized = serialized.get<bool>("saveMaximized");
+			settings.saveMaximized = serialized.get<bool8>("saveMaximized");
 
 		if (serialized.contains("iconSet"))
 		{
@@ -144,19 +144,19 @@ namespace otto
 		settings.windowMode = file.read<WindowMode>();
 		settings.clearColor = file.read<uint32>();
 
-		settings.saveTitle = file.read<bool>();
-		settings.saveSize = file.read<bool>();
-		settings.saveWindowMode = file.read<bool>();
-		settings.saveClearColor = file.read<bool>();
+		settings.saveTitle = file.read<bool8>();
+		settings.saveSize = file.read<bool8>();
+		settings.saveWindowMode = file.read<bool8>();
+		settings.saveClearColor = file.read<bool8>();
 
-		settings.resizable = file.read<bool>();
-		settings.closeButton = file.read<bool>();
-		settings.closeOnAltF4 = file.read<bool>();
+		settings.resizable = file.read<bool8>();
+		settings.closeButton = file.read<bool8>();
+		settings.closeOnAltF4 = file.read<bool8>();
 
-		settings.minimized = file.read<bool>();
-		settings.maximized = file.read<bool>();
-		settings.saveMinimized = file.read<bool>();
-		settings.saveMaximized = file.read<bool>();
+		settings.minimized = file.read<bool8>();
+		settings.maximized = file.read<bool8>();
+		settings.saveMinimized = file.read<bool8>();
+		settings.saveMaximized = file.read<bool8>();
 
 		settings.iconSet = IconLoader::_loadIconSetFromBinotto(file);
 		settings.cursorSet = IconLoader::_loadCursorSetFromBinotto(file);

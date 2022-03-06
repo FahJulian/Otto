@@ -121,7 +121,6 @@ namespace otto
         static Log* sInstance;
 
         friend class Application;
-        friend class SceneLoader;
     };
 
 } // namespace otto

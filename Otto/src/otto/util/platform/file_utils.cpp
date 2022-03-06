@@ -6,34 +6,34 @@
 
 namespace otto
 {
-    bool FileUtils::directoryExists(const FilePath& directoryPath)
+    bool8 FileUtils::directoryExists(const FilePath& directoryPath)
     {
         auto fileAttributes = GetFileAttributesA(directoryPath.toString().getData());
         return fileAttributes != INVALID_FILE_ATTRIBUTES && (fileAttributes & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    bool FileUtils::fileExists(const FilePath& filePath)
+    bool8 FileUtils::fileExists(const FilePath& filePath)
     {
         auto fileAttributes = GetFileAttributesA(filePath.toString().getData());
         return fileAttributes != INVALID_FILE_ATTRIBUTES && !(fileAttributes & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    bool FileUtils::createDirectory(const FilePath& directory)
+    bool8 FileUtils::createDirectory(const FilePath& directory)
     {
         return CreateDirectoryA(directory.toString().getData(), NULL);
     }
 
-    bool FileUtils::moveFile(const FilePath& oldName, const FilePath& newName)
+    bool8 FileUtils::moveFile(const FilePath& oldName, const FilePath& newName)
     {
         return MoveFileA(oldName.toString().getData(), newName.toString().getData());
     }
 
-    bool FileUtils::renameFile(const FilePath& oldName, const FilePath& newName)
+    bool8 FileUtils::renameFile(const FilePath& oldName, const FilePath& newName)
     {
         return moveFile(oldName, newName);
     }
 
-    bool FileUtils::createDirectoryRecursively(const FilePath& directory)
+    bool8 FileUtils::createDirectoryRecursively(const FilePath& directory)
     {
         for (uint64 index = directory.toString().findFirstOf('\\', directory.toString().findFirstOf(":\\") + 1), end = directory.toString().getSize();
             index < end; index = directory.toString().findFirstOf('\\', index + 1))
@@ -46,17 +46,17 @@ namespace otto
         return true;
     }
 
-    bool FileUtils::deleteFile(const FilePath& fileName)
+    bool8 FileUtils::deleteFile(const FilePath& fileName)
     {
         return DeleteFileA(fileName.toString().getData());
     }
 
-    bool FileUtils::deleteEmptyDirectory(const FilePath& fileName)
+    bool8 FileUtils::deleteEmptyDirectory(const FilePath& fileName)
     {
         return RemoveDirectoryA(fileName.toString().getData());
     }
 
-    bool FileUtils::deleteEmptyDirectoryRecursively(const FilePath& directory)
+    bool8 FileUtils::deleteEmptyDirectoryRecursively(const FilePath& directory)
     {
         for (uint64 index = directory.toString().findLastOf('\\'), end = directory.toString().findFirstOf(":\\");
             index > end + 1; index = directory.toString().findLastOf('\\', index - 1))

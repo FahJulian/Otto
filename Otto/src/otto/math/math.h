@@ -21,13 +21,13 @@ namespace otto
         return value1 < value2 ? value1 : value2;
     }
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T> requires isIntegral<T>
     T max(T value1, T value2)
     {
         return value1 > value2 ? value1 : value2;
     }
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T> requires isIntegral<T>
     T min(std::initializer_list<T> values)
     {
         T minValue = std::numeric_limits<T>::max;
@@ -39,7 +39,7 @@ namespace otto
         return minValue;
     }
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T> requires isIntegral<T>
     T max(std::initializer_list<T> values)
     {
         T maxValue = 0;

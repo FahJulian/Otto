@@ -16,9 +16,9 @@ namespace otto
 
         Texture2D& operator=(const Texture2D& other);
 
-        bool operator==(const Texture2D& other) { return mOpenglHandle == other.mOpenglHandle; }
+        bool8 operator==(const Texture2D& other) { return mOpenglHandle == other.mOpenglHandle; }
 
-        bool isValid() { return mOpenglHandle != 0; }
+        bool8 isValid() const { return mOpenglHandle != 0; }
 
         uint32 getWidth() const { return mWidth; }
         uint32 getHeight() const { return mHeight; }
@@ -30,6 +30,8 @@ namespace otto
         uint32 mHeight;
         uint32 mOpenglHandle;
         uint64* mNCopies;
+
+        friend class TextureLoader;
     };
 
 } // namespace otto

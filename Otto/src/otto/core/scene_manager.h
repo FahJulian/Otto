@@ -13,7 +13,7 @@ namespace otto
         SceneManager(const SceneManager& other) = delete;
         SceneManager& operator=(const SceneManager& other) = delete;
 
-        static bool setScene(const FilePath& scene);
+        static bool8 setScene(const FilePath& scene);
 
         static Shared<Scene> sCurrentScene;
 

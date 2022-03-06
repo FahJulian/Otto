@@ -1,5 +1,7 @@
 #include "file_path.h"
 
+#include "otto/core/application.h"
+
 namespace otto
 {
     namespace
@@ -50,6 +52,12 @@ namespace otto
     }
 
 #endif
+
+    FilePath FilePath::getResourceFilePath(const FilePath& filePath)
+    {
+        return filePath.toString().startsWith(FilePath("otto/").toString()) ?
+            Application::getCoreRootDirectory() + "res/" + filePath : Application::getRootDirectory() + filePath;
+    }
 
     std::ostream& operator<<(std::ostream& stream, const FilePath& filePath)
     {

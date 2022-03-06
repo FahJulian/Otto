@@ -5,6 +5,7 @@
 #include "otto/core/package.h"
 #include "otto/debug/log/log.h"
 #include "otto/window/events.h"
+#include "otto/window/window.h"
 #include "otto/util/platform/file_path.h"
 #include "otto/serialization/serialized.h"
 
@@ -15,8 +16,7 @@ namespace otto
     class Application
     {
     private:
-        Application() = delete;
-        Application(const Application& other) = delete;
+        Application() = default;
 
         struct Settings
         {
@@ -28,6 +28,7 @@ namespace otto
             String startScene;
             FilePath windowSettingsPath;
             Package applicationPackage;
+            float64 updateCap = 60.0f;
             Map<String, Serialized> additionalSettings;
         };
 
@@ -53,7 +54,11 @@ namespace otto
 #endif
 
     private:
-        static bool init(const FilePath& settingsFilePath);
+        static Application* getInstance();
+
+        static bool8 init(Application* mainApplication, Window* mainWindow, Log* mainLog);
+
+        static bool8 init(const FilePath& settingsFilePath);
 
         static void run();
 
@@ -75,8 +80,14 @@ namespace otto
         static void _onWindowGainedFocus(const _WindowGainedFocusEvent& e);
         static void _onWindowLostFocus(const _WindowLostFocusEvent& e);
 
-        friend int ::main();
+    private:
+        bool8 mRunning = false;
+        FilePath mRootDirectory;
+        Map<String, Serialized> mAdditionalSettings;
+        float64 mSecondsPerUpdate;
+
         friend class Scene;
+        friend int ::main();
     };
 
 } // namespace otto

@@ -15,28 +15,28 @@ namespace otto
 	struct WindowSettings
 	{
 		String title;
-		bool saveTitle = true;
+		bool8 saveTitle = true;
 
 		Color clearColor = 0x333333ff;
-		bool saveClearColor = true;
+		bool8 saveClearColor = true;
 
 		uint16 width = 0;
 		uint16 height = 0;
-		bool saveSize = true;
+		bool8 saveSize = true;
 
 		WindowMode windowMode = WindowMode::WINDOWED;
-		bool saveWindowMode = true;
+		bool8 saveWindowMode = true;
 
-		bool resizable = false;
-		bool closeButton = true;
+		bool8 resizable = false;
+		bool8 closeButton = true;
 
-		bool closeOnAltF4 = true;
+		bool8 closeOnAltF4 = true;
 
-		bool minimized = false;
-		bool maximized = false;
+		bool8 minimized = false;
+		bool8 maximized = false;
 
-		bool saveMinimized = false;
-		bool saveMaximized = true;
+		bool8 saveMinimized = false;
+		bool8 saveMaximized = true;
 
 		Map<String, Icon> iconSet;
 		Map<String, Cursor> cursorSet;

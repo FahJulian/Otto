@@ -15,20 +15,7 @@ namespace otto
 {
     namespace
     {
-        static FilePath sSettingsFilePath;
-        static Serialized sInitialSettings;
-        static WindowSettings sSettings;
-
-        static Window::Listeners sListeners;
-
-        static bool sIgnoreSizeMessage = false;
-
-        static HWND sWin32Handle;
-
-        static HICON sSmallIconHandle;
-        static HICON sLargeIconHandle;
-        static HCURSOR sCurrentCursor;
-        static Map<String, HCURSOR> sCursors;
+        static Window* sInstance = nullptr;
 
         std::wstring _toWideString(const String& string)
         {
@@ -55,7 +42,7 @@ namespace otto
             return bi;
         }
 
-        static HICON _createNativeIcon(uint16 width, uint16 height, uint8_t* bitmap, bool isCursor = false, uint16 hotspotX = 0, uint16 hotspotY = 0)
+        static HICON _createNativeIcon(uint16 width, uint16 height, uint8_t* bitmap, bool8 isCursor = false, uint16 hotspotX = 0, uint16 hotspotY = 0)
         {
             if (!bitmap)
                 return 0;
@@ -101,122 +88,9 @@ namespace otto
             return handle;
         }
 
-        static void _initCursors(const String& defaultCursor)
-        {
-            for (auto& [name, cursor] : sSettings.cursorSet)
-            {
-                HCURSOR handle = HCURSOR(_createNativeIcon(cursor.width, cursor.height, cursor.bitmap, true, cursor.hotspotX, cursor.hotspotY));
-                if (handle)
-                    sCursors.insert(name, handle);
-            }
 
-            sCurrentCursor = sCursors.get(defaultCursor);
-        }
 
-        static void _initIcons()
-        {
-            uint16 smallIconWidth = uint16(GetSystemMetrics(SM_CXSMICON));
-            uint16 smallIconHeight = uint16(GetSystemMetrics(SM_CYSMICON));
-            uint16 largeIconWidth = uint16(GetSystemMetrics(SM_CXICON));
-            uint16 largeIconHeight = uint16(GetSystemMetrics(SM_CYICON));
-
-            Icon smallIcon;
-            float64 smallestSizeDifference = 1.0e35;
-            for (auto& [name, icon] : sSettings.iconSet)
-            {
-                int32 xoff = smallIconWidth - icon.width;
-                int32 yoff = smallIconHeight - icon.height;
-
-                float64 offset = sqrt(xoff * xoff + yoff * yoff);
-                if (offset < smallestSizeDifference)
-                {
-                    smallestSizeDifference = offset;
-                    smallIcon = icon;
-                }
-            }
-
-            Icon largeIcon;
-            smallestSizeDifference = 1.0e35;
-            for (auto& [name, icon] : sSettings.iconSet)
-            {
-                int32 xoff = largeIconWidth - icon.width;
-                int32 yoff = largeIconHeight - icon.height;
-
-                double offset = sqrt(xoff * xoff + yoff * yoff);
-                if (offset < smallestSizeDifference)
-                {
-                    smallestSizeDifference = offset;
-                    largeIcon = icon;
-                }
-            }
-
-            if (smallIcon.bitmap)
-                sSmallIconHandle = _createNativeIcon(smallIcon.width, smallIcon.height, smallIcon.bitmap);
-            if (largeIcon.bitmap)
-                sLargeIconHandle = _createNativeIcon(largeIcon.width, largeIcon.height, largeIcon.bitmap);
-
-            if (sSmallIconHandle)
-                SendMessage(sWin32Handle, WM_SETICON, ICON_SMALL, LPARAM(sSmallIconHandle));
-            if (sLargeIconHandle)
-                SendMessage(sWin32Handle, WM_SETICON, ICON_BIG, LPARAM(sLargeIconHandle));
-        }
-
-        static void _initStyle()
-        {
-            sSettings.windowedStyle = (WS_OVERLAPPED | WS_CAPTION);
-            sSettings.windowedExStyle = 0;
-
-            if (sSettings.closeButton)
-                sSettings.windowedStyle |= WS_SYSMENU;
-
-            if (sSettings.resizable)
-                sSettings.windowedStyle |= (WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME);
-        }
-
-        static void _setDecorated(bool decorated)
-        {
-            sIgnoreSizeMessage = true;
-            SetWindowLong(sWin32Handle, GWL_STYLE, decorated ? sSettings.windowedStyle : 0);
-            SetWindowLong(sWin32Handle, GWL_EXSTYLE, decorated ? sSettings.windowedExStyle : 0);
-            sIgnoreSizeMessage = false;
-        }
-
-        static void _updateWindowSize()
-        {
-            if (sSettings.windowMode == WindowMode::WINDOWED)
-            {
-                RECT newWindow = { (sSettings.monitorWidth - sSettings.unmaximizedWidth) / 2, (sSettings.monitorHeight - sSettings.unmaximizedHeight) / 2,
-                    (sSettings.monitorWidth + sSettings.unmaximizedWidth) / 2, (sSettings.monitorHeight + sSettings.unmaximizedHeight) / 2 };
-                AdjustWindowRectEx(&newWindow, sSettings.windowedStyle, FALSE, sSettings.windowedExStyle);
-
-                SetWindowPos(sWin32Handle, HWND_TOP, newWindow.left, newWindow.top,
-                    newWindow.right - newWindow.left, newWindow.bottom - newWindow.top, SWP_NOZORDER);
-
-                ShowWindow(sWin32Handle, sSettings.maximized ? SW_MAXIMIZE : sSettings.minimized ? SW_MINIMIZE : SW_NORMAL);
-            }
-            else if (sSettings.windowMode == WindowMode::WINDOWED_BORDERLESS)
-            {
-                SetWindowPos(sWin32Handle, HWND_TOP, (sSettings.monitorWidth - sSettings.unmaximizedWidth) / 2, (sSettings.monitorHeight - sSettings.unmaximizedHeight) / 2,
-                    sSettings.unmaximizedWidth, sSettings.unmaximizedHeight, SWP_NOZORDER);
-
-                ShowWindow(sWin32Handle, sSettings.minimized ? SW_MINIMIZE : SW_SHOW);
-            }
-            else
-            {
-                SetWindowPos(sWin32Handle, HWND_TOP, 0, 0, sSettings.monitorWidth, sSettings.monitorHeight, SWP_NOZORDER);
-                ShowWindow(sWin32Handle, sSettings.minimized ? SW_MINIMIZE : SW_SHOW);
-            }
-        }
-
-        static void _adjustSize(uint16 width, uint16 height)
-        {
-            sSettings.unmaximizedWidth = width;
-            sSettings.unmaximizedHeight = height;
-
-            _updateWindowSize();
-        }
-
-        static void _setFullscreen(bool fullscreen)
+        static void _setFullscreen(bool8 fullscreen)
         {
             DISPLAY_DEVICE displayDevice = {};
             displayDevice.cb = sizeof(DISPLAY_DEVICE);
@@ -226,7 +100,7 @@ namespace otto
             {
                 DEVMODE deviceMode = {};
                 deviceMode.dmSize = sizeof(DEVMODE);
-                BOOL s = EnumDisplaySettingsEx(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS, &deviceMode, 0);
+                bool8 s = EnumDisplaySettingsEx(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS, &deviceMode, 0);
 
                 deviceMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL |
                     DM_DISPLAYFREQUENCY;
@@ -276,8 +150,15 @@ namespace otto
 
     } // namespace
 
-    bool Window::init(const FilePath& filePath, const Listeners& listeners)
+    bool8 Window::init(const FilePath& filePath)
     {
+        static Window instance;
+
+        if (sInstance != nullptr)
+            return false;
+
+        sInstance = &instance;
+
         Log::trace("Initializing Window...");
 
         auto serialized = Serializer::load(filePath);
@@ -294,16 +175,14 @@ namespace otto
             return false;
         }
 
-        sSettingsFilePath = filePath;
-        sInitialSettings = serialized.getResult();
-        sSettings = settings.getResult();
+        sInstance->mSettingsFilePath = filePath;
+        sInstance->mInitialSettings = serialized.getResult();
+        sInstance->mSettings = settings.getResult();
 
-        sListeners = listeners;
-
-        sSettings.unmaximizedWidth = sSettings.width;
-        sSettings.unmaximizedHeight = sSettings.height;
-        sSettings.windowMode = sSettings.windowMode;
-        sSettings.title = sSettings.title;
+        sInstance->mSettings.unmaximizedWidth = sInstance->mSettings.width;
+        sInstance->mSettings.unmaximizedHeight = sInstance->mSettings.height;
+        sInstance->mSettings.windowMode = sInstance->mSettings.windowMode;
+        sInstance->mSettings.title = sInstance->mSettings.title;
 
         if (!_createWin32Window())
         {
@@ -313,40 +192,49 @@ namespace otto
 
         _initStyle();
 
-        sSettings.monitorWidth = GetSystemMetrics(SM_CXSCREEN);
-        sSettings.monitorHeight = GetSystemMetrics(SM_CYSCREEN);
+        sInstance->mSettings.monitorWidth = GetSystemMetrics(SM_CXSCREEN);
+        sInstance->mSettings.monitorHeight = GetSystemMetrics(SM_CYSCREEN);
 
-        _setFullscreen(sSettings.windowMode == WindowMode::FULLSCREEN);
-        _setDecorated(sSettings.windowMode == WindowMode::WINDOWED);
+        _setFullscreen(sInstance->mSettings.windowMode == WindowMode::FULLSCREEN);
+        _setDecorated(sInstance->mSettings.windowMode == WindowMode::WINDOWED);
 
-        sSettings.maximized = sSettings.maximized;
-        sSettings.minimized = !sSettings.maximized && sSettings.minimized;
+        sInstance->mSettings.maximized = sInstance->mSettings.maximized;
+        sInstance->mSettings.minimized = !sInstance->mSettings.maximized && sInstance->mSettings.minimized;
 
         _updateWindowSize();
 
-        _initCursors(sSettings.defaultCursor);
+        _initCursors(sInstance->mSettings.defaultCursor);
         _initIcons();
-
-        if (!Context::init(reinterpret_cast<ptr64>(sWin32Handle)))
-        {
-            Log::error("Error initializing Context");
-            return false;
-        }
-
-        if (!GraphicsAPI::init())
-        {
-            Log::error("Error initializing Graphics API");
-            return false;
-        }
-
-        setClearColor(sSettings.clearColor = sSettings.clearColor);
 
         return true;
     }
 
-    bool Window::_createWin32Window()
+    bool8 Window::init(Window* instance)
     {
-        const char16* className = L"Sample Window Class";
+        if (sInstance != nullptr)
+            return false;
+
+        sInstance = instance;
+
+        Context::init(reinterpret_cast<ptr64>(instance->mWin32Handle));
+        GraphicsAPI::init();
+
+        return true;
+    }
+
+    Window* Window::getInstance()
+    {
+        return sInstance;
+    }
+
+    void Window::setListeners(const Listeners& listeners)
+    {
+        sInstance->mListeners = listeners;
+    }
+
+    bool8 Window::_createWin32Window()
+    {
+        const char16* className = L"Otto Window";
         HMODULE win32ModuleHandle = GetModuleHandle(0);
 
         WNDCLASSEX win32WindowClass = { };
@@ -358,11 +246,11 @@ namespace otto
 
         RegisterClassEx(&win32WindowClass);
 
-        sWin32Handle = CreateWindowEx(0, className, _toWideString(sSettings.title).c_str(), 0,
+        sInstance->mWin32Handle = CreateWindowEx(0, className, _toWideString(sInstance->mSettings.title).c_str(), 0,
             0, 0, 0, 0, NULL, NULL, win32ModuleHandle, NULL
         );
 
-        if (sWin32Handle == NULL)
+        if (sInstance->mWin32Handle == NULL)
         {
             DWORD error = GetLastError();
             Log::error("Error creating win32 Window (Win32 Error code: ", error, ")");
@@ -384,55 +272,55 @@ namespace otto
 
     void Window::_onResized(uint16 width, uint16 height)
     {
-        if (sSettings.windowMode == WindowMode::WINDOWED && !sSettings.minimized && !sSettings.maximized)
+        if (sInstance->mSettings.windowMode == WindowMode::WINDOWED && !sInstance->mSettings.minimized && !sInstance->mSettings.maximized)
         {
-            sSettings.unmaximizedWidth = width;
-            sSettings.unmaximizedHeight = height;
+            sInstance->mSettings.unmaximizedWidth = width;
+            sInstance->mSettings.unmaximizedHeight = height;
         }
 
-        if (sSettings.width != width || sSettings.height != height)
+        if (sInstance->mSettings.width != width || sInstance->mSettings.height != height)
         {
-            sSettings.width = width;
-            sSettings.height = height;
+            sInstance->mSettings.width = width;
+            sInstance->mSettings.height = height;
 
-            GraphicsAPI::setViewport(0, 0, uint32(width), uint32(height));
-            sListeners.onWindowResized(_WindowResizedEvent(float32(width), float32(height)));
+            //GraphicsAPI::setViewport(0, 0, uint32(width), uint32(height));
+            sInstance->mListeners.onWindowResized(_WindowResizedEvent(float32(width), float32(height)));
         }
     }
 
     void Window::_onMouseButtonPressed(MouseButton button)
     {
         Mouse::sButtons[uint64(button)] = true;
-        sListeners.onMouseButtonPressed(_MouseButtonPressedEvent(button, Mouse::sX, Mouse::sY));
-        SetCapture(sWin32Handle);
+        sInstance->mListeners.onMouseButtonPressed(_MouseButtonPressedEvent(button, Mouse::sX, Mouse::sY));
+        SetCapture(sInstance->mWin32Handle);
     }
 
     void Window::_onMouseButtonReleased(MouseButton button)
     {
         Mouse::sButtons[uint64(button)] = false;
-        sListeners.onMouseButtonReleased(_MouseButtonReleasedEvent(button, Mouse::sX, Mouse::sY));
+        sInstance->mListeners.onMouseButtonReleased(_MouseButtonReleasedEvent(button, Mouse::sX, Mouse::sY));
         ReleaseCapture();
     }
 
     void Window::setTitle(const String& title)
     {
-        sSettings.title = title;
-        SetWindowText(sWin32Handle, _toWideString(title).c_str());
+        sInstance->mSettings.title = title;
+        SetWindowText(sInstance->mWin32Handle, _toWideString(title).c_str());
     }
 
     String Window::getTitle()
     {
-        return sSettings.title;
+        return sInstance->mSettings.title;
     }
 
     void Window::setWidth(float32 width)
     {
-        _adjustSize(uint16(width + 0.5f), sSettings.height);
+        _adjustSize(uint16(width + 0.5f), sInstance->mSettings.height);
     }
 
     void Window::setHeight(float32 height)
     {
-        _adjustSize(sSettings.width, uint16(height + 0.5f));
+        _adjustSize(sInstance->mSettings.width, uint16(height + 0.5f));
     }
 
     void Window::setSize(float32 width, float32 height)
@@ -440,82 +328,82 @@ namespace otto
         _adjustSize(uint16(width + 0.5f), uint16(height + 0.5f));
     }
 
-    void Window::setMaximized(bool b)
+    void Window::setMaximized(bool8 b)
     {
-        sSettings.maximized = b;
+        sInstance->mSettings.maximized = b;
 
-        if (sSettings.windowMode == WindowMode::WINDOWED)
-            ShowWindow(sWin32Handle, sSettings.maximized ? SW_MAXIMIZE : SW_NORMAL);
+        if (sInstance->mSettings.windowMode == WindowMode::WINDOWED)
+            ShowWindow(sInstance->mWin32Handle, sInstance->mSettings.maximized ? SW_MAXIMIZE : SW_NORMAL);
     }
 
-    void Window::setMinimized(bool b)
+    void Window::setMinimized(bool8 b)
     {
-        sSettings.minimized = b;
+        sInstance->mSettings.minimized = b;
 
-        ShowWindow(sWin32Handle, sSettings.minimized ? SW_MINIMIZE : (sSettings.maximized && sSettings.windowMode == WindowMode::WINDOWED) ? SW_MAXIMIZE : SW_NORMAL);
+        ShowWindow(sInstance->mWin32Handle, sInstance->mSettings.minimized ? SW_MINIMIZE : (sInstance->mSettings.maximized && sInstance->mSettings.windowMode == WindowMode::WINDOWED) ? SW_MAXIMIZE : SW_NORMAL);
     }
 
-    bool Window::isMaximized()
+    bool8 Window::isMaximized()
     {
-        return sSettings.maximized || sSettings.windowMode == WindowMode::WINDOWED_FULLSCREEN || sSettings.windowMode == WindowMode::FULLSCREEN ||
-            (sSettings.windowMode == WindowMode::WINDOWED_BORDERLESS && sSettings.width == sSettings.monitorWidth && sSettings.width == sSettings.monitorHeight);
+        return sInstance->mSettings.maximized || sInstance->mSettings.windowMode == WindowMode::WINDOWED_FULLSCREEN || sInstance->mSettings.windowMode == WindowMode::FULLSCREEN ||
+            (sInstance->mSettings.windowMode == WindowMode::WINDOWED_BORDERLESS && sInstance->mSettings.width == sInstance->mSettings.monitorWidth && sInstance->mSettings.width == sInstance->mSettings.monitorHeight);
     }
 
-    bool Window::isMinimized()
+    bool8 Window::isMinimized()
     {
-        return sSettings.minimized;
+        return sInstance->mSettings.minimized;
     }
 
     float32 Window::getWidth()
     {
-        return float32(sSettings.width);
+        return float32(sInstance->mSettings.width);
     }
 
     float32 Window::getHeight()
     {
-        return float32(sSettings.height);
+        return float32(sInstance->mSettings.height);
     }
 
     float32 Window::getMonitorWidth()
     {
-        return float32(sSettings.monitorWidth);
+        return float32(sInstance->mSettings.monitorWidth);
     }
 
     float32 Window::getMonitorHeight()
     {
-        return float32(sSettings.monitorHeight);
+        return float32(sInstance->mSettings.monitorHeight);
     }
 
     WindowMode Window::getWindowMode()
     {
-        return sSettings.windowMode;
+        return sInstance->mSettings.windowMode;
     }
 
     void Window::setWindowMode(WindowMode mode)
     {
-        if (mode == sSettings.windowMode)
+        if (mode == sInstance->mSettings.windowMode)
             return;
 
-        sIgnoreSizeMessage = true;
+        sInstance->mIgnoreSizeMessage = true;
 
         if (mode == WindowMode::FULLSCREEN )
             _setFullscreen(true);
-        else if (sSettings.windowMode == WindowMode::FULLSCREEN )
+        else if (sInstance->mSettings.windowMode == WindowMode::FULLSCREEN )
             _setFullscreen(false);
 
         if (mode == WindowMode::WINDOWED)
             _setDecorated(true);
-        else if (sSettings.windowMode == WindowMode::WINDOWED)
+        else if (sInstance->mSettings.windowMode == WindowMode::WINDOWED)
             _setDecorated(false);
 
-        sSettings.windowMode = mode;
+        sInstance->mSettings.windowMode = mode;
 
         _updateWindowSize();
     }
 
     void Window::setClearColor(const Color& color)
     {
-        sSettings.clearColor = color;
+        sInstance->mSettings.clearColor = color;
 
         GraphicsAPI::setClearColor(color);
     }
@@ -528,18 +416,18 @@ namespace otto
         if (!GetCursorPos(&cursorPos))
             return;
 
-        if (WindowFromPoint(cursorPos) != sWin32Handle)
+        if (WindowFromPoint(cursorPos) != sInstance->mWin32Handle)
             return;
 
-        GetClientRect(sWin32Handle, &clientArea);
-        ClientToScreen(sWin32Handle, (POINT*)&clientArea.left);
-        ClientToScreen(sWin32Handle, (POINT*)&clientArea.right);
+        GetClientRect(sInstance->mWin32Handle, &clientArea);
+        ClientToScreen(sInstance->mWin32Handle, (POINT*)&clientArea.left);
+        ClientToScreen(sInstance->mWin32Handle, (POINT*)&clientArea.right);
 
         if (!PtInRect(&clientArea, cursorPos))
             return;
 
-        if (sCursors.containsKey(name))
-            SetCursor(sCurrentCursor = sCursors.get(name));
+        if (sInstance->mCursors.containsKey(name))
+            SetCursor(sInstance->mCurrentCursor = sInstance->mCursors.get(name));
     }
 
     void Window::clear()
@@ -554,26 +442,141 @@ namespace otto
 
     void Window::saveSettings()
     {
-        FileUtils::createDirectoryRecursively(sSettingsFilePath);
-        WindowSettingsLoader::saveWindowSettingsToOtto(sSettings, sInitialSettings, sSettingsFilePath);
+        FileUtils::createDirectoryRecursively(sInstance->mSettingsFilePath);
+        WindowSettingsLoader::saveWindowSettingsToOtto(sInstance->mSettings, sInstance->mInitialSettings, sInstance->mSettingsFilePath);
     }
 
     void Window::destroy()
     {
         Log::trace("Destroying Window...");
 
-        if (sSettings.windowMode == WindowMode::FULLSCREEN )
+        if (sInstance->mSettings.windowMode == WindowMode::FULLSCREEN )
             _setFullscreen(false);
 
-        if (sSmallIconHandle)
-            DestroyIcon(sSmallIconHandle);
-        if (sLargeIconHandle)
-            DestroyIcon(sLargeIconHandle);
+        if (sInstance->mSmallIconHandle)
+            DestroyIcon(sInstance->mSmallIconHandle);
+        if (sInstance->mLargeIconHandle)
+            DestroyIcon(sInstance->mLargeIconHandle);
 
-        for (auto& [_, cursor] : sCursors)
+        for (auto& [_, cursor] : sInstance->mCursors)
             DestroyCursor(cursor);
 
-        DestroyWindow(sWin32Handle);
+        DestroyWindow(sInstance->mWin32Handle);
+    }
+
+    void Window::_initCursors(const String& defaultCursor)
+    {
+        for (auto& [name, cursor] : sInstance->mSettings.cursorSet)
+        {
+            HCURSOR handle = HCURSOR(_createNativeIcon(cursor.width, cursor.height, cursor.bitmap, true, cursor.hotspotX, cursor.hotspotY));
+            if (handle)
+                sInstance->mCursors.insert(name, handle);
+        }
+
+        sInstance->mCurrentCursor = sInstance->mCursors.get(defaultCursor);
+    }
+
+    void Window::_initIcons()
+    {
+        uint16 smallIconWidth = uint16(GetSystemMetrics(SM_CXSMICON));
+        uint16 smallIconHeight = uint16(GetSystemMetrics(SM_CYSMICON));
+        uint16 largeIconWidth = uint16(GetSystemMetrics(SM_CXICON));
+        uint16 largeIconHeight = uint16(GetSystemMetrics(SM_CYICON));
+
+        Icon smallIcon;
+        float64 smallestSizeDifference = 1.0e35;
+        for (auto& [name, icon] : sInstance->mSettings.iconSet)
+        {
+            int32 xoff = smallIconWidth - icon.width;
+            int32 yoff = smallIconHeight - icon.height;
+
+            float64 offset = sqrt(xoff * xoff + yoff * yoff);
+            if (offset < smallestSizeDifference)
+            {
+                smallestSizeDifference = offset;
+                smallIcon = icon;
+            }
+        }
+
+        Icon largeIcon;
+        smallestSizeDifference = 1.0e35;
+        for (auto& [name, icon] : sInstance->mSettings.iconSet)
+        {
+            int32 xoff = largeIconWidth - icon.width;
+            int32 yoff = largeIconHeight - icon.height;
+
+            double offset = sqrt(xoff * xoff + yoff * yoff);
+            if (offset < smallestSizeDifference)
+            {
+                smallestSizeDifference = offset;
+                largeIcon = icon;
+            }
+        }
+
+        if (smallIcon.bitmap)
+            sInstance->mSmallIconHandle = _createNativeIcon(smallIcon.width, smallIcon.height, smallIcon.bitmap);
+        if (largeIcon.bitmap)
+            sInstance->mLargeIconHandle = _createNativeIcon(largeIcon.width, largeIcon.height, largeIcon.bitmap);
+
+        if (sInstance->mSmallIconHandle)
+            SendMessage(sInstance->mWin32Handle, WM_SETICON, ICON_SMALL, LPARAM(sInstance->mSmallIconHandle));
+        if (sInstance->mLargeIconHandle)
+            SendMessage(sInstance->mWin32Handle, WM_SETICON, ICON_BIG, LPARAM(sInstance->mLargeIconHandle));
+    }
+
+    void Window::_initStyle()
+    {
+        sInstance->mSettings.windowedStyle = (WS_OVERLAPPED | WS_CAPTION);
+        sInstance->mSettings.windowedExStyle = 0;
+
+        if (sInstance->mSettings.closeButton)
+            sInstance->mSettings.windowedStyle |= WS_SYSMENU;
+
+        if (sInstance->mSettings.resizable)
+            sInstance->mSettings.windowedStyle |= (WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME);
+    }
+
+    void Window::_setDecorated(bool8 decorated)
+    {
+        sInstance->mIgnoreSizeMessage = true;
+        SetWindowLong(sInstance->mWin32Handle, GWL_STYLE, decorated ? sInstance->mSettings.windowedStyle : 0);
+        SetWindowLong(sInstance->mWin32Handle, GWL_EXSTYLE, decorated ? sInstance->mSettings.windowedExStyle : 0);
+        sInstance->mIgnoreSizeMessage = false;
+    }
+
+    void Window::_updateWindowSize()
+    {
+        if (sInstance->mSettings.windowMode == WindowMode::WINDOWED)
+        {
+            RECT newWindow = { (sInstance->mSettings.monitorWidth - sInstance->mSettings.unmaximizedWidth) / 2, (sInstance->mSettings.monitorHeight - sInstance->mSettings.unmaximizedHeight) / 2,
+                (sInstance->mSettings.monitorWidth + sInstance->mSettings.unmaximizedWidth) / 2, (sInstance->mSettings.monitorHeight + sInstance->mSettings.unmaximizedHeight) / 2 };
+            AdjustWindowRectEx(&newWindow, sInstance->mSettings.windowedStyle, FALSE, sInstance->mSettings.windowedExStyle);
+
+            SetWindowPos(sInstance->mWin32Handle, HWND_TOP, newWindow.left, newWindow.top,
+                newWindow.right - newWindow.left, newWindow.bottom - newWindow.top, SWP_NOZORDER);
+
+            ShowWindow(sInstance->mWin32Handle, sInstance->mSettings.maximized ? SW_MAXIMIZE : sInstance->mSettings.minimized ? SW_MINIMIZE : SW_NORMAL);
+        }
+        else if (sInstance->mSettings.windowMode == WindowMode::WINDOWED_BORDERLESS)
+        {
+            SetWindowPos(sInstance->mWin32Handle, HWND_TOP, (sInstance->mSettings.monitorWidth - sInstance->mSettings.unmaximizedWidth) / 2, (sInstance->mSettings.monitorHeight - sInstance->mSettings.unmaximizedHeight) / 2,
+                sInstance->mSettings.unmaximizedWidth, sInstance->mSettings.unmaximizedHeight, SWP_NOZORDER);
+
+            ShowWindow(sInstance->mWin32Handle, sInstance->mSettings.minimized ? SW_MINIMIZE : SW_SHOW);
+        }
+        else
+        {
+            SetWindowPos(sInstance->mWin32Handle, HWND_TOP, 0, 0, sInstance->mSettings.monitorWidth, sInstance->mSettings.monitorHeight, SWP_NOZORDER);
+            ShowWindow(sInstance->mWin32Handle, sInstance->mSettings.minimized ? SW_MINIMIZE : SW_SHOW);
+        }
+    }
+
+    void Window::_adjustSize(uint16 width, uint16 height)
+    {
+        sInstance->mSettings.unmaximizedWidth = width;
+        sInstance->mSettings.unmaximizedHeight = height;
+
+        _updateWindowSize();
     }
 
     __int64 __stdcall Window::WindowProc(HWND__* handle, unsigned int msg, unsigned __int64 wParam, __int64 lParam)
@@ -582,7 +585,7 @@ namespace otto
         {
         case WM_CLOSE: [[fallthrough]];
         case WM_QUIT:
-            sListeners.onWindowClosed(_WindowClosedEvent());
+            sInstance->mListeners.onWindowClosed(_WindowClosedEvent());
             return 0;
 
         case WM_LBUTTONDOWN:
@@ -623,22 +626,22 @@ namespace otto
             float32 beforeY = Mouse::sY;
 
             Mouse::sX = float32(GET_X_LPARAM(lParam));
-            Mouse::sY = sSettings.height - float32(GET_Y_LPARAM(lParam)) - 1;
+            Mouse::sY = sInstance->mSettings.height - float32(GET_Y_LPARAM(lParam)) - 1;
 
             float32 deltaX = Mouse::sX - beforeX;
             float32 deltaY = Mouse::sY - beforeY;
 
             for (uint64 button = 0; button < Mouse::sButtons.getSize(); button++)
                 if (Mouse::sButtons[button])
-                    sListeners.onMouseDragged(_MouseDraggedEvent(MouseButton(button), Mouse::sX, Mouse::sY, beforeX, beforeY, deltaX, deltaY));
+                    sInstance->mListeners.onMouseDragged(_MouseDraggedEvent(MouseButton(button), Mouse::sX, Mouse::sY, beforeX, beforeY, deltaX, deltaY));
 
-            sListeners.onMouseMoved(_MouseMovedEvent(Mouse::sX, Mouse::sY, beforeX, beforeY, deltaX, deltaY));
+            sInstance->mListeners.onMouseMoved(_MouseMovedEvent(Mouse::sX, Mouse::sY, beforeX, beforeY, deltaX, deltaY));
 
             return 0;
         }
 
         case WM_MOUSEWHEEL:
-            sListeners.onMouseScrolled(_MouseScrolledEvent(Mouse::sX, Mouse::sY, 0.0f, float32(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA));
+            sInstance->mListeners.onMouseScrolled(_MouseScrolledEvent(Mouse::sX, Mouse::sY, 0.0f, float32(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA));
             return 0;
 
         case WM_SYSKEYDOWN: [[fallthrough]];
@@ -654,10 +657,10 @@ namespace otto
             }
 
             Keyboard::sKeys[uint64(key)] = true;
-            sListeners.onKeyPressed(_KeyPressedEvent(key, keyChar));
+            sInstance->mListeners.onKeyPressed(_KeyPressedEvent(key, keyChar));
 
-            if (sSettings.closeOnAltF4 && key == Key::F4 && Keyboard::isKeyPressed(Key::ALT))
-                sListeners.onWindowClosed(_WindowClosedEvent());
+            if (sInstance->mSettings.closeOnAltF4 && key == Key::F4 && Keyboard::isKeyPressed(Key::ALT))
+                sInstance->mListeners.onWindowClosed(_WindowClosedEvent());
 
             return 0;
         }
@@ -668,18 +671,18 @@ namespace otto
             Key key = _getKey(lParam, wParam);
 
             Keyboard::sKeys[uint64(key)] = false;
-            sListeners.onKeyReleased(_KeyReleasedEvent(key));
+            sInstance->mListeners.onKeyReleased(_KeyReleasedEvent(key));
 
             return 0;
         }
 
         case WM_SIZE:
-            if (!sIgnoreSizeMessage)
+            if (!sInstance->mIgnoreSizeMessage)
             {
                 if (wParam == SIZE_MINIMIZED)
-                    sSettings.minimized = true;
-                else if (sSettings.windowMode == WindowMode::WINDOWED && wParam == SIZE_MAXIMIZED)
-                    sSettings.maximized = true;
+                    sInstance->mSettings.minimized = true;
+                else if (sInstance->mSettings.windowMode == WindowMode::WINDOWED && wParam == SIZE_MAXIMIZED)
+                    sInstance->mSettings.maximized = true;
 
                 _onResized(uint16(LOWORD(lParam)), uint16(HIWORD(lParam)));
             }
@@ -687,10 +690,10 @@ namespace otto
             return 0;
 
         case WM_KILLFOCUS:
-            sListeners.onWindowLostFocus(_WindowLostFocusEvent());
+            sInstance->mListeners.onWindowLostFocus(_WindowLostFocusEvent());
 
-            if (sSettings.windowMode == WindowMode::FULLSCREEN )
-                ShowWindow(sWin32Handle, SW_MINIMIZE);
+            if (sInstance->mSettings.windowMode == WindowMode::FULLSCREEN )
+                ShowWindow(sInstance->mWin32Handle, SW_MINIMIZE);
 
             return 0;
 
@@ -698,13 +701,13 @@ namespace otto
             Mouse::sButtons = { false };
             Keyboard::sKeys = { false };
 
-            sListeners.onWindowGainedFocus(_WindowGainedFocusEvent());
+            sInstance->mListeners.onWindowGainedFocus(_WindowGainedFocusEvent());
             return 0;
 
         case WM_SETCURSOR:
             if (LOWORD(lParam) == HTCLIENT)
             {
-                SetCursor(sCurrentCursor);
+                SetCursor(sInstance->mCurrentCursor);
                 return TRUE;
             }
             else

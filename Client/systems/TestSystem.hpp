@@ -26,22 +26,18 @@ public:
 
     void onEvent(const TestEvent& e)
     {
-        Log::info("TestSystem::onTestEvent");
     }
 
     void onEvent(const MouseMovedEvent& e)
     {
-        Log::info("Mouse moved to (", e.x, ", ", e.y, ")");
     }
 
     void onEvent(const ComponentAddedEvent<TestComponent>& e)
     {
-        Log::info("TestComponent added to ", e.entity);
     }
 
     void onEvent(const ComponentRemovedEvent<TestComponent2>& e)
     {
-        Log::info("TestComponent added to ", e.entity);
     }
 
 private:

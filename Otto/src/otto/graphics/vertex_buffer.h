@@ -16,16 +16,16 @@ namespace otto
     {
     private:
         template<typename T>
-        static constexpr bool _isShaderType = false;
+        static constexpr bool8 _isShaderType = false;
 
-        template<> static constexpr bool _isShaderType<float32> = true;
-        template<> static constexpr bool _isShaderType<Vec2f32> = true;
-        template<> static constexpr bool _isShaderType<Vec3f32> = true;
-        template<> static constexpr bool _isShaderType<Vec4f32> = true;
-        template<> static constexpr bool _isShaderType<int32> = true;
-        template<> static constexpr bool _isShaderType<Vec2i32> = true;
-        template<> static constexpr bool _isShaderType<Vec3i32> = true;
-        template<> static constexpr bool _isShaderType<Vec4i32> = true;
+        template<> static constexpr bool8 _isShaderType<float32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec2f32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec3f32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec4f32> = true;
+        template<> static constexpr bool8 _isShaderType<int32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec2i32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec3i32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec4i32> = true;
 
         template<typename T>
         static constexpr uint8 _elementCount = 0;
@@ -52,13 +52,13 @@ namespace otto
         template<> static constexpr uint32 _openglBaseType<Vec4i32> = GL_INT;
 
     public:
-        BufferElement(uint8 size, uint8 elementCount, uint64 offset, uint32 openglBaseType, bool normalized)
+        BufferElement(uint8 size, uint8 elementCount, uint64 offset, uint32 openglBaseType, bool8 normalized)
             : size(size), elementCount(elementCount), offset(offset), openglBaseType(openglBaseType), normalized(normalized)
         {
         }
 
         template<typename T> requires _isShaderType<T>
-        static BufferElement create(bool normalized = false)
+        static BufferElement create(bool8 normalized = false)
         {
             return BufferElement(sizeof(T), _elementCount<T>, 0, _openglBaseType<T>, normalized);
         }
@@ -67,7 +67,7 @@ namespace otto
         uint8 elementCount;
         uint64 offset;
         uint32 openglBaseType;
-        bool normalized;
+        bool8 normalized;
     };
 
     class VertexBuffer
@@ -89,7 +89,6 @@ namespace otto
         VertexBuffer& operator=(const VertexBuffer& other);
 
         void bind() const;
-        void unbind() const;
 
         void setData(const void* data, uint64 size);
 
@@ -101,6 +100,18 @@ namespace otto
 
         template<typename T, uint64 N>
         void setData(const StaticArray<T, N>& data, uint64 elements)
+        {
+            setData(reinterpret_cast<const void*>(data.getData()), elements * sizeof(T));
+        }
+
+        template<typename T>
+        void setData(const DynamicArray<T>& data)
+        {
+            setData(reinterpret_cast<const void*>(data.getData()), data.getSize() * sizeof(T));
+        }
+
+        template<typename T>
+        void setData(const DynamicArray<T>& data, uint64 elements)
         {
             setData(reinterpret_cast<const void*>(data.getData()), elements * sizeof(T));
         }

@@ -10,7 +10,7 @@ namespace otto
 		return Serialized(string);
 	}
 
-	template<typename T> requires std::is_integral_v<T>
+	template<typename T> requires isIntegral<T>
 	Serialized serialize(const Vec2<T>& v)
 	{
 		return String::valueOf(v.x) + ", " + String::valueOf(v.y);
@@ -35,7 +35,7 @@ namespace otto
 		return serialized.toString();
 	}
 
-	template<typename T> requires std::is_integral_v<T>
+	template<typename T> requires isIntegral<T>
 	Vec2<T> deserialize(const Serialized& serialized)
 	{
 		auto values = String::split(serialized.get<String>(), ", ");

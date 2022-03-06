@@ -24,12 +24,12 @@ namespace otto
         {
         }
 
-        explicit Serialized(Type type, bool hasBrackets = false, bool isTopLevel = false)
+        explicit Serialized(Type type, bool8 hasBrackets = false, bool8 isTopLevel = false)
             : mType(type), mHasBrackets(hasBrackets), mIsTopLevel(isTopLevel)
         {
         }
 
-        template<typename T> requires std::is_integral_v<T>
+        template<typename T> requires isIntegral<T>
         Serialized(T value)
             : mType(Type::VALUE), mValue(otto::String::toString(mValue))
         {
@@ -90,7 +90,7 @@ namespace otto
             return dictionary;
         }
 
-        bool contains(const String& entryName) const
+        bool8 contains(const String& entryName) const
         {
             for (auto& [key, _] : mDictionary)
             {
@@ -112,7 +112,7 @@ namespace otto
             return mDictionary.get(entryName); // Will cause error
         }
 
-        template<typename T> requires std::is_integral<T>::value
+        template<typename T> requires isIntegral<T>
             T get() const
         {
             return mValue.to<T>();
@@ -130,7 +130,7 @@ namespace otto
             return mValue;
         }
 
-        template<typename T> requires std::is_integral<T>::value
+        template<typename T> requires isIntegral<T>
             T get(const String& entryName) const
         {
             for (auto& [key, _] : mDictionary)
@@ -159,7 +159,7 @@ namespace otto
             return mList[index];
         }
 
-        template<typename T> requires std::is_integral<T>::value
+        template<typename T> requires isIntegral<T>
             void insert(const String& name, T value)
         {
             if (mType == Type::VOID)
@@ -243,14 +243,14 @@ namespace otto
             return s;
         }
 
-        bool isValue() const { return mType == Type::VALUE; }
-        bool isList() const { return mType == Type::LIST; }
-        bool isDictionary() const { return mType == Type::DICTIONARY; }
+        bool8 isValue() const { return mType == Type::VALUE; }
+        bool8 isList() const { return mType == Type::LIST; }
+        bool8 isDictionary() const { return mType == Type::DICTIONARY; }
 
     private:
         Type mType;
-        bool mHasBrackets = false;
-        bool mIsTopLevel = false;
+        bool8 mHasBrackets = false;
+        bool8 mIsTopLevel = false;
 
         String mValue;
         DynamicArray<Serialized> mList;

@@ -23,7 +23,9 @@ namespace otto
             mWidth = width;
             mHeight = height;
 
-            GLenum internalFormat = 0, dataFormat = 0;
+            GLenum internalFormat = 0;
+            GLenum dataFormat = 0;
+
             if (channels == 4)
             {
                 internalFormat = GL_RGBA8;
@@ -76,6 +78,10 @@ namespace otto
             return *this;
 
         this->~Texture2D();
+
+        mWidth = other.mWidth;
+        mHeight = other.mHeight;
+        mOpenglHandle = other.mOpenglHandle;
 
         mNCopies = other.mNCopies;
         if (mNCopies != nullptr)

@@ -47,12 +47,12 @@ namespace otto
             Iterator& operator++() { mIndex++; return *this; }
             Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
 
-            friend bool operator==(const Iterator& a, const Iterator& b) { return a.mIndex == b.mIndex; }
-            friend bool operator!=(const Iterator& a, const Iterator& b) { return a.mIndex != b.mIndex; }
-            friend bool operator <(const Iterator& a, const Iterator& b) { return a.mIndex < b.mIndex; }
-            friend bool operator >(const Iterator& a, const Iterator& b) { return a.mIndex > b.mIndex; }
-            friend bool operator <=(const Iterator& a, const Iterator& b) { return a.mIndex <= b.mIndex; }
-            friend bool operator >=(const Iterator& a, const Iterator& b) { return a.mIndex >= b.mIndex; }
+            friend bool8 operator==(const Iterator& a, const Iterator& b) { return a.mIndex == b.mIndex; }
+            friend bool8 operator!=(const Iterator& a, const Iterator& b) { return a.mIndex != b.mIndex; }
+            friend bool8 operator <(const Iterator& a, const Iterator& b) { return a.mIndex < b.mIndex; }
+            friend bool8 operator >(const Iterator& a, const Iterator& b) { return a.mIndex > b.mIndex; }
+            friend bool8 operator <=(const Iterator& a, const Iterator& b) { return a.mIndex <= b.mIndex; }
+            friend bool8 operator >=(const Iterator& a, const Iterator& b) { return a.mIndex >= b.mIndex; }
 
             ~Iterator()
             {

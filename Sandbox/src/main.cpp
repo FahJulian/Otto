@@ -1,4 +1,5 @@
-#include <otto.h>
+//#include <otto.h>
+#include <otto/core/application.h>
 
 int main()
 {

@@ -49,7 +49,7 @@ namespace otto
 
         void moveCursor(uint64 offset);
 
-        bool close();
+        bool8 close();
 
         void read(uint8* dst, uint64 size);
         void readCompressed(uint8* dst, uint64 size);

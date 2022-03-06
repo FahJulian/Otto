@@ -7,16 +7,19 @@
 #include "otto/window/window_mode.h"
 #include "otto/event/event_listener.h"
 #include "otto/window/input/keyboard.h"
+#include "otto/window/window_settings.h"
 #include "otto/util/platform/file_path.h"
+#include "otto/serialization/serialized.h"
 
 struct HWND__;
+struct HICON__;
 
 namespace otto 
 {
 	class Window
 	{
 	private:
-		Window() = delete;
+		Window() = default;
 		Window(const Window& other) = delete;
 
 	public:
@@ -35,7 +38,8 @@ namespace otto
 			EventListener<_WindowLostFocusEvent> onWindowLostFocus = EventListener<_WindowLostFocusEvent>([](auto& e) {});
 		};
 
-		static bool init(const FilePath& infoFilePath, const Listeners& listeners);
+		static bool8 init(const FilePath& infoFilePath);
+		static bool8 init(Window* instance);
 
 		static void saveSettings();
 		static void destroy();
@@ -59,11 +63,11 @@ namespace otto
 		static float32 getWidth();
 		static float32 getHeight();
 
-		static void setMaximized(bool b);
-		static void setMinimized(bool b);
+		static void setMaximized(bool8 b);
+		static void setMinimized(bool8 b);
 
-		static bool isMinimized();
-		static bool isMaximized();
+		static bool8 isMinimized();
+		static bool8 isMaximized();
 
 		static float32 getMonitorWidth();
 		static float32 getMonitorHeight();
@@ -72,13 +76,45 @@ namespace otto
 		static WindowMode getWindowMode();
 
 	private:
-		static bool _createWin32Window();
+		static Window* getInstance();
+
+		static void setListeners(const Listeners& listeners);
+
+		static bool8 _createWin32Window();
 
 		static void _onResized(uint16 width, uint16 height);
 		static void _onMouseButtonPressed(MouseButton button);
 		static void _onMouseButtonReleased(MouseButton button);
 
+		static void _initCursors(const String& defaultCursor);
+		static void _initIcons();
+		static void _initStyle();
+
+		static void _setDecorated(bool8 decorated);
+
+		static void _updateWindowSize();
+
+		static void _adjustSize(uint16 width, uint16 height);
+
 		static __int64 __stdcall WindowProc(HWND__* handle, unsigned int msg, unsigned __int64 wParam, __int64 lParam);
+
+	private:
+		FilePath mSettingsFilePath;
+		Serialized mInitialSettings;
+		WindowSettings mSettings;
+
+		Window::Listeners mListeners;
+
+		bool8 mIgnoreSizeMessage = false;
+
+		HWND__* mWin32Handle;
+
+		HICON__* mSmallIconHandle;
+		HICON__* mLargeIconHandle;
+		HICON__* mCurrentCursor;
+		Map<String, HICON__*> mCursors;
+
+		friend class Application;
 	};
 
 }

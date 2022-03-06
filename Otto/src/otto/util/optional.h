@@ -31,7 +31,7 @@ namespace otto
                 mValue.~T();
         }
 
-        operator bool() const
+        operator bool8() const
         {
             return mHasValue;
         }
@@ -46,7 +46,7 @@ namespace otto
             return &mValue;
         }
 
-        bool hasValue() const
+        bool8 hasValue() const
         {
             return mHasValue;
         }
@@ -62,7 +62,7 @@ namespace otto
         }
 
     private:
-        bool mHasValue;
+        bool8 mHasValue;
 
         union
         {

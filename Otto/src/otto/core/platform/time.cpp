@@ -6,7 +6,7 @@
 
 namespace otto
 {
-    static bool INITIALIZED = false;
+    static bool8 INITIALIZED = false;
     static uint64 INIT_TICKS = 0;
     static uint64 FREQUENCY = 0;
 

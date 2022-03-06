@@ -33,7 +33,7 @@ namespace otto
                 GLenum type = _toShaderType(String::subString(source, typeIndex + strlen("# type"), source.findFirstOf('\n', typeIndex)).trim());
 
                 if (type != 0)
-                    shaderSources.insert(type, String::subString(source, typeIndex, nextTypeIndex));
+                    shaderSources.insert(type, String::subString(source, source.findFirstOf('\n', typeIndex) + 1, nextTypeIndex));
 
                 typeIndex = nextTypeIndex;
             }
@@ -80,7 +80,7 @@ namespace otto
             for (auto& [type, source] : shaderSources)
             {
                 const char8* shaderSourceData = source.getData();
-                int32 shaderSourceLength = source.getSize();
+                int32 shaderSourceLength = int32(source.getSize());
 
                 uint32 handle = glCreateShader(type);
                 glShaderSource(handle, 1, &shaderSourceData, &shaderSourceLength);
@@ -112,9 +112,7 @@ namespace otto
         auto error = _compileShaderAndGetErrors(mOpenglHandle, shaderSources);
 
         if (error.hasValue())
-        {
             Log::error("Error compiling shader ", filePath, ":\n", error.getValue());
-        }
     }
 
     Shader::Shader(const Shader& other)
@@ -144,6 +142,8 @@ namespace otto
 
         this->~Shader();
 
+        mOpenglHandle = other.mOpenglHandle;
+
         mNCopies = other.mNCopies;
         if (mNCopies != nullptr)
             (*mNCopies)++;
@@ -154,11 +154,6 @@ namespace otto
     void Shader::bind() const
     {
         glUseProgram(mOpenglHandle);
-    }
-
-    void Shader::unbind() const
-    {
-        glUseProgram(0);
     }
 
     template<> 

@@ -7,7 +7,7 @@ namespace otto
 {
     Shared<Scene> SceneManager::sCurrentScene = nullptr;
 
-    bool SceneManager::setScene(const FilePath& filePath)
+    bool8 SceneManager::setScene(const FilePath& filePath)
     {
         Log::trace("Setting scene to ", filePath);
 

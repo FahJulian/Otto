@@ -22,7 +22,9 @@ namespace otto
                 return sLoadedTextures.get(filePath);
             else
             {
-                Texture2D texture = Texture2D(filePath);
+                Texture2D texture = Texture2D(filePath.toString().startsWith("otto/") ?
+                    Application::getCoreRootDirectory() + "res/" + filePath : Application::getRootDirectory() + filePath);
+
                 sLoadedTextures.insert(filePath, texture);
                 return texture;
             }
@@ -35,7 +37,7 @@ namespace otto
     {
         if (serialized.contains("spritesheet"))
         {
-            FilePath filePath = serialized.get<String>("filePath");
+            FilePath filePath = serialized.get<String>("spritesheet");
             auto result = Serializer::load(filePath.toString().startsWith("otto/") ?
                 Application::getCoreRootDirectory() + "res/" + filePath : Application::getRootDirectory() + filePath);
 

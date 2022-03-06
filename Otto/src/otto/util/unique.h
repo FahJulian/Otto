@@ -63,12 +63,12 @@ namespace otto
 			return mPointer;
 		}
 
-		operator bool() const
+		operator bool8() const
 		{
 			return isValid();
 		}
 
-		bool isValid() const
+		bool8 isValid() const
 		{
 			return mPointer != nullptr;
 		}
@@ -83,14 +83,14 @@ namespace otto
 			return mPointer;
 		}
 
-		bool isOwner() const
+		bool8 isOwner() const
 		{
 			return mIsOwner;
 		}
 
 	private:
 		T* mPointer;
-		bool mIsOwner;
+		bool8 mIsOwner;
 	};
 
 } // namespace otto

@@ -25,13 +25,13 @@ namespace otto
                 result.~R();
         }
 
-        bool hasError() const { return _hasError; }
+        bool8 hasError() const { return _hasError; }
         const E& getError() const { return error; }
         R& getResult() { return result; }
         const R& getResult() const { return result; }
 
     private:
-        bool _hasError;
+        bool8 _hasError;
 
         union
         {

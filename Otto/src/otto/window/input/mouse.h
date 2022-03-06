@@ -16,11 +16,11 @@ namespace otto
 		static float32 getX() { return sX; }
 		static float32 getY() { return sY; }
 
-		static bool isButtonPressed(MouseButton button) { return sButtons[static_cast<uint64>(button)]; }
+		static bool8 isButtonPressed(MouseButton button) { return sButtons[static_cast<uint64>(button)]; }
 
 	private:
 		static float32 sX, sY;
-		static StaticArray<bool, static_cast<uint8>(MouseButton::_HIGHEST_BUTTON) + 1> sButtons;
+		static StaticArray<bool8, static_cast<uint8>(MouseButton::_HIGHEST_BUTTON) + 1> sButtons;
 
 		friend class Window;
 	};

@@ -199,8 +199,6 @@ namespace otto
 
 	Result<Icon, IconLoader::IconLoadingError> IconLoader::loadIcon(const FilePath& filePath)
 	{
-		Log::trace("Loading icon ", filePath, "...");
-
 		if (filePath.toString().endsWith(".otto"))
 		{
 			auto result = Serializer::load(filePath);
@@ -238,8 +236,6 @@ namespace otto
 
 	Result<Cursor, IconLoader::IconLoadingError> IconLoader::loadCursor(const FilePath& filePath)
 	{
-		Log::trace("Loading cursor ", filePath, "...");
-
 		if (filePath.toString().endsWith(".otto"))
 		{
 			auto result = Serializer::load(filePath);

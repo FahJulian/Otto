@@ -1,15 +1,12 @@
 #define OTTO_GENERATED_CODE
-#include "otto/base.h"
-#include "otto/scene/scene.h"
-#include "otto/event/event_dispatcher.h"
-#include "otto/events/ComponentAddedEvent.hpp"
-#include "otto/events/ComponentRemovedEvent.hpp"
+#include "otto.h"
 
 using namespace otto;
 
 #include "otto\components\TransformComponent.hpp"
 #include "components\TestComponent.hpp"
 #include "components\TestComponent2.hpp"
+#include "otto\components\ui\UIComponent.hpp"
 #include "events\TestEvent.hpp"
 #include "events\TestEvent2.hpp"
 #include "otto\events\key\KeyPressedEvent.hpp"
@@ -23,6 +20,8 @@ using namespace otto;
 #include "otto\events\window\WindowResizedEvent.hpp"
 #include "otto\events\window\WindowGainedFocusEvent.hpp"
 #include "otto\events\window\WindowLostFocusEvent.hpp"
+#include "otto\events\ui\UIRendererRebufferEvent.hpp"
+#include "otto\events\ui\UIClickedEvent.hpp"
 #include "otto\events\InitEvent.hpp"
 #include "otto\events\UpdateEvent.hpp"
 #include "otto\events\RebufferEvent.hpp"
@@ -35,7 +34,7 @@ OTTO_DLL_FUNC void Scene::removeComponent<TransformComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC TransformComponent& Scene::getComponent<TransformComponent>(Entity entity);
 template<>
-OTTO_DLL_FUNC bool Scene::hasComponent<TransformComponent>(Entity entity);
+OTTO_DLL_FUNC bool8 Scene::hasComponent<TransformComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component);
 template<>
@@ -43,7 +42,7 @@ OTTO_DLL_FUNC void Scene::removeComponent<TestComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC TestComponent& Scene::getComponent<TestComponent>(Entity entity);
 template<>
-OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent>(Entity entity);
+OTTO_DLL_FUNC bool8 Scene::hasComponent<TestComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC void Scene::addComponent<TestComponent2>(Entity entity, const TestComponent2& component);
 template<>
@@ -51,7 +50,15 @@ OTTO_DLL_FUNC void Scene::removeComponent<TestComponent2>(Entity entity);
 template<>
 OTTO_DLL_FUNC TestComponent2& Scene::getComponent<TestComponent2>(Entity entity);
 template<>
-OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent2>(Entity entity);
+OTTO_DLL_FUNC bool8 Scene::hasComponent<TestComponent2>(Entity entity);
+template<>
+OTTO_DLL_FUNC void Scene::addComponent<UIComponent>(Entity entity, const UIComponent& component);
+template<>
+OTTO_DLL_FUNC void Scene::removeComponent<UIComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC UIComponent& Scene::getComponent<UIComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC bool8 Scene::hasComponent<UIComponent>(Entity entity);
 
 template<>
 OTTO_DLL_FUNC void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
@@ -132,6 +139,18 @@ OTTO_DLL_FUNC void Scene::removeEventListener<WindowLostFocusEvent>(const EventL
 template<>
 OTTO_DLL_FUNC void Scene::dispatchEvent<WindowLostFocusEvent>(const WindowLostFocusEvent& e);
 template<>
+OTTO_DLL_FUNC void Scene::addEventListener<UIRendererRebufferEvent>(const EventListener<UIRendererRebufferEvent>& eventListener);
+template<>
+OTTO_DLL_FUNC void Scene::removeEventListener<UIRendererRebufferEvent>(const EventListener<UIRendererRebufferEvent>& eventListener);
+template<>
+OTTO_DLL_FUNC void Scene::dispatchEvent<UIRendererRebufferEvent>(const UIRendererRebufferEvent& e);
+template<>
+OTTO_DLL_FUNC void Scene::addEventListener<UIClickedEvent>(const EventListener<UIClickedEvent>& eventListener);
+template<>
+OTTO_DLL_FUNC void Scene::removeEventListener<UIClickedEvent>(const EventListener<UIClickedEvent>& eventListener);
+template<>
+OTTO_DLL_FUNC void Scene::dispatchEvent<UIClickedEvent>(const UIClickedEvent& e);
+template<>
 OTTO_DLL_FUNC void Scene::addEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
 template<>
 OTTO_DLL_FUNC void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener);
@@ -160,6 +179,8 @@ OTTO_DLL_FUNC void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e);
 #include "behaviours\TestBehaviour2.hpp"
 #include "systems\TestSystem.hpp"
 #include "systems\TestSystem2.hpp"
+#include "otto\systems\ui\UIRenderer.hpp"
+#include "otto\systems\ui\UIHandler.hpp"
 
 namespace otto
 {
@@ -170,6 +191,7 @@ namespace otto
         ComponentPool<TransformComponent> transformComponentPool;
         ComponentPool<TestComponent> testComponentPool;
         ComponentPool<TestComponent2> testComponent2Pool;
+        ComponentPool<UIComponent> uIComponentPool;
 
         ComponentPool<TestBehaviour> testBehaviourPool;
         ComponentPool<TestBehaviour2> testBehaviour2Pool;
@@ -187,6 +209,8 @@ namespace otto
         EventDispatcher<WindowResizedEvent> windowResizedEventDispatcher;
         EventDispatcher<WindowGainedFocusEvent> windowGainedFocusEventDispatcher;
         EventDispatcher<WindowLostFocusEvent> windowLostFocusEventDispatcher;
+        EventDispatcher<UIRendererRebufferEvent> uIRendererRebufferEventDispatcher;
+        EventDispatcher<UIClickedEvent> uIClickedEventDispatcher;
         EventDispatcher<InitEvent> initEventDispatcher;
         EventDispatcher<UpdateEvent> updateEventDispatcher;
         EventDispatcher<RebufferEvent> rebufferEventDispatcher;
@@ -196,10 +220,13 @@ namespace otto
         View<TestBehaviour2> testBehaviour2View = View<TestBehaviour2>(&testBehaviour2Pool); 
         View<TestComponent> testComponentView = View<TestComponent>(&testComponentPool); 
         View<TransformComponent> transformComponentView = View<TransformComponent>(&transformComponentPool); 
+        View<UIComponent> uIComponentView = View<UIComponent>(&uIComponentPool); 
 
         MultiView<TestComponent, TransformComponent> testComponent_transformComponentView = MultiView<TestComponent, TransformComponent>(&testComponentPool, &transformComponentPool);
         TestSystem testSystem = TestSystem(&testComponent_transformComponentView, &testComponentView, &transformComponentView);
         TestSystem2 testSystem2 = TestSystem2();
+        UIRenderer uIRenderer = UIRenderer(&uIComponentView);
+        UIHandler uIHandler = UIHandler(&uIComponentView);
         Map<Entity, DynamicArray<uint16>> entityComponentMap;    };
 
     template<typename C>
@@ -223,6 +250,12 @@ namespace otto
     static uint16 getID<TestComponent2>()
     {
         return 2;
+    }
+
+    template<>
+    static uint16 getID<UIComponent>()
+    {
+        return 3;
     }
 
     template<typename C>
@@ -249,14 +282,21 @@ namespace otto
         return deserializeComponent<TestComponent>(args, entities);
     }
 
+    template<>
+    UIComponent deserializeComponentOrBehaviour<UIComponent>(const Serialized& args, const Map<String, Entity>& entities)
+    {
+        return deserializeComponent<UIComponent>(args, entities);
+    }
+
     OTTO_DLL_FUNC Shared<Scene> Scene::_createScene()
     {
         return new Scene(new SceneData());
     }
 
-    OTTO_DLL_FUNC void Scene::_initClientLog(Log* mainLog)
+    OTTO_DLL_FUNC void Scene::_initClient(Application* mainApplication, Window* mainWindow, Log* mainLog, const Color& clearColor)
     {
-        Log::init(mainLog);
+        Application::init(mainApplication, mainWindow, mainLog);
+        Window::setClearColor(clearColor);
     }
 
     OTTO_DLL_FUNC Entity Scene::addEntity()
@@ -264,6 +304,23 @@ namespace otto
         Entity entity = mData->nextEntity++;
         mData->entityComponentMap.insert(entity, DynamicArray<uint16>());
         return entity;
+    }
+
+    OTTO_DLL_FUNC void Scene::update(float32 delta)
+    {
+        dispatchEvent(_UpdateEvent(delta));
+    }
+
+    OTTO_DLL_FUNC void Scene::rebuffer()
+    {
+        dispatchEvent(_RebufferEvent());
+    }
+
+        OTTO_DLL_FUNC void Scene::render()
+    {
+        Window::clear();
+        dispatchEvent(_RenderEvent());
+        Window::swapBuffers();
     }
 
     OTTO_DLL_FUNC void Scene::removeEntity(Entity entity)
@@ -275,6 +332,7 @@ namespace otto
             case 0: removeComponent<TransformComponent>(entity); break;
             case 1: removeComponent<TestComponent>(entity); break;
             case 2: removeComponent<TestComponent2>(entity); break;
+            case 3: removeComponent<UIComponent>(entity); break;
             }
         }
 
@@ -285,6 +343,8 @@ namespace otto
     {
         mData->testSystem.mScene = this;
         mData->testSystem2.mScene = this;
+        mData->uIRenderer.mScene = this;
+        mData->uIHandler.mScene = this;
         for (auto [entity, behaviour] : mData->testBehaviourView)
         {
             behaviour.mScene = this;
@@ -295,6 +355,8 @@ namespace otto
             behaviour.mScene = this;
             behaviour.mEntity = entity;
         }
+
+        dispatchEvent(_InitEvent());
     }
 
     template<typename E>
@@ -379,6 +441,18 @@ namespace otto
     OTTO_DLL_FUNC void Scene::addEventListener<WindowLostFocusEvent>(const EventListener<WindowLostFocusEvent>& eventListener)
     {
         mData->windowLostFocusEventDispatcher.addListener(eventListener);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::addEventListener<UIRendererRebufferEvent>(const EventListener<UIRendererRebufferEvent>& eventListener)
+    {
+        mData->uIRendererRebufferEventDispatcher.addListener(eventListener);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::addEventListener<UIClickedEvent>(const EventListener<UIClickedEvent>& eventListener)
+    {
+        mData->uIClickedEventDispatcher.addListener(eventListener);
     }
 
     template<>
@@ -490,6 +564,18 @@ namespace otto
     }
 
     template<>
+    OTTO_DLL_FUNC void Scene::removeEventListener<UIRendererRebufferEvent>(const EventListener<UIRendererRebufferEvent>& eventListener)
+    {
+        mData->uIRendererRebufferEventDispatcher.removeListener(eventListener);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::removeEventListener<UIClickedEvent>(const EventListener<UIClickedEvent>& eventListener)
+    {
+        mData->uIClickedEventDispatcher.removeListener(eventListener);
+    }
+
+    template<>
     OTTO_DLL_FUNC void Scene::removeEventListener<InitEvent>(const EventListener<InitEvent>& eventListener)
     {
         mData->initEventDispatcher.removeListener(eventListener);
@@ -586,6 +672,7 @@ namespace otto
     template<>
     OTTO_DLL_FUNC void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e)
     {
+        mData->uIRenderer.onEvent(e);
         mData->windowResizedEventDispatcher.dispatchEvent(e);
     }
 
@@ -602,10 +689,24 @@ namespace otto
     }
 
     template<>
+    OTTO_DLL_FUNC void Scene::dispatchEvent<UIRendererRebufferEvent>(const UIRendererRebufferEvent& e)
+    {
+        mData->uIRenderer.onEvent(e);
+        mData->uIRendererRebufferEventDispatcher.dispatchEvent(e);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::dispatchEvent<UIClickedEvent>(const UIClickedEvent& e)
+    {
+        mData->uIClickedEventDispatcher.dispatchEvent(e);
+    }
+
+    template<>
     OTTO_DLL_FUNC void Scene::dispatchEvent<InitEvent>(const InitEvent& e)
     {
         mData->testSystem.onEvent(e);
         mData->testSystem2.onEvent(e);
+        mData->uIRenderer.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviour2View)
@@ -618,6 +719,7 @@ namespace otto
     {
         mData->testSystem.onEvent(e);
         mData->testSystem2.onEvent(e);
+        mData->uIHandler.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onEvent(e);
         mData->updateEventDispatcher.dispatchEvent(e);
@@ -626,12 +728,14 @@ namespace otto
     template<>
     OTTO_DLL_FUNC void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e)
     {
+        mData->uIRenderer.onEvent(e);
         mData->rebufferEventDispatcher.dispatchEvent(e);
     }
 
     template<>
     OTTO_DLL_FUNC void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e)
     {
+        mData->uIRenderer.onEvent(e);
         mData->renderEventDispatcher.dispatchEvent(e);
     }
 
@@ -643,6 +747,8 @@ namespace otto
             addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
         if (componentName == "TestComponent2")
             addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+        if (componentName == "UIComponent")
+            addComponent(entity, deserializeComponentOrBehaviour<UIComponent>(args, entities));
         if (componentName == "TestBehaviour")
             mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
         if (componentName == "TestBehaviour2")
@@ -679,6 +785,14 @@ namespace otto
         mData->entityComponentMap[entity].add(getID<TestComponent2>());
     }
 
+    template<>
+    OTTO_DLL_FUNC void Scene::addComponent<UIComponent>(Entity entity, const UIComponent& component)
+    {
+        mData->uIComponentPool.addComponent(entity, component);
+        mData->uIRenderer.onEvent(ComponentAddedEvent<UIComponent>(entity));
+        mData->entityComponentMap[entity].add(getID<UIComponent>());
+    }
+
     template<typename C>
     OTTO_DLL_FUNC void Scene::removeComponent(Entity entity)
     {
@@ -709,6 +823,14 @@ namespace otto
         mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TestComponent2>()));
     }
 
+    template<>
+    OTTO_DLL_FUNC void Scene::removeComponent<UIComponent>(Entity entity)
+    {
+        mData->uIComponentPool.removeComponent(entity);
+        mData->uIRenderer.onEvent(ComponentRemovedEvent<UIComponent>(entity));
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<UIComponent>()));
+    }
+
     template<typename C>
     OTTO_DLL_FUNC C& Scene::getComponent(Entity entity)
     {
@@ -733,103 +855,40 @@ namespace otto
         return mData->testComponent2Pool.getComponent(entity);
     }
 
+    template<>
+    OTTO_DLL_FUNC UIComponent& Scene::getComponent<UIComponent>(Entity entity)
+    {
+        return mData->uIComponentPool.getComponent(entity);
+    }
+
     template<typename C>
-    OTTO_DLL_FUNC bool Scene::hasComponent(Entity entity)
+    OTTO_DLL_FUNC bool8 Scene::hasComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
     }
 
     template<>
-    OTTO_DLL_FUNC bool Scene::hasComponent<TransformComponent>(Entity entity)
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<TransformComponent>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TransformComponent>());
     }
 
     template<>
-    OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent>(Entity entity)
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<TestComponent>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TestComponent>());
     }
 
     template<>
-    OTTO_DLL_FUNC bool Scene::hasComponent<TestComponent2>(Entity entity)
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<TestComponent2>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<TestComponent2>());
     }
 
-    OTTO_DLL_FUNC void Scene::_onKeyPressed(const KeyPressedEvent& e)
+    template<>
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<UIComponent>(Entity entity)
     {
-        dispatchEvent<KeyPressedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onKeyReleased(const KeyReleasedEvent& e)
-    {
-        dispatchEvent<KeyReleasedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onMouseButtonPressed(const MouseButtonPressedEvent& e)
-    {
-        dispatchEvent<MouseButtonPressedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onMouseButtonReleased(const MouseButtonReleasedEvent& e)
-    {
-        dispatchEvent<MouseButtonReleasedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onMouseMoved(const MouseMovedEvent& e)
-    {
-        dispatchEvent<MouseMovedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onMouseDragged(const MouseDraggedEvent& e)
-    {
-        dispatchEvent<MouseDraggedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onMouseScrolled(const MouseScrolledEvent& e)
-    {
-        dispatchEvent<MouseScrolledEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onWindowClosed(const WindowClosedEvent& e)
-    {
-        dispatchEvent<WindowClosedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onWindowResized(const WindowResizedEvent& e)
-    {
-        dispatchEvent<WindowResizedEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onWindowGainedFocus(const WindowGainedFocusEvent& e)
-    {
-        dispatchEvent<WindowGainedFocusEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onWindowLostFocus(const WindowLostFocusEvent& e)
-    {
-        dispatchEvent<WindowLostFocusEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onInit(const InitEvent& e)
-    {
-        dispatchEvent<InitEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onUpdate(const UpdateEvent& e)
-    {
-        dispatchEvent<UpdateEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onRebuffer(const RebufferEvent& e)
-    {
-        dispatchEvent<RebufferEvent>(e);
-    }
-
-    OTTO_DLL_FUNC void Scene::_onRender(const RenderEvent& e)
-    {
-        dispatchEvent<RenderEvent>(e);
+        return mData->entityComponentMap[entity].contains(getID<UIComponent>());
     }
 
 } // namespace otto

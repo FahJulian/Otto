@@ -8,33 +8,17 @@
 #include "otto/core/application.h"
 #include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
+#include "otto/window/window.h"
 
 namespace otto
 {
     namespace
     {
 #ifdef OTTO_DYNAMIC
-        static const DynamicArray<String> ON_EVENT_FUNCTIONS = {
-            "KeyPressed",
-            "KeyReleased",
-            "MouseButtonPressed",
-            "MouseButtonReleased",
-            "MouseMoved",
-            "MouseDragged",
-            "MouseScrolled",
-            "WindowClosed",
-            "WindowResized",
-            "WindowGainedFocus",
-            "WindowLostFocus",
-            "Init",
-            "Update",
-            "Rebuffer",
-            "Render",
-        };
 
         struct _SystemInitArg
         {
-            bool isMultiView;
+            bool8 isMultiView;
             String view1Type;
             String view2Type;
         };
@@ -44,10 +28,10 @@ namespace otto
             String name;
             FilePath relativeFilePath;
 
-            bool hasSerializationFunction;
-            bool hasDeserializationFunction;
+            bool8 hasSerializationFunction;
+            bool8 hasDeserializationFunction;
 
-            bool operator==(const _Component& other) { return relativeFilePath == other.relativeFilePath; }
+            bool8 operator==(const _Component& other) { return relativeFilePath == other.relativeFilePath; }
         };
 
         struct _Event
@@ -55,7 +39,7 @@ namespace otto
             String name;
             FilePath relativeFilePath;
 
-            bool operator==(const _Event& other) { return relativeFilePath == other.relativeFilePath; }
+            bool8 operator==(const _Event& other) { return relativeFilePath == other.relativeFilePath; }
         };
 
         struct _Behaviour
@@ -63,8 +47,8 @@ namespace otto
             String name;
             FilePath relativeFilePath;
 
-            bool hasSerializationFunction;
-            bool hasDeserializationFunction;
+            bool8 hasSerializationFunction;
+            bool8 hasDeserializationFunction;
 
             DynamicArray<_Event> eventFunctions;
         };
@@ -95,7 +79,7 @@ namespace otto
             String returnType;
             DynamicArray<String> argumentTypes;
 
-            bool operator==(const _Function& other)
+            bool8 operator==(const _Function& other)
             {
                 return name == other.name && returnType == other.returnType && argumentTypes == other.argumentTypes;
             }
@@ -183,7 +167,7 @@ namespace otto
             return _Function{ name, returnType, argumentTypes };
         }
 
-        void _hasSerializationFunctions(const FilePath& file, const String& className, bool* hasSerializationFunction, bool* hasDeserializationFunction)
+        void _hasSerializationFunctions(const FilePath& file, const String& className, bool8* hasSerializationFunction, bool8* hasDeserializationFunction)
         {
             *hasSerializationFunction = false;
             *hasDeserializationFunction = false;
@@ -556,7 +540,7 @@ namespace otto
                 code.append("template<>\n"
                     "OTTO_DLL_FUNC " + component.name + "& Scene::getComponent<" + component.name + ">(Entity entity);\n");
                 code.append("template<>\n"
-                    "OTTO_DLL_FUNC bool Scene::hasComponent<" + component.name + ">(Entity entity);\n");
+                    "OTTO_DLL_FUNC bool8 Scene::hasComponent<" + component.name + ">(Entity entity);\n");
             }
 
             code.append('\n');
@@ -621,7 +605,7 @@ namespace otto
             {
                 code.append("        " + system.name + ' ' + String::untitle(system.name) + " = " + system.name + "(");
 
-                bool first = true;
+                bool8 first = true;
                 for (auto& argument : system.constructorArgs)
                 {
                     if (!first)
@@ -746,7 +730,7 @@ namespace otto
             }
         }
 
-        void _addInitializerAndAddEntityFunctions(String& code)
+        void _addOtherSceneFunctions(String& code)
         {
             code.append("    OTTO_DLL_FUNC Shared<Scene> Scene::_createScene()\n"
                 "    {\n"
@@ -756,9 +740,10 @@ namespace otto
 
             code.append('\n');
 
-            code.append("    OTTO_DLL_FUNC void Scene::_initClientLog(Log* mainLog)\n"
+            code.append("    OTTO_DLL_FUNC void Scene::_initClient(Application* mainApplication, Window* mainWindow, Log* mainLog, const Color& clearColor)\n"
                 "    {\n"
-                "        Log::init(mainLog);\n"
+                "        Application::init(mainApplication, mainWindow, mainLog);\n"
+                "        Window::setClearColor(clearColor);\n"
                 "    }\n"
             );
 
@@ -769,6 +754,32 @@ namespace otto
                 "        Entity entity = mData->nextEntity++;\n"
                 "        mData->entityComponentMap.insert(entity, DynamicArray<uint16>());\n"
                 "        return entity;\n"
+                "    }\n"
+            );
+
+            code.append('\n');
+
+            code.append("    OTTO_DLL_FUNC void Scene::update(float32 delta)\n"
+                "    {\n"
+                "        dispatchEvent(_UpdateEvent(delta));\n"
+                "    }\n"
+            );
+
+            code.append('\n');
+
+            code.append("    OTTO_DLL_FUNC void Scene::rebuffer()\n"
+                "    {\n"
+                "        dispatchEvent(_RebufferEvent());\n"
+                "    }\n"
+            );
+
+            code.append('\n');
+
+            code.append("        OTTO_DLL_FUNC void Scene::render()\n"
+                "    {\n"
+                "        Window::clear();\n"
+                "        dispatchEvent(_RenderEvent());\n"
+                "        Window::swapBuffers();\n"
                 "    }\n"
             );
 
@@ -811,6 +822,9 @@ namespace otto
                 code.append("            behaviour.mEntity = entity;\n");
                 code.append("        }\n");
             }
+
+            code.append('\n');
+            code.append("        dispatchEvent(_InitEvent());\n");
 
             code.append("    }\n");
 
@@ -1028,7 +1042,7 @@ namespace otto
         void _addHasComponentFunctions(String& code, const _Package& package)
         {
             code.append("    template<typename C>\n"
-                "    OTTO_DLL_FUNC bool Scene::hasComponent(Entity entity)\n"
+                "    OTTO_DLL_FUNC bool8 Scene::hasComponent(Entity entity)\n"
                 "    {\n"
                 "        OTTO_ASSERT(false, \"Component is not added.\")\n"
                 "    }\n"
@@ -1039,22 +1053,9 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("    template<>\n");
-                code.append("    OTTO_DLL_FUNC bool Scene::hasComponent<" + component.name + ">(Entity entity)\n");
+                code.append("    OTTO_DLL_FUNC bool8 Scene::hasComponent<" + component.name + ">(Entity entity)\n");
                 code.append("    {\n");
                 code.append("        return mData->entityComponentMap[entity].contains(getID<" + component.name + ">());\n");
-                code.append("    }\n");
-
-                code.append('\n');
-            }
-        }
-
-        void _addOnEventFunctions(String& code)
-        {
-            for (auto& e : ON_EVENT_FUNCTIONS)
-            {
-                code.append("    OTTO_DLL_FUNC void Scene::_on" + e + "(const " + e + "Event& e)\n");
-                code.append("    {\n");
-                code.append("        dispatchEvent<" + e + "Event>(e);\n");
                 code.append("    }\n");
 
                 code.append('\n');
@@ -1066,11 +1067,7 @@ namespace otto
             String code;
 
             code.append("#define OTTO_GENERATED_CODE\n");
-            code.append("#include \"otto/base.h\"\n");
-            code.append("#include \"otto/scene/scene.h\"\n");
-            code.append("#include \"otto/event/event_dispatcher.h\"\n");
-            code.append("#include \"otto/events/ComponentAddedEvent.hpp\"\n");
-            code.append("#include \"otto/events/ComponentRemovedEvent.hpp\"\n");
+            code.append("#include \"otto.h\"\n");
             code.append('\n');
 
             code.append("using namespace otto;\n\n");
@@ -1079,13 +1076,14 @@ namespace otto
             _addComponentAndEventFuncDefinitions(code, package);
             _addBehaviourAndSystemIncludes(code, package);
 
+
             code.append("namespace otto\n{\n");
 
             _addSceneDataStruct(code, package);
             _addComponentIDFunctions(code, package);
             _addSerializationFunctions(code, package);
             _addDeserializationFunctions(code, package);
-            _addInitializerAndAddEntityFunctions(code);
+            _addOtherSceneFunctions(code);
             _addRemoveEntityFunction(code, package);
             _addSceneInitFunction(code, package);
             _addAddEventListenerFunctions(code, package);
@@ -1095,7 +1093,6 @@ namespace otto
             _addRemoveComponentFunctions(code, package);
             _addGetComponentFunctions(code, package);
             _addHasComponentFunctions(code, package);
-            _addOnEventFunctions(code);
 
             code.append("} // namespace otto\n");
 
@@ -1144,22 +1141,27 @@ namespace otto
     }
 
 #ifdef OTTO_DYNAMIC
-    bool SceneLoader::reloadDll(const Package& package)
+    bool8 SceneLoader::reloadDll(const Package& package)
     {
         Log::trace("Generating scene code...");
         _createSceneFile(_loadPackage(package), Application::getRootDirectory() + ".tmp/generated_scene.cpp");
 
-        bool dllReloaded = DllReloader::reloadDll(Application::getRootDirectory() + ".tmp/client.dll", true, {
-            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "OTTO_DEBUG", "OTTO_DYNAMIC", "OTTO_EXPORT" });
+        bool8 dllReloaded = DllReloader::reloadDll(Application::getRootDirectory() + ".tmp/client.dll", true, {
+            Application::getRootDirectory() + ".tmp/generated_scene.cpp" }, { "GLEW_STATIC", "OTTO_DEBUG", "OTTO_DYNAMIC", "OTTO_EXPORT" }, 
+            { }, { "/LTCG", "/ignore:4075", "/ignore:4098" });
 
         if (!dllReloaded)
             return false;
 
-        OTTO_DECLARE_DLL_FUNCTION_HANDLE(initClientLogHandle, Application::_getClientDllPath(), void, otto::Scene::_initClientLog, Log*);
-
-        OTTO_CALL_DLL_FUNCTION(initClientLogHandle, Log::getInstance());
-
         return true;
+    }
+
+    void SceneLoader::initClient(Application* mainApplication, Window* mainWindow, Log* mainLog, const Color& clearColor)
+    {
+        OTTO_DECLARE_DLL_FUNCTION_HANDLE(initClientHandle, Application::_getClientDllPath(), void, 
+            otto::Scene::_initClient, Application*, Window*, Log*, const Color&);
+
+        OTTO_CALL_DLL_FUNCTION(initClientHandle, mainApplication, mainWindow, mainLog, clearColor);
     }
 #endif
 

@@ -12,7 +12,7 @@ namespace otto
         GraphicsAPI() = delete;
         GraphicsAPI(const GraphicsAPI& other) = delete;
 
-        static bool init();
+        static bool8 init();
 
         static void setClearColor(const Color& color);
 

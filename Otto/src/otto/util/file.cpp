@@ -71,7 +71,7 @@ namespace otto
         mInputStream.seekg(offset, std::ios::cur);
     }
 
-    bool BinaryFile::close()
+    bool8 BinaryFile::close()
     {
         if (mMode == Mode::WRITE)
         {

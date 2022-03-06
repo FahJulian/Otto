@@ -10,7 +10,7 @@ namespace otto
     template<typename R, typename... Args>
     class Function
     {
-        static constexpr bool ALWAYS_FALSE = false;
+        static constexpr bool8 ALWAYS_FALSE = false;
         static_assert(ALWAYS_FALSE, "otto::Function can only be used with function typenames");
     };
 
@@ -50,40 +50,40 @@ namespace otto
             return (this->*mFunctionCaller)(std::forward<Args>(args)...);
         }
 
-        operator bool() const
+        operator bool8() const
         {
             return isValid();
         }
 
-        bool isValid() const
+        bool8 isValid() const
         {
             return mFunctionCaller != nullptr;
         }
 
-        bool isFunction() const
+        bool8 isFunction() const
         {
             return mFunctionCaller == &Function::_callFunction;
         }
 
-        bool isMemberFunction() const
+        bool8 isMemberFunction() const
         {
             return isValid() && !isFunction();
         }
 
         template<typename R1, typename... Args1>
-        bool isFunction(R1(*Function)(Args...)) const
+        bool8 isFunction(R1(*Function)(Args...)) const
         {
             return Function != nullptr && mFunction == *reinterpret_cast<ptr64*>(&Function);
         }
 
         template<typename T, typename R1, typename... Args1>
-        bool isMemberFunction(R1(T::* memberFunction)(Args1...)) const
+        bool8 isMemberFunction(R1(T::* memberFunction)(Args1...)) const
         {
             return memberFunction != nullptr && mFunction == *reinterpret_cast<ptr64*>(&memberFunction);
         }
 
         template<typename T>
-        bool isMemberFunctionOfObject(T* object) const
+        bool8 isMemberFunctionOfObject(T* object) const
         {
             return object != nullptr && mObject == reinterpret_cast<ptr64>(object);
         }

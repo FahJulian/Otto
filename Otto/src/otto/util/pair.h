@@ -82,13 +82,13 @@ namespace otto
         }
 
         template<typename T, typename F>
-        bool operator==(const Pair<T, F>& other) const
+        bool8 operator==(const Pair<T, F>& other) const
         {
             return first == other.first;
         }
 
         template<typename T>
-        bool operator==(const T& otherKey) const
+        bool8 operator==(const T& otherKey) const
         {
             return first == otherKey;
         }

@@ -37,7 +37,7 @@ namespace otto
         }
 
         template<typename F>
-        typename std::enable_if<std::is_integral<F>::value, Vec3&>::type operator+=(F f)
+        typename Vec3& operator+=(F f) requires isIntegral<F>
         {
             x += f;
             y += f;
@@ -45,7 +45,7 @@ namespace otto
         }
 
         template<typename F>
-        typename std::enable_if<std::is_integral<F>::value, Vec3&>::type operator*=(F f)
+        typename Vec3& operator*=(F f) requires isIntegral<F>
         {
             x *= f;
             y *= f;
@@ -59,25 +59,25 @@ namespace otto
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator+(F f, const Vec3& v)
+        friend typename Vec3 operator+(F f, const Vec3& v) requires isIntegral<F>
         {
             return { f + v.x, f + v.y, f + v.z };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator+(const Vec3& v, F f)
+        friend typename Vec3 operator+(const Vec3& v, F f) requires isIntegral<F>
         {
             return { v.x + f, v.y + f, v.z + f };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator*(F f, const Vec3& v)
+        friend typename Vec3 operator*(F f, const Vec3& v) requires isIntegral<F>
         {
             return { f * v.x, f * v.y, f * v.z };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec3>::type operator*(const Vec3& v, F f)
+        friend typename Vec3 operator*(const Vec3& v, F f) requires isIntegral<F>
         {
             return { v.x * f, v.y * f, v.z * f };
         }

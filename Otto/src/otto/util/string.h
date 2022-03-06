@@ -44,45 +44,45 @@ namespace otto
         void operator+=(const String& String) { append(String); }
         void operator+=(const char8* String) { append(String); }
 
-        bool operator==(char8 c) const { return equals(c); }
-        bool operator==(const String& other) const { return equals(other); }
-        bool operator==(const char8* other) const { return equals(other); }
+        bool8 operator==(char8 c) const { return equals(c); }
+        bool8 operator==(const String& other) const { return equals(other); }
+        bool8 operator==(const char8* other) const { return equals(other); }
 
-        bool operator!=(char8 c) const { return !equals(c); }
-        bool operator!=(const String& other) const { return !equals(other); }
-        bool operator!=(const char8* other) const { return !equals(other); }
+        bool8 operator!=(char8 c) const { return !equals(c); }
+        bool8 operator!=(const String& other) const { return !equals(other); }
+        bool8 operator!=(const char8* other) const { return !equals(other); }
 
-        bool equals(char8 c) const;
-        bool equals(const String& other) const;
-        bool equals(const char8* other) const;
+        bool8 equals(char8 c) const;
+        bool8 equals(const String& other) const;
+        bool8 equals(const char8* other) const;
 
-        bool equalsIgnoreCase(char8 c) const;
-        bool equalsIgnoreCase(const String& other) const;
-        bool equalsIgnoreCase(const char8* other) const;
+        bool8 equalsIgnoreCase(char8 c) const;
+        bool8 equalsIgnoreCase(const String& other) const;
+        bool8 equalsIgnoreCase(const char8* other) const;
 
-        bool startsWith(char8 c) const;
-        bool startsWith(const char8* String) const;
-        bool startsWith(const String& String) const;
+        bool8 startsWith(char8 c) const;
+        bool8 startsWith(const char8* String) const;
+        bool8 startsWith(const String& String) const;
 
-        bool startsWithIgnoreCase(char8 c) const;
-        bool startsWithIgnoreCase(const char8* String) const;
-        bool startsWithIgnoreCase(const String& String) const;
+        bool8 startsWithIgnoreCase(char8 c) const;
+        bool8 startsWithIgnoreCase(const char8* String) const;
+        bool8 startsWithIgnoreCase(const String& String) const;
 
-        bool endsWith(char8 c) const;
-        bool endsWith(const char8* String) const;
-        bool endsWith(const String& String) const;
+        bool8 endsWith(char8 c) const;
+        bool8 endsWith(const char8* String) const;
+        bool8 endsWith(const String& String) const;
 
-        bool endsWithIgnoreCase(char8 c) const;
-        bool endsWithIgnoreCase(const char8* String) const;
-        bool endsWithIgnoreCase(const String& String) const;
+        bool8 endsWithIgnoreCase(char8 c) const;
+        bool8 endsWithIgnoreCase(const char8* String) const;
+        bool8 endsWithIgnoreCase(const String& String) const;
 
-        bool contains(char8 c) const;
-        bool contains(const String& String) const;
-        bool contains(const char8* String) const;
+        bool8 contains(char8 c) const;
+        bool8 contains(const String& String) const;
+        bool8 contains(const char8* String) const;
 
-        bool containsIgnoreCase(char8 c) const;
-        bool containsIgnoreCase(const String& String) const;
-        bool containsIgnoreCase(const char8* String) const;
+        bool8 containsIgnoreCase(char8 c) const;
+        bool8 containsIgnoreCase(const String& String) const;
+        bool8 containsIgnoreCase(const char8* String) const;
 
         String& append(char8 c);
         String& append(const String& String);
@@ -110,7 +110,7 @@ namespace otto
 
         uint64 getSize() const { return mSize; }
 
-        bool isEmpty() const { return mSize == 0; }
+        bool8 isEmpty() const { return mSize == 0; }
 
         char& get(uint64 index);
         const char& get(uint64 index) const;
@@ -292,7 +292,7 @@ namespace otto
         static String insert(const String& string, uint64 index, const char8* insertString);
         static String insert(const String& string, uint64 index, const String& insertString);
 
-        static String valueOf(bool b);
+        static String valueOf(bool8 b);
         static String valueOf(char8 c, int32 base = 10);
         static String valueOf(uchar8 c, int32 base = 10);
         static String valueOf(int16 s, int32 base = 10);
@@ -301,12 +301,12 @@ namespace otto
         static String valueOf(uint32 i, int32 base = 10);
         static String valueOf(int64 l, int32 base = 10);
         static String valueOf(uint64 l, int32 base = 10);
-        static String valueOf(float32 f, bool scientific = false);
-        static String valueOf(float64 f, bool scientific = false);
+        static String valueOf(float32 f, bool8 scientific = false);
+        static String valueOf(float64 f, bool8 scientific = false);
 
         static String toString(const String& s) { return s; }
 
-        template<typename T> requires std::is_integral<T>::value
+        template<typename T> requires isIntegral<T>
         static String toString(T t)
         {
             return String::valueOf(t);
@@ -340,8 +340,8 @@ namespace otto
         char8* mData;
     };
 
-    bool operator<<(String& string, std::istream& file);
-    bool operator<<(String& string, std::istream&& file);
+    bool8 operator<<(String& string, std::istream& file);
+    bool8 operator<<(String& string, std::istream&& file);
 
     std::ostream& operator<<(std::ostream& stream, const String& string);
 

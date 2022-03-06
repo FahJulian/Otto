@@ -1,4 +1,14 @@
 Entity1: 
+    UIComponent:
+        x: 50
+        y: 100
+        width: 50
+        height: 100   
+        renderingProperties:
+            sprite:
+                spritesheet: resources/spritesheets/mario.otto
+                row: 1
+                col: 2     
     TestBehaviour:
     TestBehaviour2:
     TestComponent: {
@@ -34,6 +44,13 @@ Entity1:
         scale: 1, 1, 1
 
 Entity2:
+    UIComponent:
+        x: 200
+        y: 300
+        width: 50
+        height: 75   
+        renderingProperties:
+            color: #FF0000FF
     Component1: {
         variable1: "String",    
     }

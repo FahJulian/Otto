@@ -11,18 +11,18 @@ namespace otto
         FileUtils(const FileUtils& other) = delete;
 
     public:
-        static bool directoryExists(const FilePath& directoryPath);
-        static bool fileExists(const FilePath& filePath);
+        static bool8 directoryExists(const FilePath& directoryPath);
+        static bool8 fileExists(const FilePath& filePath);
 
-        static bool createDirectory(const FilePath& directory);
-        static bool createDirectoryRecursively(const FilePath& directory);
+        static bool8 createDirectory(const FilePath& directory);
+        static bool8 createDirectoryRecursively(const FilePath& directory);
 
-        static bool moveFile(const FilePath& oldName, const FilePath& newName);
-        static bool renameFile(const FilePath& oldName, const FilePath& newName);
+        static bool8 moveFile(const FilePath& oldName, const FilePath& newName);
+        static bool8 renameFile(const FilePath& oldName, const FilePath& newName);
 
-        static bool deleteFile(const FilePath& fileName);
-        static bool deleteEmptyDirectory(const FilePath& directoryPath);
-        static bool deleteEmptyDirectoryRecursively(const FilePath& directoryPath);
+        static bool8 deleteFile(const FilePath& fileName);
+        static bool8 deleteEmptyDirectory(const FilePath& directoryPath);
+        static bool8 deleteEmptyDirectoryRecursively(const FilePath& directoryPath);
     };
 
 } // namespace otto::platform

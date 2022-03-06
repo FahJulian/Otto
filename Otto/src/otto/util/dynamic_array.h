@@ -109,12 +109,12 @@ namespace otto
             add(std::forward<Args>(args)...);
         }
 
-        bool operator==(const DynamicArray& other)
+        bool8 operator==(const DynamicArray& other)
         {
             return equals(other);
         }
 
-        bool operator!=(const DynamicArray& other)
+        bool8 operator!=(const DynamicArray& other)
         {
             return !equals(other);
         }
@@ -126,19 +126,19 @@ namespace otto
 
         T& operator[](uint64 index)
         {
-            OTTO_ASSERT(index < mSize, "Index out of range");
+            OTTO_ASSERT(index < mCapacity, "Index out of range");
 
             return mData[index];
         }
 
         const T& operator[](uint64 index) const
         {
-            OTTO_ASSERT(index < mSize, "Index out of range");
+            OTTO_ASSERT(index < mCapacity, "Index out of range");
 
             return mData[index];
         }
 
-        bool equals(const DynamicArray& other)
+        bool8 equals(const DynamicArray& other)
         {
             if (other.mSize != mSize)
                 return false;
@@ -277,12 +277,12 @@ namespace otto
         }
 
         template<typename F>
-        bool contains(const F& value) const
+        bool8 contains(const F& value) const
         {
             return indexOf(value) != mSize;
         }
 
-        bool contains(const T& value) const
+        bool8 contains(const T& value) const
         {
             return indexOf(value) != mSize;
         }

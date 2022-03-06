@@ -22,7 +22,9 @@ namespace otto
         SceneLoader(const SceneLoader& other) = delete;
 
 #ifdef OTTO_DYNAMIC
-        static bool reloadDll(const Package& package);
+        static bool8 reloadDll(const Package& package);
+
+        static void initClient(Application* mainApplication, Window* mainWindow, Log* mainLog, const Color& clearColor);
 #endif
 
         static Result<Shared<Scene>, SceneLoadingError> loadScene(const FilePath& filePath);

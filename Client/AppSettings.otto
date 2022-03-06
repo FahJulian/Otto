@@ -8,6 +8,7 @@ windowSettingsPath: windows/WindowSettings.otto
 
 dependencies: [
     otto/core   
+    otto/ui
 ]
 
 components: [

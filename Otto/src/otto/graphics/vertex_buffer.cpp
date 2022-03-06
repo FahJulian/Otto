@@ -55,6 +55,10 @@ namespace otto
 
         this->~VertexBuffer();
 
+        mStride = other.mStride;
+        mOpenglHandle = other.mOpenglHandle;
+        mLayout = other.mLayout;
+
         mNCopies = other.mNCopies;
         if (mNCopies != nullptr)
             (*mNCopies)++;
@@ -65,11 +69,6 @@ namespace otto
     void VertexBuffer::bind() const
     {
         glBindBuffer(GL_ARRAY_BUFFER, mOpenglHandle);
-    }
-
-    void VertexBuffer::unbind() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     void VertexBuffer::setData(const void* data, uint64 size)

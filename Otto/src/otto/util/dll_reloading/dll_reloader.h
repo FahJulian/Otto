@@ -75,7 +75,7 @@ namespace otto
         }
 
         template<typename... Args>
-        static String getTypeNames(bool isArgumentTypes)
+        static String getTypeNames(bool8 isArgumentTypes)
         {
             String string;
             _appendTypeNames<Args...>(string, isArgumentTypes);
@@ -83,7 +83,7 @@ namespace otto
         }
 
         template<>
-        static otto::String getTypeNames(bool isArgumentTypes)
+        static otto::String getTypeNames(bool8 isArgumentTypes)
         {
             return { };
         }
@@ -129,10 +129,10 @@ namespace otto
             return *reinterpret_cast<MemberFunctionptr64<R, T, Args...>*>(&function);
         }
 
-        static bool init(const Settings& settings);
+        static bool8 init(const Settings& settings);
 
-        static bool reloadDll(const FilePath& dllPath, bool forceRecompile, std::initializer_list<FilePath> sourceFiles,
-            std::initializer_list<String> additionalPreprocessorDefinitions = {});
+        static bool8 reloadDll(const FilePath& dllPath, bool8 forceRecompile, const DynamicArray<FilePath>& sourceFiles,
+            const DynamicArray<String>& additionalPreprocessorDefinitions = { }, const DynamicArray<String>& compilerOptions = { }, const DynamicArray<String>& linkerOptions = { });
 
         static void destroy();
 
@@ -140,7 +140,7 @@ namespace otto
         static ptr64 _registerFunction(const FilePath& dllPath, ptr64* functionptr64, const String& functionName);
 
         template<typename T>
-        static void _appendTypeNames(String& string, bool isArgumentTypes, bool start = true)
+        static void _appendTypeNames(String& string, bool8 isArgumentTypes, bool8 start = true)
         {
             if (!start)
                 string.append(',');
@@ -149,14 +149,14 @@ namespace otto
         }
 
         template<typename T, typename F, typename... Args>
-        static void _appendTypeNames(String& string, bool isArugmentTypes, bool start = true)
+        static void _appendTypeNames(String& string, bool8 isArugmentTypes, bool8 start = true)
         {
             _appendTypeNames<T>(string, isArugmentTypes, start);
             _appendTypeNames<F, Args...>(string, isArugmentTypes, false);
         }
 
         template<typename T>
-        static constexpr String _getTypeName(bool ignoreModifiers)
+        static constexpr String _getTypeName(bool8 ignoreModifiers)
         {
             if (std::is_pointer<T>::value)
             {

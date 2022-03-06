@@ -12,9 +12,6 @@ namespace otto
 {
     class Shader
     {
-        template<typename T>
-        static constexpr bool _isNotIntegral = !std::is_integral_v<T>;
-
     public:
         Shader();
         Shader(const FilePath& filePath);
@@ -25,7 +22,6 @@ namespace otto
         Shader& operator=(const Shader& other);
 
         void bind() const;
-        void unbind() const;
 
         template<typename T>
         void setUniform(const String& name, T value)

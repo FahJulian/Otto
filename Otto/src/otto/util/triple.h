@@ -74,7 +74,7 @@ namespace otto
         }
 
         template<typename T, typename F, typename G>
-        bool operator==(const Triple<T, F, G>& other) const
+        bool8 operator==(const Triple<T, F, G>& other) const
         {
             return first == other.first;
         }

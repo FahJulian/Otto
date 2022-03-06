@@ -36,14 +36,14 @@ namespace otto
         }
 
         template<typename F>
-        typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator+=(F f)
+        Vec2& operator+=(F f) requires isIntegral<F>
         {
             x += f;
             y += f;
         }
 
         template<typename F>
-        typename std::enable_if<std::is_integral<F>::value, Vec2&>::type operator*=(F f)
+        Vec2& operator*=(F f) requires isIntegral<F>
         {
             x *= f;
             y *= f;
@@ -56,25 +56,25 @@ namespace otto
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(F f, const Vec2& v)
+        friend typename Vec2 operator+(F f, const Vec2& v) requires isIntegral<F>
         {
             return { f + v.x, f + v.y };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator+(const Vec2& v, F f)
+        friend typename Vec2 operator+(const Vec2& v, F f) requires isIntegral<F>
         {
             return { v.x + f, v.y + f };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(F f, const Vec2& v)
+        friend typename Vec2 operator*(F f, const Vec2& v) requires isIntegral<F>
         {
             return { f * v.x, f * v.y };
         }
 
         template<typename F>
-        friend typename std::enable_if<std::is_integral<F>::value, Vec2>::type operator*(const Vec2& v, F f)
+        friend typename Vec2 operator*(const Vec2& v, F f) requires isIntegral<F>
         {
             return { v.x * f, v.y * f };
         }

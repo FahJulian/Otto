@@ -10,6 +10,7 @@
 #include "otto/core/platform/time.h"
 #include "otto/scene/scene_loader.h"
 #include "otto/core/scene_manager.h"
+#include "otto/util/optional.h"
 #include "otto/window/window.h"
 #include "otto/debug/log/log.h"
 #include "otto/scene/scene.h"
@@ -18,30 +19,18 @@
 
 namespace otto
 {
-    struct LogLevelParsingError
-    {
-    } sLogLevelParsingError;
+    static Application* sInstance = nullptr;
 
-    static const uint32 UPDATE_CAP = 60;
-    static const float64 sSecondsPerUpdate = 1.0 / UPDATE_CAP;
-
-    static bool sInitialized = false;
-    static bool sRunning = false;
-
-    static FilePath sRootDirectory;
     static const FilePath CORE_ROOT_DIRECTORY = "C:/ProgramData/Otto/";
-
-    static Map<String, Serialized> sAdditionalSettings;
 
 #ifdef OTTO_COUNT_FPS
     static const float64 FPS_UPDATES_PER_SECOND = 1.0;
     static const float64 SECONDS_PER_FPS_UPDATE = 1.0 / FPS_UPDATES_PER_SECOND;
 #endif
         
-
     namespace
     {
-        Result<uint8, LogLevelParsingError> _parseLogLevel(const String& logLevel)
+        Optional<uint8> _parseLogLevel(const String& logLevel)
         {
             if (logLevel == "ALL")
                 return uint8(Log::ALL);
@@ -60,15 +49,36 @@ namespace otto
             else if (logLevel == "TRACE")
                 return uint8(Log::TRACE);
 
-            return sLogLevelParsingError;
+            return NULLOPT;
         }
 
     } // namespace
 
-    bool Application::init(const FilePath& settingsFilePath)
+    Application* Application::getInstance()
+    {   
+        return sInstance;
+    }
+
+    bool8 Application::init(Application* mainApplication, Window* mainWindow, Log* mainLog)
     {
-        if (sInitialized)
+        if (sInstance != nullptr)
             return false;
+
+        Log::init(mainLog);
+        Window::init(mainWindow);
+
+        sInstance = mainApplication;
+        return true;
+    }
+
+    bool8 Application::init(const FilePath& settingsFilePath)
+    {
+        static Application application;
+
+        if (sInstance != nullptr)
+            return false;
+
+        sInstance = &application;
 
         Log::_pushMessage(std::cout, Log::INFO, "Initializing Application...");
 
@@ -83,7 +93,9 @@ namespace otto
 
         auto settings = result.getResult();
 
-        sRootDirectory = settings.rootDirectory;
+        sInstance->mRootDirectory = settings.rootDirectory;
+        sInstance->mSecondsPerUpdate = 1.0 / settings.updateCap;
+        sInstance->mAdditionalSettings = settings.additionalSettings;
 
         Log::init(getRootDirectory() + settings.logFilePath, std::cout, settings.logConsoleLevel, settings.logFileLevel);
 
@@ -97,10 +109,11 @@ namespace otto
         DllReloader::Settings dllSettings;
         dllSettings.compilerExePath = CORE_ROOT_DIRECTORY + "MSVC/" + settings.msvcVersion + "/bin/Hostx86/x64/cl.exe";
         dllSettings.linkerExePath = CORE_ROOT_DIRECTORY + "MSVC/" + settings.msvcVersion + "/bin/Hostx86/x64/link.exe";
-        dllSettings.tmpDir = sRootDirectory + ".tmp/";
+        dllSettings.tmpDir = sInstance->mRootDirectory + ".tmp/";
         dllSettings.includeDirs = { 
             "C:/dev/Otto/Otto/src",
-            sRootDirectory,
+            "C:/dev/Otto/Otto/dependencies/glew/include",
+            sInstance->mRootDirectory,
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/shared",
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/ucrt",
             CORE_ROOT_DIRECTORY + "WindowsKits/10.0.19041.0/include/um",
@@ -131,12 +144,20 @@ namespace otto
             Log::error("Failed to reload Client Dll.");
             return false;
         }
+#endif
 
-        if (!SceneManager::setScene(sRootDirectory + settings.startScene + ".otto"))
+        if (!Window::init(settings.rootDirectory + settings.windowSettingsPath))
+        {
+            Log::error("Failed to initialize Window.");
+            return false;
+        }
+
+        SceneLoader::initClient(Application::getInstance(), Window::getInstance(), Log::getInstance(), Window::getInstance()->mSettings.clearColor);
+
+        if (!SceneManager::setScene(sInstance->mRootDirectory + settings.startScene + ".otto"))
             return false;
 
-#endif
-        bool windowInitialized = Window::init(settings.rootDirectory + settings.windowSettingsPath, {
+        Window::setListeners({
             Application::_onKeyPressed,
             Application::_onKeyReleased,
             Application::_onMouseButtonPressed,
@@ -150,26 +171,13 @@ namespace otto
             Application::_onWindowLostFocus,
         });
 
-        if (!windowInitialized)
-        {
-            Log::error("Failed to initialize Window.");
-            return false;
-        }
-
         Log::trace("Initializing scene...");
 
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneInitHandle, _getClientDllPath(), Scene, void, init);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnInitHandle, _getClientDllPath(), Scene, void, _onInit, const _InitEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneInitHandle);
-        OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnInitHandle, _InitEvent());
 
         Log::trace("Done initializing scene.");
-
-        sAdditionalSettings = settings.additionalSettings;
-
-        sInitialized = true;
-
         Log::info("Initialization complete.");
 
         return true;
@@ -177,11 +185,11 @@ namespace otto
 
     void Application::run()
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnUpdateHandle, _getClientDllPath(), Scene, void, _onUpdate, const _UpdateEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRebufferHandle, _getClientDllPath(), Scene, void, _onRebuffer, const _RebufferEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRenderHandle, _getClientDllPath(), Scene, void, _onRender, const _RenderEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneUpdateHandle, _getClientDllPath(), Scene, void, update, float32);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneRebufferHandle, _getClientDllPath(), Scene, void, rebuffer);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneRenderHandle, _getClientDllPath(), Scene, void, render);
 
-        sRunning = true;
+        sInstance->mRunning = true;
 
         float64 totalDelta = 0.0;
         float64 startTime = Time::getTime64();
@@ -191,21 +199,21 @@ namespace otto
         uint32 frames = 0;
 #endif
 
-        while (sRunning)
+        while (sInstance->mRunning)
         {
-            if (totalDelta >= sSecondsPerUpdate)
+            if (totalDelta >= sInstance->mSecondsPerUpdate)
             {
-                OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnUpdateHandle, _UpdateEvent{ static_cast<float32>(totalDelta) });
-                OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRebufferHandle, _RebufferEvent());
+                OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneUpdateHandle, static_cast<float32>(totalDelta));
+                OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneRebufferHandle);
 
                 Window::pollEvents();
 
                 totalDelta = 0.0;
             }
 
-            Window::clear();
-            OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRenderHandle, _RenderEvent());
-            Window::swapBuffers();
+            //Window::clear();
+            OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneRenderHandle);
+            //Window::swapBuffers();
 
             float64 endTime = Time::getTime64();
             float64 delta = endTime - startTime;
@@ -229,7 +237,7 @@ namespace otto
 
     const FilePath& Application::getRootDirectory()
     {
-        return sRootDirectory;
+        return sInstance->mRootDirectory;
     }
 
     const FilePath& Application::getCoreRootDirectory()
@@ -239,12 +247,12 @@ namespace otto
 
     const Map<String, Serialized>& Application::getSettings()
     {
-        return sAdditionalSettings;
+        return sInstance->mAdditionalSettings;
     }
 
     void Application::stop()
     {
-        sRunning = false;
+        sInstance->mRunning = false;
     }
 
     void Application::destroy()
@@ -290,27 +298,29 @@ namespace otto
 
         for (auto& [name, serialized] : file.getDictionary())
         {
+            if (name.equalsIgnoreCase("updateCap"))
+                settings.updateCap = serialized.get<float64>();
             if (name.equalsIgnoreCase("rootDirectory"))
-                settings.rootDirectory = file.get<String>("rootDirectory");
+                settings.rootDirectory = serialized.get<String>();
             else if (name.equalsIgnoreCase("logFilePath"))
-                settings.logFilePath = file.get<String>("logFilePath");
+                settings.logFilePath = serialized.get<String>();
             else if (name.equalsIgnoreCase("msvcVersion"))
-                settings.msvcVersion = file.get<String>("msvcVersion");
+                settings.msvcVersion = serialized.get<String>();
             else if (name.equalsIgnoreCase("windowSettingsPath"))
-                settings.windowSettingsPath = file.get<String>("windowSettingsPath");
+                settings.windowSettingsPath = serialized.get<String>();
             else if (name.equalsIgnoreCase("startScene"))
-                settings.startScene = file.get<String>("startScene");
+                settings.startScene = serialized.get<String>();
             else if (name.equalsIgnoreCase("logConsoleLevel"))
             {
                 auto logConsoleLevel = _parseLogLevel(file.get<String>("LogConsoleLevel"));
-                if (!logConsoleLevel.hasError())
-                    settings.logConsoleLevel = logConsoleLevel.getResult();
+                if (logConsoleLevel.hasValue())
+                    settings.logConsoleLevel = logConsoleLevel.getValue();
             }
             else if (name.equalsIgnoreCase("logFileLevel"))
             {
                 auto logFileLevel = _parseLogLevel(file.get<String>("logFileLevel"));
-                if (!logFileLevel.hasError())
-                    settings.logFileLevel = logFileLevel.getResult();
+                if (logFileLevel.hasValue())
+                    settings.logFileLevel = logFileLevel.getValue();
             }
             else if (!name.equalsIgnoreCase("dependencies") && !name.equalsIgnoreCase("components") &&
                 !name.equalsIgnoreCase("events") && !name.equalsIgnoreCase("behaviours") && !name.equalsIgnoreCase("systems"))
@@ -339,56 +349,64 @@ namespace otto
 
     void Application::_onKeyPressed(const _KeyPressedEvent& e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyPressedHandle, _getClientDllPath(), Scene, void, _onKeyPressed, const _KeyPressedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyPressedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_KeyPressedEvent>, const _KeyPressedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnKeyPressedHandle, e);
     }
 
     void Application::_onKeyReleased(const _KeyReleasedEvent& e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyReleasedHandle, _getClientDllPath(), Scene, void, _onKeyReleased, const _KeyReleasedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyReleasedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_KeyReleasedEvent>, const _KeyReleasedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnKeyReleasedHandle, e);
     }
 
     void Application::_onMouseButtonPressed(const _MouseButtonPressedEvent& e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonPressedHandle, _getClientDllPath(), Scene, void, _onMouseButtonPressed, const _MouseButtonPressedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonPressedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_MouseButtonPressedEvent>, const _MouseButtonPressedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseButtonPressedHandle, e);
     }
 
     void Application::_onMouseButtonReleased(const _MouseButtonReleasedEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonReleasedHandle, _getClientDllPath(), Scene, void, _onMouseButtonReleased, const _MouseButtonReleasedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonReleasedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_MouseButtonReleasedEvent>, const _MouseButtonReleasedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseButtonReleasedHandle, e);
     }
 
     void Application::_onMouseMoved(const _MouseMovedEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseMovedHandle, _getClientDllPath(), Scene, void, _onMouseMoved, const _MouseMovedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseMovedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_MouseMovedEvent>, const _MouseMovedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseMovedHandle, e);
     }
 
     void Application::_onMouseDragged(const _MouseDraggedEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseDraggedHandle, _getClientDllPath(), Scene, void, _onMouseDragged, const _MouseDraggedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseDraggedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_MouseDraggedEvent>, const _MouseDraggedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseDraggedHandle, e);
     }
 
     void Application::_onMouseScrolled(const _MouseScrolledEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseScrolledHandle, _getClientDllPath(), Scene, void, _onMouseScrolled, const _MouseScrolledEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseScrolledHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_MouseScrolledEvent>, const _MouseScrolledEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseScrolledHandle, e);
     }
 
     void Application::_onWindowClosed(const _WindowClosedEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowClosedHandle, _getClientDllPath(), Scene, void, _onWindowClosed, const _WindowClosedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowClosedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_WindowClosedEvent>, const _WindowClosedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowClosedHandle, e);
 
@@ -397,31 +415,36 @@ namespace otto
 
     void Application::_onWindowResized(const _WindowResizedEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowResizedHandle, _getClientDllPath(), Scene, void, _onWindowResized, const _WindowResizedEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRebufferHandle, _getClientDllPath(), Scene, void, _onRebuffer, const _RebufferEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRenderHandle, _getClientDllPath(), Scene, void, _onRender, const _RenderEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowResizedHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_WindowResizedEvent>, const _WindowResizedEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRebufferHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_RebufferEvent>, const _RebufferEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRenderHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_RenderEvent>, const _RenderEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowResizedHandle, e);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRebufferHandle, _RebufferEvent());
 
-        Window::clear();
+        //Window::clear();
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRenderHandle, _RenderEvent());
 
-        Window::swapBuffers();
+        //Window::swapBuffers();
     }
 
     void Application::_onWindowGainedFocus(const _WindowGainedFocusEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowGainedFocusHandle, _getClientDllPath(), Scene, void, _onWindowGainedFocus, const _WindowGainedFocusEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowGainedFocusHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_WindowGainedFocusEvent>, const _WindowGainedFocusEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowGainedFocusHandle, e);
     }
 
     void Application::_onWindowLostFocus(const _WindowLostFocusEvent & e)
     {
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowLostFocusHandle, _getClientDllPath(), Scene, void, _onWindowLostFocus, const _WindowLostFocusEvent&);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowLostFocusHandle, _getClientDllPath(), Scene, void, 
+            dispatchEvent<struct otto::_WindowLostFocusEvent>, const _WindowLostFocusEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowLostFocusHandle, e);
     }
@@ -429,7 +452,7 @@ namespace otto
 #ifdef OTTO_DYNAMIC
     FilePath Application::_getClientDllPath()
     {
-        return sRootDirectory + ".tmp/client.dll";
+        return sInstance->mRootDirectory + ".tmp/client.dll";
     }
 #endif
 

@@ -15,7 +15,7 @@ namespace otto
     template<>
     Serialized serialize(const String& string);
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T> requires isIntegral<T>
     Serialized serialize(const Vec2<T>& v);
 
     template<>
@@ -27,7 +27,7 @@ namespace otto
     template<>
     String deserialize(const Serialized& serialized);
 
-    template<typename T> requires std::is_integral_v<T>
+    template<typename T> requires isIntegral<T>
     Vec2<T> deserialize(const Serialized& serialized);
 
     template<>

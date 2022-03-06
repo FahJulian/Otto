@@ -21,7 +21,7 @@ namespace otto
 		}
 	}
 
-    bool GraphicsAPI::init()
+    bool8 GraphicsAPI::init()
     {   
 #ifdef OTTO_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
@@ -34,7 +34,7 @@ namespace otto
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 
         return true;
     }
@@ -56,7 +56,7 @@ namespace otto
 
 	void GraphicsAPI::drawIndexed(const VertexArray& vertexArray, uint32 indexCount)
 	{
-		glDrawElements(GL_TRIANGLES, indexCount == 0 ? indexCount : vertexArray.getSize(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, indexCount != 0 ? indexCount : vertexArray.getSize(), GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

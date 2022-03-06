@@ -1,7 +1,6 @@
 #pragma once
 
 #include "otto/base.h"
-#include "otto/util/optional.h"
 
 namespace otto
 {
@@ -11,7 +10,7 @@ namespace otto
         Context() = delete;
         Context(const Context& other) = delete;
 
-        static bool init(ptr64 windowHandle);
+        static bool8 init(ptr64 windowHandle);
 
         static void swapBuffers();
 

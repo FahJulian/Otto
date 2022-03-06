@@ -11,12 +11,13 @@ namespace otto
     {
     public:
         VertexArray();
-        VertexArray(const DynamicArray<VertexBuffer> vertexBuffers, const uint32* indices, uint32 size);
+        VertexArray(const uint32* indices, uint32 size, const DynamicArray<VertexBuffer>& vertexBuffers);
+        VertexArray(const DynamicArray<uint32>& indices, const DynamicArray<VertexBuffer>& vertexBuffers);
         VertexArray(const VertexArray& other);
 
         template<uint64 N>
-        VertexArray(const DynamicArray<VertexBuffer> vertexBuffers, const StaticArray<uint32, N> indices)
-            : VertexArray(vertexBuffers, indices.getData(), uint32(N))
+        VertexArray(const StaticArray<uint32, N> indices, const DynamicArray<VertexBuffer> vertexBuffers)
+            : VertexArray(indices.getData(), uint32(N), vertexBuffers)
         {
         }
 
@@ -25,7 +26,6 @@ namespace otto
         VertexArray& operator=(const VertexArray& other);
 
         void bind() const;
-        void unbind() const;
 
         uint32 getSize() const;
 

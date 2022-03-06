@@ -38,13 +38,17 @@ namespace otto
 
         Map<String, Dll> sDlls;
         DllReloader::Settings sSettings;
-        bool sInitialized = false;
+        bool8 sInitialized = false;
 
-        String _generateCompilerCommand(const String& dllName, const DynamicArray<FilePath>& sourceFiles, const DynamicArray<String>& prepocessorDefinitions)
+        String _generateCompilerCommand(const String& dllName, const DynamicArray<FilePath>& sourceFiles, const DynamicArray<String>& prepocessorDefinitions,
+            const DynamicArray<String>& compilerOptions)
         {
             String command = COMPILER_COMMAND;
             command.replaceFirst("%COMPILER_PATH", sSettings.compilerExePath.toString());
             command += sSettings.configuration == DllReloader::Configuration::DEBUG ? "/Od " : "/02 ";
+
+            for (auto& option : compilerOptions)
+                command += option + " ";
 
             for (auto& preprocessorDefinition : prepocessorDefinitions)
                 command += "/D " + preprocessorDefinition + " ";
@@ -66,7 +70,7 @@ namespace otto
             return command;
         }
 
-        String _generateLinkerCommand(const String& dllName, const DynamicArray<FilePath> objFiles)
+        String _generateLinkerCommand(const String& dllName, const DynamicArray<FilePath> objFiles, const DynamicArray<String>& linkerOptions)
         {
             String command = LINKER_COMMAND;
             command.replaceFirst("%LINKER_PATH", sSettings.linkerExePath.toString());
@@ -75,6 +79,9 @@ namespace otto
 
             for (auto& lib : sSettings.libs)
                 command += lib + " ";
+
+            for (auto& option : linkerOptions)
+                command += option + " ";
 
             for (auto& libDir : sSettings.libDirs)
                 command += "/LIBPATH:\"" + libDir.toString() + "\" ";
@@ -85,7 +92,7 @@ namespace otto
             return command;
         }
 
-        bool _compilationSuccessfull(const Dll& dll)
+        bool8 _compilationSuccessfull(const Dll& dll)
         {
             return (FileUtils::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".dll") &&
                 FileUtils::fileExists(sSettings.tmpDir + dll.name + "\\" + dll.name + ".lib"));
@@ -129,7 +136,7 @@ namespace otto
             return symbols;
         }
 
-        bool _reloadDll(Dll& dll, const String& path)
+        bool8 _reloadDll(Dll& dll, const String& path)
         {
             FreeLibrary(dll.win32Handle);
             dll.win32Handle = LoadLibraryA((path + dll.name + ".dll").getData());
@@ -159,7 +166,7 @@ namespace otto
             return true;
         }
 
-        bool _swapFiles(const Dll& dll, const String& path)
+        bool8 _swapFiles(const Dll& dll, const String& path)
         {
             if (String oldDllFileName = path + dll.name + ".dll";
                 FileUtils::fileExists(oldDllFileName))
@@ -177,25 +184,25 @@ namespace otto
                 FileUtils::moveFile(sSettings.tmpDir.toString() + dll.name + '\\' + dll.name + ".lib", path + dll.name + ".lib"));
         }
 
-        bool _reloadOldDll(Dll& dll, const String& path)
+        bool8 _reloadOldDll(Dll& dll, const String& path)
         {
             return (FileUtils::renameFile(path + dll.name + "-old.dll", path + dll.name + ".dll") &&
                 FileUtils::renameFile(path + dll.name + "-old.lib", path + dll.name + ".lib") &&
                 _reloadDll(dll, path));
         }
 
-        void _compileDll(const String& dllName, const DynamicArray<FilePath>& cppFiles, const DynamicArray<String>& preprocessorDefinitions)
+        void _compileDll(const String& dllName, const DynamicArray<FilePath>& cppFiles, const DynamicArray<String>& preprocessorDefinitions, const DynamicArray<String>& compilerOptions)
         {
-            String compilerCommand = _generateCompilerCommand(dllName, cppFiles, preprocessorDefinitions);
+            String compilerCommand = _generateCompilerCommand(dllName, cppFiles, preprocessorDefinitions, compilerOptions);
 
             Log::trace("Recompiling dll ", dllName, "...");
 
             std::system(compilerCommand.getData());
         }
 
-        void _linkDll(const String& dllName, const DynamicArray<FilePath>& objFiles)
+        void _linkDll(const String& dllName, const DynamicArray<FilePath>& objFiles, const DynamicArray<String>& linkerOptions)
         {
-            String linkerCommand = _generateLinkerCommand(dllName, objFiles);
+            String linkerCommand = _generateLinkerCommand(dllName, objFiles, linkerOptions);
 
             Log::trace("Linking dll ", dllName, "...");
 
@@ -220,7 +227,8 @@ namespace otto
             FileUtils::deleteEmptyDirectoryRecursively(tmpDir);
         }
 
-        bool _recompileAndReloadDll(Dll& dll, const String& path, DynamicArray<FilePath> files, DynamicArray<String> preprocessorDefinitions)
+        bool8 _recompileAndReloadDll(Dll& dll, const String& path, DynamicArray<FilePath> files, DynamicArray<String> preprocessorDefinitions,
+            const DynamicArray<String>& compilerOptions, const DynamicArray<String>& linkerOptions)
         {
             String tmpDir = sSettings.tmpDir.toString() + dll.name + '\\';
             if (!FileUtils::directoryExists(tmpDir))
@@ -235,13 +243,13 @@ namespace otto
                 }
             }
 
-            _compileDll(dll.name, files, preprocessorDefinitions);
+            _compileDll(dll.name, files, preprocessorDefinitions, compilerOptions);
 
             // Turn .cpp files into .obj files
             for (auto& file : files)
                 file = String::subString(file.toString(), file.toString().findLastOf('\\') + 1, file.toString().findFirstOf(".cpp")) + ".obj";
 
-            _linkDll(dll.name, files);
+            _linkDll(dll.name, files, linkerOptions);
 
             if (!_compilationSuccessfull(dll))
             {
@@ -275,7 +283,7 @@ namespace otto
 
     } // namespace
 
-    bool DllReloader::init(const Settings& settings)
+    bool8 DllReloader::init(const Settings& settings)
     {
         Log::trace("Initializing DllReloader...");
 
@@ -302,8 +310,8 @@ namespace otto
         return true;
     }
 
-    bool DllReloader::reloadDll(const FilePath& dllPath, bool forceRecompile, std::initializer_list<FilePath> sourceFiles,
-        std::initializer_list<String> additionalPreprocessorDefinitions)
+    bool8 DllReloader::reloadDll(const FilePath& dllPath, bool8 forceRecompile, const DynamicArray<FilePath>& sourceFiles,
+        const DynamicArray<String>& additionalPreprocessorDefinitions, const DynamicArray<String>& compilerOptions, const DynamicArray<String>& linkerOptions)
     {
         Log::info("Reloading Dll ", dllPath, "...");
 
@@ -322,7 +330,7 @@ namespace otto
 
         if (forceRecompile)
         {
-            if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions))
+            if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions, compilerOptions, linkerOptions))
                 return false;
         }
         else
@@ -331,7 +339,7 @@ namespace otto
             {
                 Log::info("Reloading dll ", dllPath.toString(), " failed, trying to recompile...");
 
-                if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions))
+                if (!_recompileAndReloadDll(dll, dllDir.toString(), sourceFiles, additionalPreprocessorDefinitions, compilerOptions, linkerOptions))
                     return false;
             }
         }

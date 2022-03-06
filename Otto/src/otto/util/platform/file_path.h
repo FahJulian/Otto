@@ -25,7 +25,9 @@ namespace otto
             return FilePath(filePath1.mFilePath + filePath2.mFilePath);
         }
 
-        bool operator==(const FilePath& other) const { return mFilePath == other.mFilePath; }
+        bool8 operator==(const FilePath& other) const { return mFilePath == other.mFilePath; }
+
+        static FilePath getResourceFilePath(const FilePath& filePath);
 
     private:
         String mFilePath;

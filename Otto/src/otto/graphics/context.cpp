@@ -1,16 +1,16 @@
 #include "context.h"
 
-#include "otto/debug/log/log.h"
-
 #include <glew/glew.h>
 #include <glew/wglew.h>
+
+#include "otto/debug/log/log.h"
 
 namespace otto
 {
     static HDC sDeviceContext;
     static HGLRC sContext;
 
-    bool Context::init(ptr64 windowHandle)
+    bool8 Context::init(ptr64 windowHandle)
     {
         sDeviceContext = GetDC(reinterpret_cast<HWND>(windowHandle));
         if (sDeviceContext == NULL)
