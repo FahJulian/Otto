@@ -1,6 +1,6 @@
 #include "serialization.h"
 
-#include "otto/graphics/texture_loader.h"
+#include "otto/serialization/texture_loader.h"
 
 namespace otto
 {

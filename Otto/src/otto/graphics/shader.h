@@ -6,7 +6,7 @@
 #include "otto/math/vec4.h"
 #include "otto/math/mat4x4.h"
 #include "otto/util/static_array.h"
-#include "otto/util/platform/file_path.h"
+#include "otto/util/file_path.h"
 
 namespace otto
 {

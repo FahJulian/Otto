@@ -3,8 +3,8 @@
 #include "otto/base.h"
 
 #include "otto/util/string.h"
+#include "otto/util/file_path.h"
 #include "otto/util/dynamic_array.h"
-#include "otto/util/platform/file_path.h"
 
 #define OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(handleName, dllPath, classType, returnType, name, ...) \
         static returnType(classType::* handleName)(__VA_ARGS__) = \

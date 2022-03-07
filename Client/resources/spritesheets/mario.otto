@@ -1,4 +1,5 @@
-texture: resources/textures/mario.png
+filePath: resources/textures/mario.png
+filter: NEAREST
 rows: 1
 cols: 14
 spriteWidth: 16

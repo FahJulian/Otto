@@ -7,12 +7,13 @@ startScene: scenes/TestScene
 windowSettingsPath: windows/WindowSettings.otto
 
 dependencies: [
+    otto/window
     otto/core   
     otto/ui
 ]
 
 components: [
-    otto/components/TransformComponent
+    otto/2D/components/TransformComponent
 
     components/TestComponent
     components/TestComponent2

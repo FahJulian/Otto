@@ -3,18 +3,16 @@
 #include <iostream>
 
 #include "otto/util/dll_reloading/dll_reloader.h"
-#include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
-#include "otto/window/icon/icon_loader.h"
-#include "otto/core/package_loader.h"
-#include "otto/core/platform/time.h"
-#include "otto/scene/scene_loader.h"
-#include "otto/core/scene_manager.h"
+#include "otto/serialization/icon_loader.h"
+#include "otto/serialization/package_loader.h"
+#include "otto/serialization/scene_loader.h"
+#include "otto/core/application_events.h"
+#include "otto/scene/scene_manager.h"
 #include "otto/util/optional.h"
 #include "otto/window/window.h"
-#include "otto/debug/log/log.h"
 #include "otto/scene/scene.h"
-#include "otto/core/events.h"
+#include "otto/core/time.h"
 #include "otto/util/file.h"
 
 namespace otto
@@ -335,22 +333,13 @@ namespace otto
         else
             settings.applicationPackage = package.getResult();
 
-        if (!settings.applicationPackage.events.contains("otto/events/InitEvent"))
-            settings.applicationPackage.events.add("otto/events/InitEvent");
-        if (!settings.applicationPackage.events.contains("otto/events/UpdateEvent"))
-            settings.applicationPackage.events.add("otto/events/UpdateEvent");
-        if (!settings.applicationPackage.events.contains("otto/events/RebufferEvent"))
-            settings.applicationPackage.events.add("otto/events/RebufferEvent");
-        if (!settings.applicationPackage.events.contains("otto/events/RenderEvent"))
-            settings.applicationPackage.events.add("otto/events/RenderEvent");
-
         return settings;
     }
 
     void Application::_onKeyPressed(const _KeyPressedEvent& e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyPressedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_KeyPressedEvent>, const _KeyPressedEvent&);
+            _onKeyPressed, const _KeyPressedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnKeyPressedHandle, e);
     }
@@ -358,7 +347,7 @@ namespace otto
     void Application::_onKeyReleased(const _KeyReleasedEvent& e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnKeyReleasedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_KeyReleasedEvent>, const _KeyReleasedEvent&);
+            _onKeyReleased, const _KeyReleasedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnKeyReleasedHandle, e);
     }
@@ -366,7 +355,7 @@ namespace otto
     void Application::_onMouseButtonPressed(const _MouseButtonPressedEvent& e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonPressedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_MouseButtonPressedEvent>, const _MouseButtonPressedEvent&);
+            _onMouseButtonPressed, const _MouseButtonPressedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseButtonPressedHandle, e);
     }
@@ -374,7 +363,7 @@ namespace otto
     void Application::_onMouseButtonReleased(const _MouseButtonReleasedEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseButtonReleasedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_MouseButtonReleasedEvent>, const _MouseButtonReleasedEvent&);
+            _onMouseButtonReleased, const _MouseButtonReleasedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseButtonReleasedHandle, e);
     }
@@ -382,7 +371,7 @@ namespace otto
     void Application::_onMouseMoved(const _MouseMovedEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseMovedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_MouseMovedEvent>, const _MouseMovedEvent&);
+            _onMouseMoved, const _MouseMovedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseMovedHandle, e);
     }
@@ -390,7 +379,7 @@ namespace otto
     void Application::_onMouseDragged(const _MouseDraggedEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseDraggedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_MouseDraggedEvent>, const _MouseDraggedEvent&);
+            _onMouseDragged, const _MouseDraggedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseDraggedHandle, e);
     }
@@ -398,7 +387,7 @@ namespace otto
     void Application::_onMouseScrolled(const _MouseScrolledEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnMouseScrolledHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_MouseScrolledEvent>, const _MouseScrolledEvent&);
+            _onMouseScrolled, const _MouseScrolledEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnMouseScrolledHandle, e);
     }
@@ -406,7 +395,7 @@ namespace otto
     void Application::_onWindowClosed(const _WindowClosedEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowClosedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_WindowClosedEvent>, const _WindowClosedEvent&);
+            _onWindowClosed, const _WindowClosedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowClosedHandle, e);
 
@@ -415,28 +404,20 @@ namespace otto
 
     void Application::_onWindowResized(const _WindowResizedEvent & e)
     {
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneRebufferHandle, _getClientDllPath(), Scene, void, rebuffer);
+        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneRenderHandle, _getClientDllPath(), Scene, void, render);
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowResizedHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_WindowResizedEvent>, const _WindowResizedEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRebufferHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_RebufferEvent>, const _RebufferEvent&);
-        OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnRenderHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_RenderEvent>, const _RenderEvent&);
+            _onWindowResized, const _WindowResizedEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowResizedHandle, e);
-
-        OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRebufferHandle, _RebufferEvent());
-
-        //Window::clear();
-
-        OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnRenderHandle, _RenderEvent());
-
-        //Window::swapBuffers();
+        OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneRebufferHandle);
+        OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneRenderHandle);
     }
 
     void Application::_onWindowGainedFocus(const _WindowGainedFocusEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowGainedFocusHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_WindowGainedFocusEvent>, const _WindowGainedFocusEvent&);
+            _onWindowGainedFocus, const _WindowGainedFocusEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowGainedFocusHandle, e);
     }
@@ -444,7 +425,7 @@ namespace otto
     void Application::_onWindowLostFocus(const _WindowLostFocusEvent & e)
     {
         OTTO_DECLARE_DLL_MEMBER_FUNCTION_HANDLE(sceneOnWindowLostFocusHandle, _getClientDllPath(), Scene, void, 
-            dispatchEvent<struct otto::_WindowLostFocusEvent>, const _WindowLostFocusEvent&);
+            _onWindowLostFocus, const _WindowLostFocusEvent&);
 
         OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneOnWindowLostFocusHandle, e);
     }

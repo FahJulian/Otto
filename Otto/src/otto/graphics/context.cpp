@@ -3,7 +3,7 @@
 #include <glew/glew.h>
 #include <glew/wglew.h>
 
-#include "otto/debug/log/log.h"
+#include "otto/debug/log.h"
 
 namespace otto
 {

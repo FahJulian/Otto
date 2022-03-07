@@ -2,14 +2,13 @@
 
 #include "_win32_include.h"
 
-#include "otto/window/events.h"
-#include "otto/debug/log/log.h"
+#include "otto/debug/log.h"
+#include "otto/util/file_utils.h"
 #include "otto/core/application.h"
 #include "otto/graphics/context.h"
 #include "otto/graphics/graphics_api.h"
-#include "otto/util/platform/file_utils.h"
 #include "otto/serialization/serializer.h"
-#include "otto/window/window_settings_loader.h"
+#include "otto/serialization/window_settings_loader.h"
 
 namespace otto
 {

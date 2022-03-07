@@ -11,33 +11,8 @@ Entity1:
                 col: 2     
     TestBehaviour:
     TestBehaviour2:
-    TestComponent: {
-        variable1: 1.0
-        variable2: 234
-    }
     TestComponent:
         tag: Test Tag
-        variable1: This is also a viable value // This is a comment
-        variable2: [ // This is a list
-            String 1
-            23456456
-        ]
-        variable3:   // This is also a list
-            Value1
-            Value2
-        variable4: [
-            [
-                a
-                b
-                c
-            ]
-            {
-                Key1: Value1
-                Key2: Value2
-            }
-            Value4
-            Value5
-        ]
     TransformComponent:
         translation: 1.0, 3, 4
         rotation: 654609.45345, 534580345, 0
@@ -51,9 +26,9 @@ Entity2:
         height: 75   
         renderingProperties:
             color: #FF0000FF
-    Component1: {
-        variable1: "String",    
-    }
+            borderColor: #00FF00FF
+            borderWeight: 5.0
+            edgeRadius: 10.0
 
 Entity3:
     TestComponent:

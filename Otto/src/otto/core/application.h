@@ -1,12 +1,12 @@
 #pragma once
 
 #include "otto/base.h"
+#include "otto/debug/log.h"
 #include "otto/util/result.h"
 #include "otto/core/package.h"
-#include "otto/debug/log/log.h"
-#include "otto/window/events.h"
+#include "otto/window/window_events.h"
 #include "otto/window/window.h"
-#include "otto/util/platform/file_path.h"
+#include "otto/util/file_path.h"
 #include "otto/serialization/serialized.h"
 
 extern int main();

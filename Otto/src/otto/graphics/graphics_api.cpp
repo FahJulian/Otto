@@ -2,19 +2,22 @@
 
 #include <glew/glew.h>
 
-#include "otto/debug/log/log.h"
+#include "otto/debug/log.h"
 
 namespace otto
 {
 	static void openglMessageCallback(uint32 source, uint32 type, uint32 id, uint32 severity, 
 		int32 length, const char8* message, const void* userParam)
 	{
+		if (id == 2)	// Fragment shader recompile due to state change
+			return;
+
 		switch (severity)
 		{
-		case GL_DEBUG_SEVERITY_HIGH:         Log::fatal(message); return;
-		case GL_DEBUG_SEVERITY_MEDIUM:       Log::error(message); return;
-		case GL_DEBUG_SEVERITY_LOW:          Log::warn(message); return;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: Log::info(message); return;
+		case GL_DEBUG_SEVERITY_HIGH:         Log::error(message, "[severity: HIGH; id: ", id, "]"); return;
+		case GL_DEBUG_SEVERITY_MEDIUM:       Log::warn(message, "[severity: MEDIUM; id: ", id, "]"); return;
+		case GL_DEBUG_SEVERITY_LOW:          Log::info(message, "[severity: LOW; id: ", id, "]"); return;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: Log::trace(message, "[severity: NOTIFICATION; id: ", id, "]"); return;
 		default: 
 			Log::warn("Unknown opengl message severity level!"); 
 			return;
@@ -57,7 +60,10 @@ namespace otto
 	void GraphicsAPI::drawIndexed(const VertexArray& vertexArray, uint32 indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount != 0 ? indexCount : vertexArray.getSize(), GL_UNSIGNED_INT, nullptr);
+
 		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+		glUseProgram(0);
 	}
 
 } // namespace otto

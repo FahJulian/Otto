@@ -1,7 +1,7 @@
 #include "serializer.h"
 
 #include "otto/util/file.h"
-#include "otto/debug/log/log.h"
+#include "otto/debug/log.h"
 
 namespace otto
 {

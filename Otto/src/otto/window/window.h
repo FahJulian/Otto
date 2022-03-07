@@ -1,14 +1,14 @@
 #pragma once
 
 #include "otto/base.h"
-#include "otto/window/events.h"
+#include "otto/util/file_path.h"
 #include "otto/graphics/color.h"
 #include "otto/window/input/mouse.h"
 #include "otto/window/window_mode.h"
 #include "otto/event/event_listener.h"
+#include "otto/window/window_events.h"
 #include "otto/window/input/keyboard.h"
 #include "otto/window/window_settings.h"
-#include "otto/util/platform/file_path.h"
 #include "otto/serialization/serialized.h"
 
 struct HWND__;

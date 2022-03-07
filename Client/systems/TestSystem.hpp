@@ -1,8 +1,13 @@
+#pragma once
+
 #include <otto.h>
+
+#include <packages/otto/2D.h>
+#include <packages/otto/core.h>
+#include <packages/otto/window.h>
 
 #include "events/TestEvent.hpp"
 #include "events/TestEvent2.hpp"
-// #include "otto/components/TransformComponent.hpp"
 
 using namespace otto;
 

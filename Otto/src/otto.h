@@ -13,11 +13,10 @@
 #include "otto/util/unique.h"
 #include "otto/util/function.h"
 #include "otto/util/optional.h"
+#include "otto/util/file_path.h"
+#include "otto/util/file_utils.h"
 #include "otto/util/static_array.h"
 #include "otto/util/dynamic_array.h"
-
-#include "otto/util/platform/file_path.h"
-#include "otto/util/platform/file_utils.h"
 
 #include "otto/math/math.h"
 #include "otto/math/vec2.h"
@@ -27,13 +26,12 @@
 #include "otto/math/mat3x3.h"
 #include "otto/math/mat4x4.h"
 
-#include "otto/debug/log/log.h"
-#include "otto/debug/profile/profiler.h"
+#include "otto/debug/log.h"
+#include "otto/debug/profiler.h"
 
+#include "otto/core/time.h"
 #include "otto/core/application.h"
-#include "otto/core/scene_manager.h"
-
-#include "otto/core/platform/time.h"
+#include "otto/core/application_events.h"
 
 #include "otto/scene/view.h"
 #include "otto/scene/scene.h"
@@ -42,6 +40,7 @@
 #include "otto/scene/behaviour.h"
 #include "otto/scene/multi_view.h"
 #include "otto/scene/serialization.h"
+#include "otto/scene/scene_manager.h"
 #include "otto/scene/component_pool.h"
 
 #include "otto/serialization/serialized.h"
@@ -63,31 +62,10 @@
 #include "otto/event/event_dispatcher.h"
 
 #include "otto/graphics/color.h"
+#include "otto/graphics/shader.h"
 #include "otto/graphics/sprite.h"
-
-#include "otto/events/InitEvent.hpp"
-#include "otto/events/UpdateEvent.hpp"
-#include "otto/events/RenderEvent.hpp"
-#include "otto/events/RebufferEvent.hpp"
-#include "otto/events/ComponentAddedEvent.hpp"
-#include "otto/events/ComponentRemovedEvent.hpp"
-
-#include "otto/events/key/KeyPressedEvent.hpp"
-#include "otto/events/key/KeyReleasedEvent.hpp"
-
-#include "otto/events/mouse/MouseMovedEvent.hpp"
-#include "otto/events/mouse/MouseDraggedEvent.hpp"
-#include "otto/events/mouse/MouseScrolledEvent.hpp"
-#include "otto/events/mouse/MouseButtonPressedEvent.hpp"
-#include "otto/events/mouse/MouseButtonReleasedEvent.hpp"
-
-#include "otto/events/window/WindowClosedEvent.hpp"
-#include "otto/events/window/WindowResizedEvent.hpp"
-#include "otto/events/window/WindowLostFocusEvent.hpp"
-#include "otto/events/window/WindowGainedFocusEvent.hpp"
-
-#include "otto/events/ui/UIClickedEvent.hpp"
-
-#include "otto/components/TransformComponent.hpp"
-
-#include "otto/components/ui/UIComponent.hpp"
+#include "otto/graphics/context.h"
+#include "otto/graphics/texture_2D.h"
+#include "otto/graphics/vertex_array.h"
+#include "otto/graphics/graphics_api.h"
+#include "otto/graphics/vertex_buffer.h"

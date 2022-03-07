@@ -1,4 +1,8 @@
+#pragma once
+
 #include <otto.h>
+
+#include <packages/otto/core.h>
 
 using namespace otto;
 

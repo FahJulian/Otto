@@ -5,8 +5,8 @@
 #include "otto/util/map.h"
 #include "otto/util/file.h"
 #include "otto/math/math.h"
+#include "otto/debug/log.h"
 #include "otto/util/optional.h"
-#include "otto/debug/log/log.h"
 
 namespace otto
 {

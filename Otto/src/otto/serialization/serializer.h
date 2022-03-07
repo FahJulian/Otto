@@ -2,8 +2,8 @@
 
 #include "otto/base.h"
 #include "otto/util/result.h"
+#include "otto/util/file_path.h"
 #include "otto/serialization/serialized.h"
-#include "otto/util/platform/file_path.h"
 
 namespace otto
 {

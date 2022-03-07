@@ -5,12 +5,37 @@
 
 namespace otto
 {
+    namespace
+    {
+        GLint _toGLint(Texture2D::Filter filter)
+        {
+            switch (filter)
+            {
+            case Texture2D::Filter::LINEAR: return GL_LINEAR;
+            case Texture2D::Filter::NEAREST: return GL_NEAREST;
+            }
+
+            return 0;
+        }
+
+        GLint _toGLint(Texture2D::Wrap wrap)
+        {
+            switch (wrap)
+            {
+            case Texture2D::Wrap::REPEAT: return GL_REPEAT;
+            }
+
+            return 0;
+        }
+
+    } // namespace 
+
     Texture2D::Texture2D()
         : mWidth(0), mHeight(0), mOpenglHandle(0), mNCopies(nullptr)
     {
     }
 
-    Texture2D::Texture2D(const FilePath& filePath)
+    Texture2D::Texture2D(const FilePath& filePath, Texture2D::Filter filter, Texture2D::Wrap wrap)
         : mWidth(0), mHeight(0), mOpenglHandle(0), mNCopies(new uint64(1))
     {
         stbi_set_flip_vertically_on_load(1);
@@ -40,11 +65,11 @@ namespace otto
             glCreateTextures(GL_TEXTURE_2D, 1, &mOpenglHandle);
             glTextureStorage2D(mOpenglHandle, 1, internalFormat, mWidth, mHeight);
 
-            glTextureParameteri(mOpenglHandle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTextureParameteri(mOpenglHandle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureParameteri(mOpenglHandle, GL_TEXTURE_MIN_FILTER, _toGLint(filter));
+            glTextureParameteri(mOpenglHandle, GL_TEXTURE_MAG_FILTER, _toGLint(filter));
 
-            glTextureParameteri(mOpenglHandle, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTextureParameteri(mOpenglHandle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTextureParameteri(mOpenglHandle, GL_TEXTURE_WRAP_S, _toGLint(wrap));
+            glTextureParameteri(mOpenglHandle, GL_TEXTURE_WRAP_T, _toGLint(wrap));
 
             glTextureSubImage2D(mOpenglHandle, 0, 0, 0, mWidth, mHeight, dataFormat, GL_UNSIGNED_BYTE, data);
 

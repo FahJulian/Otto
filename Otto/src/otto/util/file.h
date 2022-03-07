@@ -5,8 +5,8 @@
 #include "otto/base.h"
 #include "otto/util/pair.h"
 #include "otto/util/string.h"
+#include "otto/util/file_path.h"
 #include "otto/util/dynamic_array.h"
-#include "otto/util/platform/file_path.h"
 
 namespace otto
 {

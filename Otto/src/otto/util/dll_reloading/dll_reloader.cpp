@@ -1,13 +1,12 @@
 #include "dll_reloader.h"
 
-#include <Windows.h>
-#include <ImageHlp.h>
-
-#include "otto/debug/log/log.h"
+#include <windows.h>
+#include <imagehlp.h>
 
 #include "otto/util/map.h"
+#include "otto/debug/log.h"
 #include "otto/util/dynamic_array.h"
-#include "otto/util/platform/file_utils.h"
+#include "otto/util/file_utils.h"
 
 namespace otto
 {

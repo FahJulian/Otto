@@ -12,6 +12,12 @@
 
 namespace otto
 {
+    template<typename T>
+    Serialized serialize(T value) requires isIntegral<T>
+    {
+        return String::valueOf(value);
+    }
+
     template<>
     Serialized serialize(const String& string);
 
@@ -23,6 +29,12 @@ namespace otto
 
 	template<>
     Serialized serialize(const Color& color);
+
+    template<typename T>
+    T deserialize(const Serialized& serialized) requires isIntegral<T>
+    {
+        return serialized.get<T>();
+    }
 
     template<>
     String deserialize(const Serialized& serialized);
