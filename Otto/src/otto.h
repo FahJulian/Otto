@@ -3,6 +3,10 @@
 #include "otto/base.h"
 #include "otto/platform_detection.h"
 
+#include "otto/serialization/serialization.h"
+#include "otto/serialization/serializer.h"
+#include "otto/serialization/serialized.h"
+
 #include "otto/util/map.h"
 #include "otto/util/pair.h"
 #include "otto/util/file.h"
@@ -42,10 +46,6 @@
 #include "otto/scene/serialization.h"
 #include "otto/scene/scene_manager.h"
 #include "otto/scene/component_pool.h"
-
-#include "otto/serialization/serialized.h"
-#include "otto/serialization/serializer.h"
-#include "otto/serialization/serialization.h"
 
 #include "otto/window/window.h"
 #include "otto/window/window_mode.h"

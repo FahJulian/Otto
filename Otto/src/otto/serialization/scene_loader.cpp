@@ -846,6 +846,10 @@ namespace otto
             code.append("    OTTO_DLL_FUNC void Scene::rebuffer()\n");
             code.append("    {\n");
 
+            code.append("        GraphicsAPI::setViewport(0, 0, uint32(Window::getWidth()), uint32(Window::getHeight()));\n");
+
+            code.append('\n');
+
             if (package.events.contains("otto/core/events/RebufferEvent"))
                 code.append("        dispatchEvent(RebufferEvent());\n");
 
@@ -960,7 +964,20 @@ namespace otto
             for (auto& component : package.components)
             {
                 code.append("        if (componentName == \"" + component.name + "\")\n");
-                code.append("            addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
+                code.append("        {\n");
+
+                code.append("            mData->" + String::untitle(component.name) + "Pool.addComponent(entity, deserializeComponentOrBehaviour<" + component.name + ">(args, entities));\n");
+                code.append("            mData->entityComponentMap[entity].add(getID<" + component.name + ">());\n");
+
+                for (auto& [type1, type2] : package.multiViews)
+                {
+                    if (type1 == component.name)
+                        code.append("            mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent1Added(entity);\n");
+                    else if (type2 == component.name)
+                        code.append("            mData->" + String::untitle(type1) + "_" + String::untitle(type2) + "View.onComponent2Added(entity);\n");
+                }
+
+                code.append("        }\n");
             }
 
             for (auto& behaviour : package.behaviours)
@@ -988,6 +1005,7 @@ namespace otto
                 code.append("    OTTO_DLL_FUNC void Scene::addComponent<" + component.name + ">(Entity entity, const " + component.name + "& component)\n");
                 code.append("    {\n");
                 code.append("        mData->" + String::untitle(component.name) + "Pool.addComponent(entity, component);\n");
+                code.append("        mData->entityComponentMap[entity].add(getID<" + component.name + ">());\n");
 
                 for (auto& [type1, type2] : package.multiViews)
                 {
@@ -1002,8 +1020,6 @@ namespace otto
                     if (system.componentAddedListeners.contains(component))
                         code.append("        mData->" + String::untitle(system.name) + ".onEvent(ComponentAddedEvent<" + component.name + ">(entity));\n");
                 }
-
-                code.append("        mData->entityComponentMap[entity].add(getID<" + component.name + ">());\n");
 
                 code.append("    }\n");
 

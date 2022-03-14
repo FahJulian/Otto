@@ -81,6 +81,20 @@ namespace otto
         MultiView(const MultiView& other) = delete;
         MultiView& operator=(const MultiView& other) = delete;
 
+        Triple<Entity, C1&, C2&> operator[](uint64 index)
+        {
+            return get(index);
+        }
+
+        Triple<Entity, C1&, C2&> get(uint64 index)
+        {
+            return {
+                mEntities[index],
+                mPool1->mComponents[mEntities[index]],
+                mPool2->mComponents[mEntities[index]]
+            };
+        }
+
         Iterator begin()
         {
             return Iterator(this, 0);
@@ -89,6 +103,11 @@ namespace otto
         Iterator end()
         {
             return Iterator(this, getSize());
+        }
+
+        uint64 getSize() const
+        {
+            return mEntities.getSize();
         }
 
     private:
@@ -128,12 +147,7 @@ namespace otto
                 if (*iteratorIndex >= index)
                     (*iteratorIndex)--;
             }
-        }   
-
-        uint64 getSize() const
-        {
-            return mEntities.getSize();
-        }
+        }  
 
         DynamicArray<uint64*> mActiveIterators;
         DynamicArray<Entity> mEntities;

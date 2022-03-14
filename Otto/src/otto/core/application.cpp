@@ -209,9 +209,7 @@ namespace otto
                 totalDelta = 0.0;
             }
 
-            //Window::clear();
             OTTO_CALL_DLL_MEMBER_FUNCTION(*SceneManager::sCurrentScene.get(), sceneRenderHandle);
-            //Window::swapBuffers();
 
             float64 endTime = Time::getTime64();
             float64 delta = endTime - startTime;

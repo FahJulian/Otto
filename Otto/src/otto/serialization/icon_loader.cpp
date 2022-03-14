@@ -119,13 +119,13 @@ namespace otto
 				return IconLoader::IconLoadingError::OTTO_FILE_HOTSPOT_MISSING;
 			}
 
-			auto [hotspotX, hotspotY] = serialized.get<Vec2<uint16>>("Hotspot");
+			auto hotspot = serialized.get<Vec2<uint16>>("Hotspot");
 			auto icon = IconLoader::loadIcon(serialized.get<String>("filePath"));
 
 			if (icon.hasError())
 				return icon.getError();
 			else
-				return Cursor{ icon.getResult().width, icon.getResult().height, hotspotX, hotspotY, icon.getResult().bitmap };
+				return Cursor{ icon.getResult().width, icon.getResult().height, hotspot.x, hotspot.y, icon.getResult().bitmap };
 		}
 
 		Cursor _loadCursorFromBinotto(BinaryFile& file)

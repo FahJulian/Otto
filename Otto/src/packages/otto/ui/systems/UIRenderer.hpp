@@ -12,7 +12,7 @@ namespace otto
 {
     namespace
     {
-        struct UIVertex
+        struct Vertex
         {
             float32 x, y, zIndex;
             float32 r, g, b, a;
@@ -69,7 +69,7 @@ namespace otto
                 indices[6 * i + 5] = uint32(4 * i + 2);
             }
 
-            mVBO = VertexBuffer(4 * MAX_ELEMENTS * sizeof(UIVertex), {
+            mVBO = VertexBuffer(4 * MAX_ELEMENTS * sizeof(Vertex), {
                 BufferElement::create<Vec3f32>(),
                 BufferElement::create<Vec4f32>(), 
                 BufferElement::create<Vec2f32>(), 
@@ -86,15 +86,15 @@ namespace otto
 
         void onEvent(const RebufferEvent& rebufferEvent)
         {
-            mElementCount = mUIComponentView->getSize();
-            if (mElementCount > MAX_ELEMENTS)
-                mElementCount = MAX_ELEMENTS;
-
             if (mRebuffer)
             {
+                mElementCount = mUIComponentView->getSize();
+                if (mElementCount > MAX_ELEMENTS)
+                    mElementCount = MAX_ELEMENTS;
+
                 mTextures.clear();
 
-                for (uint64 i = 0; i < mUIComponentView->getSize() && i < MAX_ELEMENTS; i++)
+                for (uint64 i = 0; i < mElementCount; i++)
                     _drawElement(i, mUIComponentView->get(i).second);
 
                 mVBO.bind();
@@ -145,26 +145,28 @@ namespace otto
     private:
         void _drawElement(uint64 index, const UIComponent& component)
         {
-            float32 x = /*floor*/(component.x.absoluteValue);
-            float32 y = /*floor*/(component.y.absoluteValue);
-            float32 width = /*floor*/(component.width.absoluteValue);
-            float32 height = /*floor*/(component.height.absoluteValue);
-            const Sprite& sprite = component.renderingProperties.sprite;
+            float32 x = floor(component.x.absoluteValue);
+            float32 y = floor(component.y.absoluteValue);
+            float32 width = floor(component.width.absoluteValue);
+            float32 height = floor(component.height.absoluteValue);
+
+            const UIRenderingProperties& properties = component.hovered ? 
+                component.hoveredRenderingProperties : component.renderingProperties;
 
             for (uint64 i = 0; i < 4; i++)
             {
-                UIVertex& vertex = mVertices[4 * index + i];
+                Vertex& vertex = mVertices[4 * index + i];
 
                 vertex.x = x + (i % 2) * width;
                 vertex.y = y + (i / 2) * height;
                 vertex.zIndex = component.zIndex;
-                vertex.r = component.renderingProperties.color.r;
-                vertex.g = component.renderingProperties.color.g;
-                vertex.b = component.renderingProperties.color.b;
-                vertex.a = component.renderingProperties.color.a;
-                vertex.textureX = i % 2 == 0 ? sprite.x0 : sprite.x1;
-                vertex.textureY = i / 2 == 0 ? sprite.y0 : sprite.y1;
-                vertex.textureSlot = _textureSlotOf(sprite.texture);
+                vertex.r = properties.color.r;
+                vertex.g = properties.color.g;
+                vertex.b = properties.color.b;
+                vertex.a = properties.color.a;
+                vertex.textureX = i % 2 == 0 ? properties.sprite.x0 : properties.sprite.x1;
+                vertex.textureY = i / 2 == 0 ? properties.sprite.y0 : properties.sprite.y1;
+                vertex.textureSlot = _textureSlotOf(properties.sprite.texture);
 
                 vertex.rectX = x;
                 vertex.rectY = y;
@@ -172,12 +174,12 @@ namespace otto
                 vertex.rectWidth = width;
                 vertex.rectHeight = height;
 
-                vertex.borderR = component.renderingProperties.borderColor.r;
-                vertex.borderG = component.renderingProperties.borderColor.g;
-                vertex.borderB = component.renderingProperties.borderColor.b;
-                vertex.borderA = component.renderingProperties.borderColor.a;
-                vertex.borderWeight = component.renderingProperties.borderWeight;
-                vertex.edgeRadius = component.renderingProperties.edgeRadius;
+                vertex.borderR = properties.borderColor.r;
+                vertex.borderG = properties.borderColor.g;
+                vertex.borderB = properties.borderColor.b;
+                vertex.borderA = properties.borderColor.a;
+                vertex.borderWeight = properties.borderWeight;
+                vertex.edgeRadius = properties.edgeRadius;
             }
         }   
 
@@ -207,7 +209,7 @@ namespace otto
         Shader mShader;
         VertexArray mVAO;
         VertexBuffer mVBO;  
-        DynamicArray<UIVertex> mVertices;
+        DynamicArray<Vertex> mVertices;
         DynamicArray<Texture2D> mTextures;
     };
 

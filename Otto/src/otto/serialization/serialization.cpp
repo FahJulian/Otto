@@ -10,18 +10,6 @@ namespace otto
 		return Serialized(string);
 	}
 
-	template<typename T> requires isIntegral<T>
-	Serialized serialize(const Vec2<T>& v)
-	{
-		return String::valueOf(v.x) + ", " + String::valueOf(v.y);
-	}
-
-	template<>
-	Serialized serialize(const Vec3f32& v)
-	{
-		return String::valueOf(v.x) + ", " + String::valueOf(v.y) + ", " + String::valueOf(v.z);
-	}
-
 	template<>
 	Serialized serialize(const Color& color)
 	{
@@ -33,20 +21,6 @@ namespace otto
 	String deserialize(const Serialized& serialized)
 	{
 		return serialized.toString();
-	}
-
-	template<typename T> requires isIntegral<T>
-	Vec2<T> deserialize(const Serialized& serialized)
-	{
-		auto values = String::split(serialized.get<String>(), ", ");
-		return { values[0].to<T>(), values[1].to<T>() };
-	}
-
-	template<>
-	Vec3f32 deserialize(const Serialized& serialized)
-	{
-		auto values = String::split(serialized.get<String>(), ", ");
-		return { values[0].to<float32>(), values[1].to<float32>(), values[2].to<float32>() };
 	}
 
 	template<>
@@ -92,6 +66,14 @@ namespace otto
 	Sprite deserialize(const Serialized& serialized)
 	{
 		return TextureLoader::loadSpriteFromSerialized(serialized);
+	}
+
+	template<>
+	Vec2f32 deserialize(const Serialized& serialized)
+	{
+		auto values = String::split(serialized.get<String>(), ", ");
+
+		return { String::stringTo<float32>(values[0]), String::stringTo<float32>(values[1]) };
 	}
 
 } // namespace otto

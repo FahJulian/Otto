@@ -20,9 +20,13 @@ namespace otto
         UISize height;
         float32 zIndex;
 
+        bool8 hovered = false;
+
         UIRenderingProperties renderingProperties;
+        UIRenderingProperties hoveredRenderingProperties;
 
         EventListener<UIClickedEvent> clickListener;
+        EventListener<UIClickedEvent> hoverListener;
     };
 
     template<>
@@ -58,6 +62,10 @@ namespace otto
             component.zIndex = args.get<float32>("zIndex");
         if (args.contains("renderingProperties"))
             component.renderingProperties = args.get<UIRenderingProperties>("renderingProperties");
+        if (args.contains("hoveredRenderingProperties"))
+            component.hoveredRenderingProperties = args.get<UIRenderingProperties>("hoveredRenderingProperties");
+        else
+            component.hoveredRenderingProperties = component.renderingProperties;
 
         return component;
     }

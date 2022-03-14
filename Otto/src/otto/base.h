@@ -72,4 +72,26 @@ namespace otto
 
     template<typename T>
     static constexpr bool8 isNotIntegral = !isIntegral<T>;
-}
+
+    template<typename T>
+    static constexpr bool8 isInteger = false;
+
+    template<> static constexpr bool8 isInteger<int8> = true;
+    template<> static constexpr bool8 isInteger<int16> = true;
+    template<> static constexpr bool8 isInteger<int32> = true;
+    template<> static constexpr bool8 isInteger<int64> = true;
+    template<> static constexpr bool8 isInteger<uint8> = true;
+    template<> static constexpr bool8 isInteger<uint16> = true;
+    template<> static constexpr bool8 isInteger<uint32> = true;
+    template<> static constexpr bool8 isInteger<uint64> = true;
+
+    template<typename T>
+    static constexpr bool8 isFloat = false;
+
+    template<> static constexpr bool8 isFloat<float32> = true;
+    template<> static constexpr bool8 isFloat<float64> = true;
+
+    template<typename T>
+    static constexpr bool isNumber = isInteger<T> || isFloat<T>;
+
+} // namespace otto

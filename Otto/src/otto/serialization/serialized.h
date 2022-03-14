@@ -113,7 +113,7 @@ namespace otto
         }
 
         template<typename T> requires isIntegral<T>
-            T get() const
+        T get() const
         {
             return mValue.to<T>();
         }
