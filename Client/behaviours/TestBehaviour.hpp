@@ -8,7 +8,6 @@ class TestBehaviour : public Behaviour
 public:
     void onEvent(const InitEvent& e)
     {
-        Log::info("Initializing TestBehaviour");
     }
 
     void onEvent(const UpdateEvent& e)   

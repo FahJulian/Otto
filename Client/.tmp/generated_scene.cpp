@@ -5,10 +5,12 @@
 
 using namespace otto;
 
-#include "C:\dev\Otto\Otto\src\packages\otto\2D\components\TransformComponent.hpp"
 #include "C:\dev\Otto\Client\components\TestComponent.hpp"
 #include "C:\dev\Otto\Client\components\TestComponent2.hpp"
 #include "C:\dev\Otto\Otto\src\packages\otto\ui\components\UIComponent.hpp"
+#include "C:\dev\Otto\Otto\src\packages\otto\2D\components\Transform2DComponent.hpp"
+#include "C:\dev\Otto\Otto\src\packages\otto\2D\components\Renderer2DComponent.hpp"
+#include "C:\dev\Otto\Otto\src\packages\otto\2D\components\Camera2DComponent.hpp"
 #include "C:\dev\Otto\Client\events\TestEvent.hpp"
 #include "C:\dev\Otto\Client\events\TestEvent2.hpp"
 #include "C:\dev\Otto\Otto\src\packages\otto\window\events\KeyPressedEvent.hpp"
@@ -29,14 +31,6 @@ using namespace otto;
 #include "C:\dev\Otto\Otto\src\packages\otto\ui\events\UIRendererRebufferEvent.hpp"
 #include "C:\dev\Otto\Otto\src\packages\otto\ui\events\UIClickedEvent.hpp"
 
-template<>
-OTTO_DLL_FUNC void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component);
-template<>
-OTTO_DLL_FUNC void Scene::removeComponent<TransformComponent>(Entity entity);
-template<>
-OTTO_DLL_FUNC TransformComponent& Scene::getComponent<TransformComponent>(Entity entity);
-template<>
-OTTO_DLL_FUNC bool8 Scene::hasComponent<TransformComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component);
 template<>
@@ -61,6 +55,30 @@ template<>
 OTTO_DLL_FUNC UIComponent& Scene::getComponent<UIComponent>(Entity entity);
 template<>
 OTTO_DLL_FUNC bool8 Scene::hasComponent<UIComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC void Scene::addComponent<Transform2DComponent>(Entity entity, const Transform2DComponent& component);
+template<>
+OTTO_DLL_FUNC void Scene::removeComponent<Transform2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC Transform2DComponent& Scene::getComponent<Transform2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC bool8 Scene::hasComponent<Transform2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC void Scene::addComponent<Renderer2DComponent>(Entity entity, const Renderer2DComponent& component);
+template<>
+OTTO_DLL_FUNC void Scene::removeComponent<Renderer2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC Renderer2DComponent& Scene::getComponent<Renderer2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC bool8 Scene::hasComponent<Renderer2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC void Scene::addComponent<Camera2DComponent>(Entity entity, const Camera2DComponent& component);
+template<>
+OTTO_DLL_FUNC void Scene::removeComponent<Camera2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC Camera2DComponent& Scene::getComponent<Camera2DComponent>(Entity entity);
+template<>
+OTTO_DLL_FUNC bool8 Scene::hasComponent<Camera2DComponent>(Entity entity);
 
 template<>
 OTTO_DLL_FUNC void Scene::addEventListener<TestEvent>(const EventListener<TestEvent>& eventListener);
@@ -183,6 +201,7 @@ OTTO_DLL_FUNC void Scene::dispatchEvent<UIClickedEvent>(const UIClickedEvent& e)
 #include "C:\dev\Otto\Client\systems\TestSystem2.hpp"
 #include "C:\dev\Otto\Otto\src\packages\otto\ui\systems\UIRenderer.hpp"
 #include "C:\dev\Otto\Otto\src\packages\otto\ui\systems\UIHandler.hpp"
+#include "C:\dev\Otto\Otto\src\packages\otto\2D\systems\Renderer2D.hpp"
 
 namespace otto
 {
@@ -190,10 +209,12 @@ namespace otto
     {
         Entity nextEntity = 1;
 
-        ComponentPool<TransformComponent> transformComponentPool;
         ComponentPool<TestComponent> testComponentPool;
         ComponentPool<TestComponent2> testComponent2Pool;
         ComponentPool<UIComponent> uIComponentPool;
+        ComponentPool<Transform2DComponent> transform2DComponentPool;
+        ComponentPool<Renderer2DComponent> renderer2DComponentPool;
+        ComponentPool<Camera2DComponent> camera2DComponentPool;
 
         ComponentPool<TestBehaviour> testBehaviourPool;
         ComponentPool<TestBehaviour2> testBehaviour2Pool;
@@ -221,14 +242,17 @@ namespace otto
         View<TestBehaviour> testBehaviourView = View<TestBehaviour>(&testBehaviourPool); 
         View<TestBehaviour2> testBehaviour2View = View<TestBehaviour2>(&testBehaviour2Pool); 
         View<TestComponent> testComponentView = View<TestComponent>(&testComponentPool); 
-        View<TransformComponent> transformComponentView = View<TransformComponent>(&transformComponentPool); 
+        View<Transform2DComponent> transform2DComponentView = View<Transform2DComponent>(&transform2DComponentPool); 
         View<UIComponent> uIComponentView = View<UIComponent>(&uIComponentPool); 
+        View<Camera2DComponent> camera2DComponentView = View<Camera2DComponent>(&camera2DComponentPool); 
 
-        MultiView<TestComponent, TransformComponent> testComponent_transformComponentView = MultiView<TestComponent, TransformComponent>(&testComponentPool, &transformComponentPool);
-        TestSystem testSystem = TestSystem(&testComponent_transformComponentView, &testComponentView, &transformComponentView);
+        MultiView<Renderer2DComponent, Transform2DComponent> renderer2DComponent_transform2DComponentView = MultiView<Renderer2DComponent, Transform2DComponent>(&renderer2DComponentPool, &transform2DComponentPool);
+        MultiView<Transform2DComponent, Renderer2DComponent> transform2DComponent_renderer2DComponentView = MultiView<Transform2DComponent, Renderer2DComponent>(&transform2DComponentPool, &renderer2DComponentPool);
+        TestSystem testSystem = TestSystem(&renderer2DComponent_transform2DComponentView, &testComponentView, &transform2DComponentView);
         TestSystem2 testSystem2 = TestSystem2();
         UIRenderer uIRenderer = UIRenderer(&uIComponentView);
         UIHandler uIHandler = UIHandler(&uIComponentView);
+        Renderer2D renderer2D = Renderer2D(&transform2DComponent_renderer2DComponentView, &camera2DComponentView);
         Map<Entity, DynamicArray<uint16>> entityComponentMap;    };
 
     template<typename C>
@@ -237,27 +261,39 @@ namespace otto
         static_assert(false);
     }
     template<>
-    static uint16 getID<TransformComponent>()
+    static uint16 getID<TestComponent>()
     {
         return 0;
     }
 
     template<>
-    static uint16 getID<TestComponent>()
+    static uint16 getID<TestComponent2>()
     {
         return 1;
     }
 
     template<>
-    static uint16 getID<TestComponent2>()
+    static uint16 getID<UIComponent>()
     {
         return 2;
     }
 
     template<>
-    static uint16 getID<UIComponent>()
+    static uint16 getID<Transform2DComponent>()
     {
         return 3;
+    }
+
+    template<>
+    static uint16 getID<Renderer2DComponent>()
+    {
+        return 4;
+    }
+
+    template<>
+    static uint16 getID<Camera2DComponent>()
+    {
+        return 5;
     }
 
     template<typename C>
@@ -266,16 +302,16 @@ namespace otto
         return C();
     }
 
+    template<>
+    Serialized serializeComponentOrBehaviour<Renderer2DComponent>(const Renderer2DComponent& component, const Map<String, Entity>& entities)
+    {
+        return serializeComponent<Renderer2DComponent>(component, entities);
+    }
+
     template<typename C>
     C deserializeComponentOrBehaviour(const Serialized& args, const Map<String, Entity>& entities)
     {
         return C();
-    }
-
-    template<>
-    TransformComponent deserializeComponentOrBehaviour<TransformComponent>(const Serialized& args, const Map<String, Entity>& entities)
-    {
-        return deserializeComponent<TransformComponent>(args, entities);
     }
 
     template<>
@@ -288,6 +324,24 @@ namespace otto
     UIComponent deserializeComponentOrBehaviour<UIComponent>(const Serialized& args, const Map<String, Entity>& entities)
     {
         return deserializeComponent<UIComponent>(args, entities);
+    }
+
+    template<>
+    Transform2DComponent deserializeComponentOrBehaviour<Transform2DComponent>(const Serialized& args, const Map<String, Entity>& entities)
+    {
+        return deserializeComponent<Transform2DComponent>(args, entities);
+    }
+
+    template<>
+    Renderer2DComponent deserializeComponentOrBehaviour<Renderer2DComponent>(const Serialized& args, const Map<String, Entity>& entities)
+    {
+        return deserializeComponent<Renderer2DComponent>(args, entities);
+    }
+
+    template<>
+    Camera2DComponent deserializeComponentOrBehaviour<Camera2DComponent>(const Serialized& args, const Map<String, Entity>& entities)
+    {
+        return deserializeComponent<Camera2DComponent>(args, entities);
     }
 
     OTTO_DLL_FUNC Shared<Scene> Scene::_createScene()
@@ -314,10 +368,12 @@ namespace otto
         {
             switch(componentID)
             {
-            case 0: removeComponent<TransformComponent>(entity); break;
-            case 1: removeComponent<TestComponent>(entity); break;
-            case 2: removeComponent<TestComponent2>(entity); break;
-            case 3: removeComponent<UIComponent>(entity); break;
+            case 0: removeComponent<TestComponent>(entity); break;
+            case 1: removeComponent<TestComponent2>(entity); break;
+            case 2: removeComponent<UIComponent>(entity); break;
+            case 3: removeComponent<Transform2DComponent>(entity); break;
+            case 4: removeComponent<Renderer2DComponent>(entity); break;
+            case 5: removeComponent<Camera2DComponent>(entity); break;
             }
         }
 
@@ -330,6 +386,7 @@ namespace otto
         mData->testSystem2.mScene = this;
         mData->uIRenderer.mScene = this;
         mData->uIHandler.mScene = this;
+        mData->renderer2D.mScene = this;
         for (auto [entity, behaviour] : mData->testBehaviourView)
         {
             behaviour.mScene = this;
@@ -351,6 +408,8 @@ namespace otto
 
     OTTO_DLL_FUNC void Scene::rebuffer()
     {
+        GraphicsAPI::setViewport(0, 0, uint32(Window::getWidth()), uint32(Window::getHeight()));
+
         dispatchEvent(RebufferEvent());
     }
 
@@ -650,6 +709,7 @@ namespace otto
     OTTO_DLL_FUNC void Scene::dispatchEvent<MouseMovedEvent>(const MouseMovedEvent& e)
     {
         mData->testSystem.onEvent(e);
+        mData->uIHandler.onEvent(e);
         mData->mouseMovedEventDispatcher.dispatchEvent(e);
     }
 
@@ -675,6 +735,7 @@ namespace otto
     OTTO_DLL_FUNC void Scene::dispatchEvent<WindowResizedEvent>(const WindowResizedEvent& e)
     {
         mData->uIRenderer.onEvent(e);
+        mData->renderer2D.onEvent(e);
         mData->windowResizedEventDispatcher.dispatchEvent(e);
     }
 
@@ -696,6 +757,8 @@ namespace otto
         mData->testSystem.onEvent(e);
         mData->testSystem2.onEvent(e);
         mData->uIRenderer.onEvent(e);
+        mData->uIHandler.onEvent(e);
+        mData->renderer2D.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviourView)
             behaviour.onEvent(e);
         for (auto [entity, behaviour] : mData->testBehaviour2View)
@@ -718,6 +781,7 @@ namespace otto
     OTTO_DLL_FUNC void Scene::dispatchEvent<RenderEvent>(const RenderEvent& e)
     {
         mData->uIRenderer.onEvent(e);
+        mData->renderer2D.onEvent(e);
         mData->renderEventDispatcher.dispatchEvent(e);
     }
 
@@ -725,6 +789,7 @@ namespace otto
     OTTO_DLL_FUNC void Scene::dispatchEvent<RebufferEvent>(const RebufferEvent& e)
     {
         mData->uIRenderer.onEvent(e);
+        mData->renderer2D.onEvent(e);
         mData->rebufferEventDispatcher.dispatchEvent(e);
     }
 
@@ -743,14 +808,40 @@ namespace otto
 
     OTTO_DLL_FUNC void Scene::addComponent(Entity entity, const String& componentName, const Serialized& args, const Map<String, Entity>& entities)
     {
-        if (componentName == "TransformComponent")
-            addComponent(entity, deserializeComponentOrBehaviour<TransformComponent>(args, entities));
         if (componentName == "TestComponent")
-            addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
+        {
+            mData->testComponentPool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent>(args, entities));
+            mData->entityComponentMap[entity].add(getID<TestComponent>());
+        }
         if (componentName == "TestComponent2")
-            addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+        {
+            mData->testComponent2Pool.addComponent(entity, deserializeComponentOrBehaviour<TestComponent2>(args, entities));
+            mData->entityComponentMap[entity].add(getID<TestComponent2>());
+        }
         if (componentName == "UIComponent")
-            addComponent(entity, deserializeComponentOrBehaviour<UIComponent>(args, entities));
+        {
+            mData->uIComponentPool.addComponent(entity, deserializeComponentOrBehaviour<UIComponent>(args, entities));
+            mData->entityComponentMap[entity].add(getID<UIComponent>());
+        }
+        if (componentName == "Transform2DComponent")
+        {
+            mData->transform2DComponentPool.addComponent(entity, deserializeComponentOrBehaviour<Transform2DComponent>(args, entities));
+            mData->entityComponentMap[entity].add(getID<Transform2DComponent>());
+            mData->renderer2DComponent_transform2DComponentView.onComponent2Added(entity);
+            mData->transform2DComponent_renderer2DComponentView.onComponent1Added(entity);
+        }
+        if (componentName == "Renderer2DComponent")
+        {
+            mData->renderer2DComponentPool.addComponent(entity, deserializeComponentOrBehaviour<Renderer2DComponent>(args, entities));
+            mData->entityComponentMap[entity].add(getID<Renderer2DComponent>());
+            mData->renderer2DComponent_transform2DComponentView.onComponent1Added(entity);
+            mData->transform2DComponent_renderer2DComponentView.onComponent2Added(entity);
+        }
+        if (componentName == "Camera2DComponent")
+        {
+            mData->camera2DComponentPool.addComponent(entity, deserializeComponentOrBehaviour<Camera2DComponent>(args, entities));
+            mData->entityComponentMap[entity].add(getID<Camera2DComponent>());
+        }
         if (componentName == "TestBehaviour")
             mData->testBehaviourPool.addComponent(entity, deserializeComponentOrBehaviour<TestBehaviour>(args, entities));
         if (componentName == "TestBehaviour2")
@@ -764,20 +855,11 @@ namespace otto
     }
 
     template<>
-    OTTO_DLL_FUNC void Scene::addComponent<TransformComponent>(Entity entity, const TransformComponent& component)
-    {
-        mData->transformComponentPool.addComponent(entity, component);
-        mData->testComponent_transformComponentView.onComponent2Added(entity);
-        mData->entityComponentMap[entity].add(getID<TransformComponent>());
-    }
-
-    template<>
     OTTO_DLL_FUNC void Scene::addComponent<TestComponent>(Entity entity, const TestComponent& component)
     {
         mData->testComponentPool.addComponent(entity, component);
-        mData->testComponent_transformComponentView.onComponent1Added(entity);
-        mData->testSystem.onEvent(ComponentAddedEvent<TestComponent>(entity));
         mData->entityComponentMap[entity].add(getID<TestComponent>());
+        mData->testSystem.onEvent(ComponentAddedEvent<TestComponent>(entity));
     }
 
     template<>
@@ -791,8 +873,34 @@ namespace otto
     OTTO_DLL_FUNC void Scene::addComponent<UIComponent>(Entity entity, const UIComponent& component)
     {
         mData->uIComponentPool.addComponent(entity, component);
-        mData->uIRenderer.onEvent(ComponentAddedEvent<UIComponent>(entity));
         mData->entityComponentMap[entity].add(getID<UIComponent>());
+        mData->uIRenderer.onEvent(ComponentAddedEvent<UIComponent>(entity));
+        mData->uIHandler.onEvent(ComponentAddedEvent<UIComponent>(entity));
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::addComponent<Transform2DComponent>(Entity entity, const Transform2DComponent& component)
+    {
+        mData->transform2DComponentPool.addComponent(entity, component);
+        mData->entityComponentMap[entity].add(getID<Transform2DComponent>());
+        mData->renderer2DComponent_transform2DComponentView.onComponent2Added(entity);
+        mData->transform2DComponent_renderer2DComponentView.onComponent1Added(entity);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::addComponent<Renderer2DComponent>(Entity entity, const Renderer2DComponent& component)
+    {
+        mData->renderer2DComponentPool.addComponent(entity, component);
+        mData->entityComponentMap[entity].add(getID<Renderer2DComponent>());
+        mData->renderer2DComponent_transform2DComponentView.onComponent1Added(entity);
+        mData->transform2DComponent_renderer2DComponentView.onComponent2Added(entity);
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::addComponent<Camera2DComponent>(Entity entity, const Camera2DComponent& component)
+    {
+        mData->camera2DComponentPool.addComponent(entity, component);
+        mData->entityComponentMap[entity].add(getID<Camera2DComponent>());
     }
 
     template<typename C>
@@ -802,18 +910,9 @@ namespace otto
     }
 
     template<>
-    OTTO_DLL_FUNC void Scene::removeComponent<TransformComponent>(Entity entity)
-    {
-        mData->transformComponentPool.removeComponent(entity);
-        mData->testComponent_transformComponentView.onComponent2Removed(entity);
-        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TransformComponent>()));
-    }
-
-    template<>
     OTTO_DLL_FUNC void Scene::removeComponent<TestComponent>(Entity entity)
     {
         mData->testComponentPool.removeComponent(entity);
-        mData->testComponent_transformComponentView.onComponent1Removed(entity);
         mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<TestComponent>()));
     }
 
@@ -833,16 +932,35 @@ namespace otto
         mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<UIComponent>()));
     }
 
+    template<>
+    OTTO_DLL_FUNC void Scene::removeComponent<Transform2DComponent>(Entity entity)
+    {
+        mData->transform2DComponentPool.removeComponent(entity);
+        mData->renderer2DComponent_transform2DComponentView.onComponent2Removed(entity);
+        mData->transform2DComponent_renderer2DComponentView.onComponent1Removed(entity);
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<Transform2DComponent>()));
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::removeComponent<Renderer2DComponent>(Entity entity)
+    {
+        mData->renderer2DComponentPool.removeComponent(entity);
+        mData->renderer2DComponent_transform2DComponentView.onComponent1Removed(entity);
+        mData->transform2DComponent_renderer2DComponentView.onComponent2Removed(entity);
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<Renderer2DComponent>()));
+    }
+
+    template<>
+    OTTO_DLL_FUNC void Scene::removeComponent<Camera2DComponent>(Entity entity)
+    {
+        mData->camera2DComponentPool.removeComponent(entity);
+        mData->entityComponentMap[entity].remove(mData->entityComponentMap[entity].indexOf(getID<Camera2DComponent>()));
+    }
+
     template<typename C>
     OTTO_DLL_FUNC C& Scene::getComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
-    }
-
-    template<>
-    OTTO_DLL_FUNC TransformComponent& Scene::getComponent<TransformComponent>(Entity entity)
-    {
-        return mData->transformComponentPool.getComponent(entity);
     }
 
     template<>
@@ -863,16 +981,28 @@ namespace otto
         return mData->uIComponentPool.getComponent(entity);
     }
 
+    template<>
+    OTTO_DLL_FUNC Transform2DComponent& Scene::getComponent<Transform2DComponent>(Entity entity)
+    {
+        return mData->transform2DComponentPool.getComponent(entity);
+    }
+
+    template<>
+    OTTO_DLL_FUNC Renderer2DComponent& Scene::getComponent<Renderer2DComponent>(Entity entity)
+    {
+        return mData->renderer2DComponentPool.getComponent(entity);
+    }
+
+    template<>
+    OTTO_DLL_FUNC Camera2DComponent& Scene::getComponent<Camera2DComponent>(Entity entity)
+    {
+        return mData->camera2DComponentPool.getComponent(entity);
+    }
+
     template<typename C>
     OTTO_DLL_FUNC bool8 Scene::hasComponent(Entity entity)
     {
         OTTO_ASSERT(false, "Component is not added.")
-    }
-
-    template<>
-    OTTO_DLL_FUNC bool8 Scene::hasComponent<TransformComponent>(Entity entity)
-    {
-        return mData->entityComponentMap[entity].contains(getID<TransformComponent>());
     }
 
     template<>
@@ -891,6 +1021,24 @@ namespace otto
     OTTO_DLL_FUNC bool8 Scene::hasComponent<UIComponent>(Entity entity)
     {
         return mData->entityComponentMap[entity].contains(getID<UIComponent>());
+    }
+
+    template<>
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<Transform2DComponent>(Entity entity)
+    {
+        return mData->entityComponentMap[entity].contains(getID<Transform2DComponent>());
+    }
+
+    template<>
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<Renderer2DComponent>(Entity entity)
+    {
+        return mData->entityComponentMap[entity].contains(getID<Renderer2DComponent>());
+    }
+
+    template<>
+    OTTO_DLL_FUNC bool8 Scene::hasComponent<Camera2DComponent>(Entity entity)
+    {
+        return mData->entityComponentMap[entity].contains(getID<Camera2DComponent>());
     }
 
     OTTO_DLL_FUNC void Scene::_onKeyPressed(const _KeyPressedEvent& e)

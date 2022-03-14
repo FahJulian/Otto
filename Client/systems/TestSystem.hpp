@@ -1,4 +1,4 @@
-#pragma once
+#pragma
 
 #include <otto.h>
 
@@ -14,7 +14,7 @@ using namespace otto;
 class TestSystem : public System
 {
 public:
-    TestSystem(MultiView<TestComponent, TransformComponent>* view1, View<TestComponent>* view2, View<TransformComponent>* view3)
+    TestSystem(MultiView<Renderer2DComponent, Transform2DComponent>* view1, View<TestComponent>* view2, View<Transform2DComponent>* view3)
     {
         mView1 = view1;
         mView2 = view2;
@@ -46,7 +46,7 @@ public:
     }
 
 private:
-    MultiView<TestComponent, TransformComponent>* mView1;
+    MultiView<Renderer2DComponent, Transform2DComponent>* mView1;
     View<TestComponent>* mView2;
-    View<TransformComponent>* mView3;
+    View<Transform2DComponent>* mView3;
 };

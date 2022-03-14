@@ -8,19 +8,35 @@ Entity1:
             sprite:
                 spritesheet: resources/spritesheets/mario.otto
                 row: 1
-                col: 2     
+                col: 2    
+        hoveredRenderingProperties:
+            color: #000000FF
     TestBehaviour:
     TestBehaviour2:
     TestComponent:
-        tag: Test Tag
-    TransformComponent:
-        translation: 1.0, 3, 4
-        rotation: 654609.45345, 534580345, 0
-        scale: 1, 1, 1
+        tag: Test tag
+
+TestEntity:
+    Transform2DComponent:
+        translation: 100.0, 200.0
+        scale: 100, 75
+        rotation: 0
+    Renderer2DComponent:
+        color: #00FF00FF
+        sprite:
+            spritesheet: resources/spritesheets/mario.otto
+            row: 1
+            col: 6  
+
+TestEntity2:
+    Camera2DComponent:
+        Camera:
+            rotation: 10.0
+            position: -100, 100  
 
 Entity2:
     UIComponent:
-        x: 200
+        x: 100
         y: 300
         width: 50
         height: 75   

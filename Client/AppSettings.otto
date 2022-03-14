@@ -10,11 +10,10 @@ dependencies: [
     otto/window
     otto/core   
     otto/ui
+    otto/2D
 ]
 
 components: [
-    otto/2D/components/TransformComponent
-
     components/TestComponent
     components/TestComponent2
 ]

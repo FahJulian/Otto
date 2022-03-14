@@ -1,11 +1,12 @@
 Title: Test
 ClearColor: #999999ff
-Width: 500
-Height: 500
+Width: 400
+Height: 400
 windowMode: 0
 maximized: false
 cursorSet: otto/cursors/dark_cursors.otto
 defaultCursor: arrow
+resizable: true
 iconSet: 
     16: otto/icons/logo_16x16.png
     32: otto/icons/logo_32x32.png
