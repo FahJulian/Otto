@@ -83,7 +83,7 @@ namespace otto
 		}
 		else
 		{
-			Vec2i32 size = serialized.get<Vec2i32>("size");
+			Vec2<int32> size = serialized.get<Vec2<int32>>("size");
 			settings.width = size.x;
 			settings.height = size.y;
 		}
@@ -206,7 +206,7 @@ namespace otto
 		if (settings.saveSize)
 		{
 			if (serialized.contains("size"))
-				serialized.insert("size", Vec2i16(settings.unmaximizedWidth, settings.unmaximizedHeight));
+				serialized.insert("size", Vec2<int16>(settings.unmaximizedWidth, settings.unmaximizedHeight));
 			else
 			{
 				serialized.insert("width", settings.unmaximizedWidth);

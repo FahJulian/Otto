@@ -171,28 +171,35 @@ namespace otto
     }
 
     template<> 
-    void Shader::setUniform<const Vec2f32&>(const String& name, const Vec2f32& value)
+    void Shader::setUniform<Vec2<float32>>(const String& name, const Vec2<float32>& value)
     {
         GLint location = glGetUniformLocation(mOpenglHandle, name.getData());
         glUniform2f(location, value.x, value.y);
     }
 
     template<> 
-    void Shader::setUniform<Vec3f32>(const String& name, Vec3f32 value)
+    void Shader::setUniform<Vec3<float32>>(const String& name, const Vec3<float32>& value)
     {
         GLint location = glGetUniformLocation(mOpenglHandle, name.getData());
         glUniform3f(location, value.x, value.y, value.z);
     }
 
     template<> 
-    void Shader::setUniform<Vec4f32>(const String& name, Vec4f32 value)
+    void Shader::setUniform<Vec4<float32>>(const String& name, const Vec4<float32>& value)
     {
         GLint location = glGetUniformLocation(mOpenglHandle, name.getData());
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
     template<> 
-    void Shader::setUniform<Mat4x4f32>(const String& name, Mat4x4f32 value)
+    void Shader::setUniform<Mat3x3<float32>>(const String& name, const Mat3x3<float32>& value)
+    {
+        GLint location = glGetUniformLocation(mOpenglHandle, name.getData());
+        glUniformMatrix3fv(location, 1, GL_FALSE, value.getData());
+    }
+
+    template<>
+    void Shader::setUniform<Mat4x4<float32>>(const String& name, const Mat4x4<float32>& value)
     {
         GLint location = glGetUniformLocation(mOpenglHandle, name.getData());
         glUniformMatrix4fv(location, 1, GL_FALSE, value.getData());

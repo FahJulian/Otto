@@ -12,6 +12,16 @@ namespace otto
     public:
         StaticArray() = default;
 
+        explicit StaticArray(T value) requires isIntegral<T>
+        {
+            std::fill_n(mData, N, value);
+        }
+
+        explicit StaticArray(const T& value) requires isNotIntegral<T>
+        {
+            std::fill_n(mData, N, value);
+        }
+
         StaticArray(const std::initializer_list<T>& data)
         {
             OTTO_ASSERT(data.size() <= N, "To many values for StaticArray");

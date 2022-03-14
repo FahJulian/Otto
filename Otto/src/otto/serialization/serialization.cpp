@@ -69,7 +69,7 @@ namespace otto
 	}
 
 	template<>
-	Vec2f32 deserialize(const Serialized& serialized)
+	Vec2<float32> deserialize(const Serialized& serialized)
 	{
 		auto values = String::split(serialized.get<String>(), ", ");
 

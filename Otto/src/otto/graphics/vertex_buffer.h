@@ -19,37 +19,37 @@ namespace otto
         static constexpr bool8 _isShaderType = false;
 
         template<> static constexpr bool8 _isShaderType<float32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec2f32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec3f32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec4f32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec2<float32>> = true;
+        template<> static constexpr bool8 _isShaderType<Vec3<float32>> = true;
+        template<> static constexpr bool8 _isShaderType<Vec4<float32>> = true;
         template<> static constexpr bool8 _isShaderType<int32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec2i32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec3i32> = true;
-        template<> static constexpr bool8 _isShaderType<Vec4i32> = true;
+        template<> static constexpr bool8 _isShaderType<Vec2<int32>> = true;
+        template<> static constexpr bool8 _isShaderType<Vec3<int32>> = true;
+        template<> static constexpr bool8 _isShaderType<Vec4<int32>> = true;
 
         template<typename T>
         static constexpr uint8 _elementCount = 0;
 
         template<> static constexpr uint8 _elementCount<float32> = 1;
-        template<> static constexpr uint8 _elementCount<Vec2f32> = 2;
-        template<> static constexpr uint8 _elementCount<Vec3f32> = 3;
-        template<> static constexpr uint8 _elementCount<Vec4f32> = 4;
+        template<> static constexpr uint8 _elementCount<Vec2<float32>> = 2;
+        template<> static constexpr uint8 _elementCount<Vec3<float32>> = 3;
+        template<> static constexpr uint8 _elementCount<Vec4<float32>> = 4;
         template<> static constexpr uint8 _elementCount<int32> = 1;
-        template<> static constexpr uint8 _elementCount<Vec2i32> = 2;
-        template<> static constexpr uint8 _elementCount<Vec3i32> = 3;
-        template<> static constexpr uint8 _elementCount<Vec4i32> = 4;
+        template<> static constexpr uint8 _elementCount<Vec2<int32>> = 2;
+        template<> static constexpr uint8 _elementCount<Vec3<int32>> = 3;
+        template<> static constexpr uint8 _elementCount<Vec4<int32>> = 4;
 
         template<typename T>
         static constexpr uint32 _openglBaseType = 0;
 
         template<> static constexpr uint32 _openglBaseType<float32> = GL_FLOAT;
-        template<> static constexpr uint32 _openglBaseType<Vec2f32> = GL_FLOAT;
-        template<> static constexpr uint32 _openglBaseType<Vec3f32> = GL_FLOAT;
-        template<> static constexpr uint32 _openglBaseType<Vec4f32> = GL_FLOAT;
+        template<> static constexpr uint32 _openglBaseType<Vec2<float32>> = GL_FLOAT;
+        template<> static constexpr uint32 _openglBaseType<Vec3<float32>> = GL_FLOAT;
+        template<> static constexpr uint32 _openglBaseType<Vec4<float32>> = GL_FLOAT;
         template<> static constexpr uint32 _openglBaseType<int32> = GL_INT;
-        template<> static constexpr uint32 _openglBaseType<Vec2i32> = GL_INT;
-        template<> static constexpr uint32 _openglBaseType<Vec3i32> = GL_INT;
-        template<> static constexpr uint32 _openglBaseType<Vec4i32> = GL_INT;
+        template<> static constexpr uint32 _openglBaseType<Vec2<int32>> = GL_INT;
+        template<> static constexpr uint32 _openglBaseType<Vec3<int32>> = GL_INT;
+        template<> static constexpr uint32 _openglBaseType<Vec4<int32>> = GL_INT;
 
     public:
         BufferElement(uint8 size, uint8 elementCount, uint64 offset, uint32 openglBaseType, bool8 normalized)

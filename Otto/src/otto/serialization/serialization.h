@@ -66,7 +66,7 @@ namespace otto
     //}
 
     template<>
-    Vec2f32 deserialize(const Serialized& serialized);
+    Vec2<float32> deserialize(const Serialized& serialized);
 
     template<typename T> requires isIntegral<T>
     Vec3<T> deserialize(const Serialized& serialized)

@@ -70,13 +70,13 @@ namespace otto
             }
 
             mVBO = VertexBuffer(4 * MAX_ELEMENTS * sizeof(Vertex), {
-                BufferElement::create<Vec3f32>(),
-                BufferElement::create<Vec4f32>(), 
-                BufferElement::create<Vec2f32>(), 
+                BufferElement::create<Vec3<float32>>(),
+                BufferElement::create<Vec4<float32>>(), 
+                BufferElement::create<Vec2<float32>>(), 
                 BufferElement::create<float32>(), 
-                BufferElement::create<Vec2f32>(), 
-                BufferElement::create<Vec2f32>(), 
-                BufferElement::create<Vec4f32>(), 
+                BufferElement::create<Vec2<float32>>(), 
+                BufferElement::create<Vec2<float32>>(), 
+                BufferElement::create<Vec4<float32>>(), 
                 BufferElement::create<float32>(),
                 BufferElement::create<float32>() 
             });

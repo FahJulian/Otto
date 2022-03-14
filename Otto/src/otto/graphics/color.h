@@ -1,6 +1,7 @@
 #pragma once
 
 #include "otto/base.h"
+#include "otto/math/math.h"
 
 namespace otto
 {
@@ -32,6 +33,11 @@ namespace otto
             : Color(((colorCode >> 24) & 255) / 255.0f, ((colorCode >> 16) & 255) / 255.0f,
                 ((colorCode >> 8) & 255) / 255.0f, (colorCode & 255) / 255.0f)
         {
+        }
+
+        const Vec4<float32>& toVec4() const
+        {
+            return *reinterpret_cast<const Vec4<float32>*>(this);
         }
 
         ColorCode toColorCode() const

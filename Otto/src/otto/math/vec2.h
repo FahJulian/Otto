@@ -1,102 +1,191 @@
 #pragma once
 
-#include <iostream>
-
 #include "otto/base.h"
+#include "otto/math/vec.h"
+#include "otto/util/string.h"
+#include "otto/math/functions.h"
+#include "otto/util/static_array.h"
 
 namespace otto
 {
-    template<typename T>
-    struct Vec2
+    template<typename T> requires isIntegral<T>
+    struct Vec<2, T> 
     {
-        constexpr Vec2()
-            : Vec2(T(0))
+        Vec()
+            : mData(StaticArray<T, 2>(T(0)))
         {
-        }
-
-        constexpr Vec2(T t)
-            : x(t), y(t)
-        {
-        }
-
-        constexpr Vec2(T x, T y)
-            : x(x), y(y)
-        {
-        }
-
-        Vec2(const Vec2& other) = default;
-
-        Vec2& operator=(const Vec2& other) = default;
-
-        template<typename F>
-        Vec2& operator+=(const Vec2<F>& v)
-        {
-            x += v.x;
-            y += v.y;
         }
 
         template<typename F>
-        Vec2& operator+=(F f) requires isIntegral<F>
+        explicit Vec(F value) requires isIntegral<F>
+            : mData(StaticArray<T, 2>(T(value)))
         {
-            x += f;
-            y += f;
         }
 
         template<typename F>
-        Vec2& operator*=(F f) requires isIntegral<F>
+        Vec(F v1, F v2) requires isIntegral<F>
+            : mData({ T(v1), T(v2) })
         {
-            x *= f;
-            y *= f;
-        }
-
-        template<typename F, typename G>
-        friend Vec2 operator+(const Vec2<F>& v1, const Vec2<G>& v2)
-        {
-            return { v1.x + v2.x, v1.y + v2.y };
         }
 
         template<typename F>
-        friend typename Vec2 operator+(F f, const Vec2& v) requires isIntegral<F>
+        Vec(const Vec<2, F>& other)
         {
-            return { f + v.x, f + v.y };
+            *this = other;
+        }
+
+        ~Vec()
+        {
+            mData.~StaticArray<T, 2>();
         }
 
         template<typename F>
-        friend typename Vec2 operator+(const Vec2& v, F f) requires isIntegral<F>
+        Vec& operator=(const Vec<2, F>& other)
         {
-            return { v.x + f, v.y + f };
+            mData[0] = other.mData[0];
+            mData[1] = other.mData[1];
+
+            return *this;
         }
 
         template<typename F>
-        friend typename Vec2 operator*(F f, const Vec2& v) requires isIntegral<F>
+        Vec& operator+=(const Vec<2, F>& other)
         {
-            return { f * v.x, f * v.y };
+            mData[0] += other.mData[0];
+            mData[1] += other.mData[1];
+
+            return *this;
         }
 
         template<typename F>
-        friend typename Vec2 operator*(const Vec2& v, F f) requires isIntegral<F>
+        Vec& operator-=(const Vec<2, F>& other)
         {
-            return { v.x * f, v.y * f };
+            mData[0] -= other.mData[0];
+            mData[1] -= other.mData[1];
+
+            return *this;
         }
 
-        friend std::ostream& operator<<(std::ostream& stream, const Vec2& v)
+        template<typename F>
+        Vec& operator*=(F value) requires isIntegral<F>
         {
-            return (stream << '(' << v.x << ", " << v.y << ')');
+            mData[0] *= value;
+            mData[1] *= value;
+
+            return *this;
         }
 
-        T x = T();
-        T y = T();
+        T& operator[](uint64 index)
+        {
+            return mData[index];
+        }
+
+        const T& operator[](uint64 index) const
+        {
+            return mData[index];
+        }
+
+        T* getData()
+        {
+            return mData.getData();
+        }
+
+        const T* getData() const
+        {
+            return mData.getData();
+        }
+
+        String toString() const
+        {
+            return String::valueOf(x) + ", " + String::valueOf(y);
+        }
+
+        union
+        {
+            struct
+            {
+                T x;
+                T y;
+            };
+
+            struct
+            {
+                T width;
+                T height;
+            };
+
+            StaticArray<T, 2> mData;
+        };
     };
 
-    using Vec2f32 = Vec2<float32>;
-    using Vec2f64 = Vec2<float64>;
-    using Vec2ui8 = Vec2<uint8>;
-    using Vec2ui16 = Vec2<uint16>;
-    using Vec2ui32 = Vec2<uint32>;
-    using Vec2ui64 = Vec2<uint64>;
-    using Vec2i8 = Vec2<int8>;
-    using Vec2i16 = Vec2<int16>;
-    using Vec2i32 = Vec2<int32>;
-    using Vec2i64 = Vec2<int64>;
+    template<typename T, typename F>
+    Vec<2, T> operator+(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return {
+            v1.mData[0] + v2.mData[0],
+            v1.mData[1] + v2.mData[1],
+        };
+    }
+
+    template<typename T, typename F>
+    Vec<2, T> operator-(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return {
+            v1.mData[0] - v2.mData[0],
+            v1.mData[1] - v2.mData[1],
+        };
+    }
+
+    template<typename T, typename F>
+    Vec<2, T> operator*(F value, const Vec<2, T>& vec) requires isIntegral<F>
+    {
+        return {
+            vec.mData[0] * value,
+            vec.mData[1] * value,
+        };
+    }
+
+    template<typename T, typename F>
+    Vec<2, T> operator*(const Vec<2, T>& vec, F value) requires isIntegral<F>
+    {
+        return value * vec;
+    }
+
+    template<typename T, typename F>
+    bool8 operator==(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return v1.mData[0] == v2.mData[0] &&
+            v2.mData[1] == v2.mData[1];
+    }
+
+    template<typename T, typename F>
+    bool8 operator!=(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return !(v1 == v2);
+    }
+
+    template<typename T>
+    T length(const Vec<2, T>& vec)
+    {
+        return sqrt(vec.x * vec.x + vec.y * vec.y);
+    }
+
+    template<typename T, typename F>
+    T dot(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return v1.x * v2.x + v1.y * v2.y;
+    }
+
+    template<typename T, typename F>
+    T distance(const Vec<2, T>& v1, const Vec<2, F>& v2)
+    {
+        return length(v2 - v1);
+    }
+
+    template<typename T>
+    Vec<2, T> normalize(const Vec<2, T>& vec)
+    {
+        return (1 / length(vec)) * vec;
+    }
 
 } // namespace otto
